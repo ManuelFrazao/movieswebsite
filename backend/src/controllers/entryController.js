@@ -1,6 +1,17 @@
 import cloudinary from "../utils/cloudinary.js";
 import { Entry, Season, Episode } from "../models/index.js";
 
+const generateSlug = (title) => {
+  return (
+    title
+      .toLowerCase()
+      .replace(/ /g, "-")
+      .replace(/[^\w-]+/g, "") +
+    "-" +
+    Date.now()
+  );
+};
+
 // CREATE ENTRY
 export const createEntry = async (req, res) => {
   try {
@@ -9,23 +20,24 @@ export const createEntry = async (req, res) => {
     if (req.file) {
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-        {
-          folder: "entries",
-        }
+        { folder: "entries" }
       );
 
       imageUrl = result.secure_url;
     }
 
+    const slug = generateSlug(req.body.title); // 🔥 aqui
+
     const entry = await Entry.create({
       ...req.body,
+      slug,
       coverImage: imageUrl,
     });
 
     res.json(entry);
 
   } catch (err) {
-    console.error("UPLOAD ERROR:", err); // 🔥 IMPORTANTE
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
