@@ -1,5 +1,5 @@
 import express from "express";
-import { sequelize } from "./config/database.js";
+import { sequelize } from "./models/index.js";
 import routes from "./routes/index.js";
 
 const app = express();
@@ -14,8 +14,14 @@ app.get("/", (req, res) => {
 
 app.use("/api", routes);
 
+// ligar à DB
 sequelize.authenticate()
   .then(() => console.log("DB conectada 🔥"))
+  .catch(err => console.error(err));
+
+// 🔥 CRIAR TABELAS
+sequelize.sync({ alter: true })
+  .then(() => console.log("Tabelas criadas ✅"))
   .catch(err => console.error(err));
 
 app.listen(PORT, () => {
