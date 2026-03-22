@@ -4,13 +4,13 @@ import api from "../services/api";
 import "./Entry.css";
 
 export default function Entry() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [entry, setEntry] = useState(null);
 
   useEffect(() => {
     const fetchEntry = async () => {
       try {
-        const res = await api.get(`/entries/${id}`);
+        const res = await api.get(`/entries/${slug}`);
         setEntry(res.data);
       } catch (err) {
         console.error(err);
@@ -18,7 +18,7 @@ export default function Entry() {
     };
 
     fetchEntry();
-  }, [id]);
+  }, [slug]);
 
   if (!entry) return <p>Loading...</p>;
 

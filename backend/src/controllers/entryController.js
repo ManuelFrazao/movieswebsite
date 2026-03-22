@@ -82,6 +82,37 @@ export const getEntryById = async (req, res) => {
   }
 };
 
+export const getEntryBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const entry = await Entry.findOne({
+      where: { slug },
+      include: [
+        {
+          model: Season,
+          as: "seasons",
+          include: [
+            {
+              model: Episode,
+              as: "episodes",
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!entry) {
+      return res.status(404).json({ message: "Entry não encontrada" });
+    }
+
+    res.json(entry);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // DELETE
 export const deleteEntry = async (req, res) => {
   try {

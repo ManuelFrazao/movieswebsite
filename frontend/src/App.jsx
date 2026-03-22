@@ -21,7 +21,7 @@ function App() {
           }
         />
 
-        <Route path="/entry/:id" element={<Entry />} />
+        <Route path="/entry/:slug" element={<Entry />} />
       </Routes>
     </BrowserRouter>
   );
