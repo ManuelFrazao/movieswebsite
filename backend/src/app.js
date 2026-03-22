@@ -1,5 +1,6 @@
 import express from "express";
 import { sequelize } from "./config/database.js";
+import routes from "./routes/index.js";
 
 const app = express();
 
@@ -10,6 +11,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("API a funcionar 🚀");
 });
+
+app.use("/api", routes);
 
 sequelize.authenticate()
   .then(() => console.log("DB conectada 🔥"))
