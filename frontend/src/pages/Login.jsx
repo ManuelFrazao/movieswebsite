@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import "./Login.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -26,24 +27,36 @@ export default function Login() {
   };
 
   return (
-    <div>
-      <h1>Login</h1>
+    <div className="container">
+      
+      <button onClick={() => navigate("/")} className="backBtn">
+        ← Voltar
+      </button>
 
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+      <div className="card">
+        <h1 className="title">Login</h1>
 
-        <input
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <form onSubmit={handleLogin} className="form">
+          
+          <input
+            type="email"
+            placeholder="Email"
+            className="input"
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <button type="submit">Entrar</button>
-      </form>
+          <input
+            type="password"
+            placeholder="Password"
+            className="input"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button type="submit" className="button">
+            Entrar
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import "./Dashboard.css";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -24,17 +27,48 @@ export default function Dashboard() {
     fetchUsers();
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
+
   return (
-    <div>
-      <h1>Admin Dashboard 👑</h1>
+    <div className="dashboard">
+      
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <h2>🎬 Admin</h2>
+        <p>Dashboard</p>
+        <button onClick={handleLogout}>Logout</button>
+      </aside>
 
-      <h2>Users</h2>
+      {/* Main content */}
+      <main className="main">
+        <h1>Dashboard 👑</h1>
 
-      {users.map((user) => (
-        <div key={user.id}>
-          <p>{user.email} - {user.role}</p>
+        <div className="card">
+          <h2>Users</h2>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.email}</td>
+                  <td>{user.role}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      ))}
+      </main>
     </div>
   );
 }
