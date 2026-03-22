@@ -3,6 +3,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminRoute from "./components/AdminRoute";
+import Entry from "./pages/Entry";
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
             </AdminRoute>
           }
         />
+
+        <Route path="/entry/:id" element={<Entry />} />
       </Routes>
     </BrowserRouter>
   );
