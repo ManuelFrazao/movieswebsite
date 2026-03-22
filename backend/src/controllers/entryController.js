@@ -7,28 +7,25 @@ export const createEntry = async (req, res) => {
     let imageUrl = null;
 
     if (req.file) {
-      const upload = await cloudinary.uploader.upload_stream(
-        { folder: "entries" },
-        async (error, result) => {
-          if (error) throw error;
-
-          imageUrl = result.secure_url;
-
-          const entry = await Entry.create({
-            ...req.body,
-            coverImage: imageUrl,
-          });
-
-          res.json(entry);
+      const result = await cloudinary.uploader.upload(
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        {
+          folder: "entries",
         }
       );
 
-      upload.end(req.file.buffer);
-    } else {
-      const entry = await Entry.create(req.body);
-      res.json(entry);
+      imageUrl = result.secure_url;
     }
+
+    const entry = await Entry.create({
+      ...req.body,
+      coverImage: imageUrl,
+    });
+
+    res.json(entry);
+
   } catch (err) {
+    console.error("UPLOAD ERROR:", err); // 🔥 IMPORTANTE
     res.status(500).json({ error: err.message });
   }
 };
