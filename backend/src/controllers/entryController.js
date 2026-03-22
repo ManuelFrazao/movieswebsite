@@ -1,10 +1,33 @@
+import cloudinary from "../utils/cloudinary.js";
 import { Entry, Season, Episode } from "../models/index.js";
 
 // CREATE ENTRY
 export const createEntry = async (req, res) => {
   try {
-    const entry = await Entry.create(req.body);
-    res.json(entry);
+    let imageUrl = null;
+
+    if (req.file) {
+      const upload = await cloudinary.uploader.upload_stream(
+        { folder: "entries" },
+        async (error, result) => {
+          if (error) throw error;
+
+          imageUrl = result.secure_url;
+
+          const entry = await Entry.create({
+            ...req.body,
+            coverImage: imageUrl,
+          });
+
+          res.json(entry);
+        }
+      );
+
+      upload.end(req.file.buffer);
+    } else {
+      const entry = await Entry.create(req.body);
+      res.json(entry);
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

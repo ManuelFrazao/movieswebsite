@@ -72,7 +72,7 @@ const EntryModel = (sequelize) => {
       type: DataTypes.JSON,
       defaultValue: [],
     },
-    votes: {
+    totalVotes: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },

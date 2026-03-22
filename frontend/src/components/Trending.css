@@ -1,0 +1,26 @@
+.trending {
+  padding: 20px;
+  background: #111;
+  color: white;
+}
+
+.cards {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+}
+
+.card {
+  min-width: 150px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card img {
+  width: 100%;
+  border-radius: 8px;
+}

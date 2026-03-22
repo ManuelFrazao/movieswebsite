@@ -57,3 +57,36 @@ th {
 tr:nth-child(even) {
   background: #f9f9f9;
 }
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form input,
+.form textarea,
+.form select {
+  padding: 8px;
+}
+
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.entry-item {
+  display: flex;
+  gap: 10px;
+  background: #eee;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.entry-item img {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+}
