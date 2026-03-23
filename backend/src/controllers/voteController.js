@@ -22,24 +22,6 @@ export const createVote = async (req, res) => {
       return res.status(400).json({ message: "episodeId necessário" });
     }
 
-    // evitar votos duplicados
-    const existingVote = await Vote.findOne({
-      where: {
-        userId,
-        entryId: entryId || null,
-        episodeId: episodeId || null,
-      },
-    });
-
-    if (existingVote) {
-      await existingVote.update({ value });
-
-      return res.json({
-        message: "Vote updated",
-        vote: existingVote,
-      });
-    }
-
     const vote = await Vote.create({
       value,
       type,
