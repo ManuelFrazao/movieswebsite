@@ -2,6 +2,7 @@ import express from "express";
 import {
   createEpisode,
   getEpisodesBySeason,
+  deleteEpisode,
 } from "../controllers/episodeController.js";
 import upload from "../middleware/upload.js";
 
@@ -11,5 +12,6 @@ const router = express.Router();
 
 router.post("/", protect, isAdmin, upload.single("image"), createEpisode);
 router.get("/season/:seasonId", getEpisodesBySeason);
+router.delete("/:id", protect, isAdmin, deleteEpisode);
 
 export default router;

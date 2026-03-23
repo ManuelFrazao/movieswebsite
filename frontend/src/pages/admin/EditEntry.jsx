@@ -13,6 +13,9 @@ export default function EditEntry() {
   const [seasons, setSeasons] = useState([]);
   const [episodes, setEpisodes] = useState({});
   const [episodeImage, setEpisodeImage] = useState(null);
+  // 🔥 NOVO STATE
+  const [episodeImages, setEpisodeImages] = useState({});
+  const [entryImage, setEntryImage] = useState(null);
 
   const [newSeason, setNewSeason] = useState({
     seasonNumber: "",
@@ -60,61 +63,96 @@ export default function EditEntry() {
     }
   };
 
+  const getNextSeasonNumber = () => {
+    return seasons.length + 1;
+  };
+
   const handleCreateSeason = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const seasonNumber = getNextSeasonNumber();
 
-      await api.post(
-        "/seasons",
-        {
-          entryId: id,
-          seasonNumber: newSeason.seasonNumber,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      await api.post("/seasons", {
+        entryId: id,
+        seasonNumber,
+      });
 
       fetchSeasons();
-      setNewSeason({ seasonNumber: "" });
     } catch (err) {
       console.error(err);
     }
   };
 
-const handleCreateEpisode = async (seasonId) => {
-  try {
-    const formData = new FormData();
+  const getNextEpisodeNumber = (seasonId) => {
+    const seasonEpisodes = episodes[seasonId] || [];
+    return seasonEpisodes.length + 1;
+  };
 
-    formData.append("title", newEpisode.title);
-    formData.append("number", newEpisode.number);
-    formData.append("seasonId", seasonId);
+  const generateEpisodeTitle = (seasonNumber, episodeNumber) => {
+    return `S${seasonNumber}.E${episodeNumber}`;
+  };
 
-    if (episodeImage) {
-      formData.append("image", episodeImage);
+  const handleCreateEpisode = async (season) => {
+    try {
+      const episodeNumber = getNextEpisodeNumber(season.id);
+      const title = generateEpisodeTitle(season.seasonNumber, episodeNumber);
+
+      const formData = new FormData();
+
+      formData.append("title", title);
+      formData.append("number", episodeNumber);
+      formData.append("seasonId", season.id);
+
+      if (episodeImages[season.id]) {
+        formData.append("image", episodeImages[season.id]);
+      }
+
+      await api.post("/episodes", formData);
+
+      fetchEpisodes(season.id);
+
+      setEpisodeImages((prev) => ({
+        ...prev,
+        [season.id]: null,
+      }));
+    } catch (err) {
+      console.error(err);
     }
-
-    await api.post("/episodes", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    fetchEpisodes(seasonId);
-
-    setNewEpisode({ title: "", number: "" });
-    setEpisodeImage(null);
-
-  } catch (err) {
-    console.error(err);
-  }
-};
+  };
 
   const handleUpdate = async () => {
-    await api.put(`/entries/${id}`, entry);
-    alert("Updated!");
+    try {
+      const formData = new FormData();
+
+      formData.append("title", entry.title);
+      formData.append("description", entry.description);
+
+      if (entryImage) {
+        formData.append("image", entryImage);
+      }
+
+      await api.put(`/entries/${id}`, formData);
+
+      alert("Updated!");
+      fetchEntry();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteSeason = async (seasonId) => {
+    if (!window.confirm("Delete season?")) return;
+
+    await api.delete(`/seasons/${seasonId}`);
+
+    fetchSeasons();
+  };
+
+  const handleDeleteEpisode = async (id, seasonId) => {
+    if (!window.confirm("Delete episode?")) return;
+
+    await api.delete(`/episodes/${id}`);
+
+    fetchEpisodes(seasonId);
   };
 
   if (!entry) return <p>Loading...</p>;
@@ -155,13 +193,7 @@ const handleCreateEpisode = async (seasonId) => {
       </Typography>
 
       {/* ADD SEASON */}
-      <Box display="flex" gap={2} mt={2}>
-        <TextField
-          label="Season Number"
-          value={newSeason.seasonNumber}
-          onChange={(e) => setNewSeason({ seasonNumber: e.target.value })}
-        />
-
+      <Box display="flex" gap={2} mt={2} alignItems="center" flexWrap="wrap">
         <Button variant="contained" onClick={handleCreateSeason}>
           + Add Season
         </Button>
@@ -171,7 +203,15 @@ const handleCreateEpisode = async (seasonId) => {
       {seasons.map((season) => (
         <Accordion key={season.id} sx={{ mt: 2 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Season {season.seasonNumber}</Typography>
+            <Typography>Season {season.seasonNumber}
+                <Button
+              color="error"
+              size="small"
+              onClick={() => handleDeleteSeason(season.id)}
+            >
+              Delete Season
+            </Button>
+            </Typography>
           </AccordionSummary>
 
           <AccordionDetails>
@@ -181,46 +221,41 @@ const handleCreateEpisode = async (seasonId) => {
             </Button>
 
             {/* ADD EPISODE */}
-            <Box display="flex" gap={2} mt={2}>
-              <TextField
-                label="Episode Title"
-                onChange={(e) =>
-                  setNewEpisode({
-                    ...newEpisode,
-                    title: e.target.value,
-                  })
-                }
-              />
-
-              <TextField
-                label="Number"
-                onChange={(e) =>
-                  setNewEpisode({
-                    ...newEpisode,
-                    number: e.target.value,
-                  })
-                }
-              />
+            <Box
+              display="flex"
+              gap={2}
+              mt={2}
+              alignItems="center"
+              flexWrap="wrap"
+            >
+              <Typography variant="body2">
+                Next: S{season.seasonNumber}.E{getNextEpisodeNumber(season.id)}
+              </Typography>
               <Button variant="outlined" component="label">
                 Upload Thumbnail
                 <input
                   type="file"
                   hidden
-                  onChange={(e) => setEpisodeImage(e.target.files[0])}
+                  onChange={(e) =>
+                    setEpisodeImages((prev) => ({
+                      ...prev,
+                      [season.id]: e.target.files[0],
+                    }))
+                  }
                 />
               </Button>
 
-              {episodeImage && (
+              {episodeImages[season.id] && (
                 <img
-                  src={URL.createObjectURL(episodeImage)}
+                  src={URL.createObjectURL(episodeImages[season.id])}
                   alt=""
-                  style={{ width: 80, marginTop: 10 }}
+                  style={{ width: 80 }}
                 />
               )}
 
               <Button
                 variant="outlined"
-                onClick={() => handleCreateEpisode(season.id)}
+                onClick={() => handleCreateEpisode(season)}
               >
                 + Episode
               </Button>
@@ -246,6 +281,13 @@ const handleCreateEpisode = async (seasonId) => {
                 <Typography>
                   {ep.number}. {ep.title}
                 </Typography>
+                <Button
+                  color="error"
+                  size="small"
+                  onClick={() => handleDeleteEpisode(ep.id, season.id)}
+                >
+                  Delete
+                </Button>
               </Box>
             ))}
           </AccordionDetails>

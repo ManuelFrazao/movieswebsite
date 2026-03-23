@@ -44,3 +44,21 @@ export const getEpisodesBySeason = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const deleteEpisode = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const episode = await Episode.findByPk(id);
+
+    if (!episode) {
+      return res.status(404).json({ message: "Episode não encontrado" });
+    }
+
+    await episode.destroy();
+
+    res.json({ message: "Episode apagado" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

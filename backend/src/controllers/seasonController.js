@@ -24,3 +24,21 @@ export const getSeasonsByEntry = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const deleteSeason = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const season = await Season.findByPk(id);
+
+    if (!season) {
+      return res.status(404).json({ message: "Season não encontrada" });
+    }
+
+    await season.destroy();
+
+    res.json({ message: "Season apagada" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
