@@ -8,6 +8,12 @@ export default function Entry() {
   const navigate = useNavigate();
   const [entry, setEntry] = useState(null);
   const [episodeStats, setEpisodeStats] = useState({});
+  const [ratingModal, setRatingModal] = useState({
+    open: false,
+    episodeId: null,
+  });
+  const [selectedRating, setSelectedRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(null);
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -161,6 +167,12 @@ export default function Entry() {
     }
   };
 
+  const getRatingColor = (value) => {
+    if (value <= 3) return "#e50914"; // 🔴
+    if (value <= 6) return "#ff9800"; // 🟠
+    return "#4caf50"; // 🟢
+  };
+
   return (
     <div className="entry">
       {/* HERO */}
@@ -285,29 +297,103 @@ export default function Entry() {
                         )}
                       </div>
 
+                      <div>
                       {episodeStats[ep.id]?.averageRating > 0 && (
                         <>
-                          <span>•</span>
-                          <span>
+                          <span style={{
+                            marginRight: "10px",
+                          }}>
                             ⭐ {episodeStats[ep.id].averageRating} (
                             {episodeStats[ep.id].totalVotes}{" "}
                             {episodeStats[ep.id].totalVotes === 1
                               ? "vote"
                               : "votes"}
                             )
-                          </span>
+                          </span>                          
                         </>
                       )}
 
+                      <button
+                        className="rate-btn"
+                        onClick={() =>
+                          setRatingModal({ open: true, episodeId: ep.id })
+                        }
+                      >
+                        ⭐ Rate
+                      </button>
+                      </div>
+
                       <p>{ep.description}</p>
 
-                      <div className="vote-buttons">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
-                          <button key={v} onClick={() => handleVote(ep.id, v)}>
-                            {v}
-                          </button>
-                        ))}
-                      </div>
+                      
+                      {ratingModal.open && (
+                        <div className="modal-overlay">
+                          <div className="modal">
+                            <h3>Rate Episode</h3>
+                            <div
+                              className="rating-value"
+                              style={{
+                                color: getRatingColor(
+                                  hoverRating ?? selectedRating,
+                                ),
+                              }}
+                            >
+                              {hoverRating ?? selectedRating}
+                            </div>
+
+                            <div className="rating-grid">
+                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                                <button
+                                  key={num}
+                                  className={`rating-btn ${selectedRating == num ? "active" : ""}`}
+                                  style={
+                                    selectedRating == num
+                                      ? {
+                                          background: getRatingColor(num),
+                                          borderColor: getRatingColor(num),
+                                        }
+                                      : {}
+                                  }
+                                  onClick={() => setSelectedRating(num)}
+                                  onMouseEnter={() => setHoverRating(num)}
+                                  onMouseLeave={() => setHoverRating(null)}
+                                >
+                                  {num}
+                                </button>
+                              ))}
+                            </div>
+
+                            <div className="modal-actions">
+                              <button
+                                onClick={() =>
+                                  setRatingModal({
+                                    open: false,
+                                    episodeId: null,
+                                  })
+                                }
+                              >
+                                Cancel
+                              </button>
+
+                              <button
+                                className="submit"
+                                onClick={() => {
+                                  handleVote(
+                                    ratingModal.episodeId,
+                                    selectedRating,
+                                  );
+                                  setRatingModal({
+                                    open: false,
+                                    episodeId: null,
+                                  });
+                                }}
+                              >
+                                Submit
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -32,7 +32,12 @@ export const createVote = async (req, res) => {
     });
 
     if (existingVote) {
-      return res.status(400).json({ message: "Já votaste" });
+      await existingVote.update({ value });
+
+      return res.json({
+        message: "Vote updated",
+        vote: existingVote,
+      });
     }
 
     const vote = await Vote.create({
@@ -110,9 +115,7 @@ export const getEntryTrending = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const sevenDaysAgo = new Date(
-      Date.now() - 7 * 24 * 60 * 60 * 1000
-    );
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const votes = await Vote.findAll({
       where: {
