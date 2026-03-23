@@ -135,34 +135,33 @@ const getLast7Days = () => {
 
 /* 🔥 COMPONENTE REUTILIZÁVEL */
 function Section({ title, entries, navigate, trendingData }) {
-  
-function Graph({ data }) {
-  const days = getLast7Days();
+  function Graph({ data }) {
+    const days = getLast7Days();
 
-  // 🔥 usar count (votos)
-  const values = days.map((day) => data?.[day]?.count || 0);
+    // 🔥 usar count (votos)
+    const values = days.map((day) => data?.[day]?.count || 0);
 
-  const max = Math.max(...values, 1);
+    const max = Math.max(...values, 1);
 
-  if (!data || Object.keys(data).length === 0) {
-    return <div className="graph-empty">No activity</div>;
+    if (!data || Object.keys(data).length === 0) {
+      return <div className="graph-empty">No activity</div>;
+    }
+
+    return (
+      <div className="graph">
+        {values.map((v, i) => (
+          <div
+            key={i}
+            className="bar-day"
+            style={{
+              height: `${(v / max) * 100}%`,
+            }}
+            title={`${v} votes`}
+          />
+        ))}
+      </div>
+    );
   }
-
-  return (
-    <div className="graph">
-      {values.map((v, i) => (
-        <div
-          key={i}
-          className="bar-day"
-          style={{
-            height: `${(v / max) * 100}%`,
-          }}
-          title={`${v} votes`}
-        />
-      ))}
-    </div>
-  );
-}
 
   const isNew = (date) => {
     const d = new Date(date);
@@ -196,10 +195,11 @@ function Graph({ data }) {
                 <p className="meta">{entry.type}</p>
               </div>
               <div className="score">
-
-                <span>
-                  ⭐ {entry.avg} ({entry.totalVotes})
-                </span>
+                {entry.totalVotes > 0 && entry.avg > 0 && (
+                  <span>
+                    ⭐ {entry.avg} ({entry.totalVotes})
+                  </span>
+                )}
                 {entry.recentVotes > 0 && (
                   <span className="trend-badge">
                     🔥 +{entry.recentVotes} this week

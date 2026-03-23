@@ -126,6 +126,15 @@ export default function EditEntry() {
       formData.append("title", entry.title);
       formData.append("description", entry.description);
 
+      // 🔥 NOVO
+      if (entry.duration) {
+        formData.append("duration", entry.duration);
+      }
+
+      if (entry.releaseDate) {
+        formData.append("releaseDate", entry.releaseDate);
+      }
+
       if (entryImage) {
         formData.append("image", entryImage);
       }

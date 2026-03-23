@@ -48,17 +48,27 @@ export default function Dashboard() {
     fetchEntries();
   }, []);
 
-  const fetchUsers = async () => {
+const fetchUsers = async () => {
+  try {
     const res = await api.get("/admin/users", {
       headers: { Authorization: `Bearer ${token}` },
     });
     setUsers(res.data);
-  };
+  } catch (err) {
+    if (err.code === "ERR_CANCELED") return;
+    console.error(err);
+  }
+};
 
-  const fetchEntries = async () => {
+const fetchEntries = async () => {
+  try {
     const res = await api.get("/entries");
     setEntries(res.data);
-  };
+  } catch (err) {
+    if (err.code === "ERR_CANCELED") return;
+    console.error(err);
+  }
+};
 
   const handleCreateEntry = async (e) => {
     e.preventDefault();

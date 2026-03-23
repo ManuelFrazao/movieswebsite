@@ -85,6 +85,18 @@
   border-bottom: 1px solid #222;
   padding-bottom: 10px;
   margin-bottom: 15px;
+    padding: 10px;
+}
+
+.season-header:hover {
+    background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.season-toggle {
+  color: #aaa;
+  font-size: 14px;
 }
 
 .season-sub {
@@ -97,21 +109,6 @@
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 12px;
-}
-
-/* PLAY BUTTON */
-.play-btn {
-  margin-top: 15px;
-  padding: 10px 20px;
-  background: #e50914;
-  border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.play-btn:hover {
-  background: #ff1f1f;
 }
 
 /* CONTENT */
@@ -294,21 +291,22 @@
   font-weight: bold;
 }
 
-img:hover {
-  transform: scale(1.05);
-}
-
 .entry-trend {
   margin: 30px 0;
   background: #111;
   padding: 20px;
   border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: max-content;
 }
 
 .trend-graph {
   display: flex;
   align-items: flex-end;
-  gap: 10px;
+  gap: 20px;
   height: 120px;
   position: relative;
 }
@@ -348,3 +346,28 @@ img:hover {
   border-radius: 50%;
 }
 
+.tabs {
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid #333;
+  padding: 10px 30px;
+  background: #111;
+}
+
+.tabs button {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 14px;
+  cursor: pointer;
+  padding-bottom: 5px;
+}
+
+.tabs button.active {
+  color: white;
+  border-bottom: 2px solid #e50914;
+}
+
+.movie-info h2 {
+  color: white;
+}

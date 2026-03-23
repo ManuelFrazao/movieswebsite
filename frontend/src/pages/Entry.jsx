@@ -16,6 +16,8 @@ export default function Entry() {
   const [hoverRating, setHoverRating] = useState(null);
   const [userRatings, setUserRatings] = useState({});
   const [entryTrend, setEntryTrend] = useState({});
+  const [activeTab, setActiveTab] = useState("overview");
+  const [openSeason, setOpenSeason] = useState(null);
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -294,11 +296,42 @@ export default function Entry() {
                 </span>
               )}
 
-              {avgDuration > 0 && <span>•</span>}
-              {avgDuration > 0 && <span>{formatDuration(avgDuration)}</span>}
-            </div>
+              {/* 🔥 SERIES */}
+              {isSeries && avgDuration > 0 && (
+                <>
+                  <span>•</span>
+                  <span>{formatDuration(avgDuration)}</span>
+                </>
+              )}
 
-            <p className="description">{entry.description}</p>
+              {isSeries && entry.totalVotes > 0 && (
+                <>
+                  <span>•</span>
+                  <div>
+                    <span style={{ color: "#aaa" }}>
+                      ⭐ {(entry.topRank / 10).toFixed(1)}
+                    </span>
+                    <span> ({entry.totalVotes})</span>
+                  </div>
+                </>
+              )}
+
+              {/* 🔥 MOVIE */}
+              {!isSeries && entry.duration && (
+                <>
+                  <span>•</span>
+                  <span>{formatDuration(entry.duration)}</span>
+                </>
+              )}
+
+              {/* 🔥 MOVIE RELEASE DATE */}
+              {!isSeries && entry.releaseDate && (
+                <>
+                  <span>•</span>
+                  <span>{formatDate(entry.releaseDate)}</span>
+                </>
+              )}
+            </div>
 
             <div className="actions">
               <button className="secondary-btn">+ My List</button>
@@ -307,120 +340,213 @@ export default function Entry() {
         </div>
       </div>
 
-      {/* CONTENT */}
-      <div className="content">
-        {/* 👉 SE FOR FILME */}
-        {!isSeries && (
-          <div className="movie-info">
-            <h2>About</h2>
-            <p>{entry.description}</p>
-          </div>
-        )}
+      <div className="tabs">
+        <button
+          className={activeTab === "overview" ? "active" : ""}
+          onClick={() => setActiveTab("overview")}
+        >
+          Overview
+        </button>
 
         {isSeries && (
-          <div className="entry-trend">
-            <h2>📊 Rating Over Time</h2>
-            <TrendGraph data={entryTrend} />
-          </div>
+          <button
+            className={activeTab === "episodes" ? "active" : ""}
+            onClick={() => setActiveTab("episodes")}
+          >
+            Episodes
+          </button>
+        )}
+
+        <button
+          className={activeTab === "details" ? "active" : ""}
+          onClick={() => setActiveTab("details")}
+        >
+          Details
+        </button>
+
+        <button
+          className={activeTab === "cast" ? "active" : ""}
+          onClick={() => setActiveTab("cast")}
+        >
+          Cast
+        </button>
+      </div>
+
+      {/* CONTENT */}
+      <div className="content">
+        {/* 🔥 OVERVIEW */}
+        {activeTab === "overview" && (
+          <>
+            <div className="movie-info">
+              <h2>Synopsis</h2>
+              <p>{entry.description}</p>
+
+              <div className="entry-trend">
+                <h3>Votes & Rating Over Time</h3>
+                <TrendGraph data={entryTrend} />
+              </div>
+            </div>
+          </>
         )}
 
         {/* 👉 SE FOR SÉRIE */}
-        {isSeries &&
-          entry.seasons?.map((season) => (
-            <div key={season.id} className="season">
-              <div className="season-header">
-                <div
-                  style={{
-                    display: "flex",
-                  }}
-                >
-                  <h2
-                    style={{
-                      color: "#ccc",
-                      fontWeight: "bold",
-                      marginRight: "10px",
-                    }}
+        {activeTab === "episodes" && isSeries && (
+          <>
+            {isSeries &&
+              entry.seasons?.map((season) => (
+                <div key={season.id} className="season">
+                  <div
+                    className="season-header"
+                    onClick={() =>
+                      setOpenSeason(openSeason === season.id ? null : season.id)
+                    }
                   >
-                    Season {season.seasonNumber}
-                  </h2>
-                  <span className="season-sub">
-                    {season.episodes?.length} episodes
-                  </span>
-                </div>
-              </div>
-
-              <div className="episodes">
-                {season.episodes?.map((ep) => (
-                  <div key={ep.id} className="episode-row">
-                    <div className="episode-number">{ep.number}.</div>
-                    <img src={ep.thumbnail} alt={ep.title} />
-
-                    <div className="episode-info">
-                      <div
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 10 }}
+                    >
+                      <h2
                         style={{
-                          display: "flex",
+                          color: "#ccc",
+                          fontWeight: "bold",
                         }}
                       >
-                        <h3>{ep.title}</h3>
-                        {ep.isFinal && (
-                          <span className="final-badge">FINAL</span>
-                        )}
-                      </div>
+                        Season {season.seasonNumber}
+                      </h2>
 
-                      <div className="episode-meta">
-                        {ep.airDate && <span>{formatDate(ep.airDate)}</span>}
-                        {ep.airDate && ep.duration && <span>•</span>}
-                        {ep.duration && (
-                          <span>{formatDuration(ep.duration)}</span>
-                        )}
-                      </div>
+                      <span className="season-sub">
+                        {season.episodes?.length} episodes
+                      </span>
+                    </div>
 
-                      <div>
-                        {episodeStats[ep.id]?.averageRating > 0 && (
-                          <>
-                            <span
+                    <span className="season-toggle">
+                      {openSeason === season.id ? "▲" : "▼"}
+                    </span>
+                  </div>
+
+                  {openSeason === season.id && (
+                    <div className="episodes">
+                      {season.episodes?.map((ep) => (
+                        <div key={ep.id} className="episode-row">
+                          <div className="episode-number">{ep.number}.</div>
+                          <img src={ep.thumbnail} alt={ep.title} />
+
+                          <div className="episode-info">
+                            <div
                               style={{
-                                marginRight: "10px",
+                                display: "flex",
                               }}
                             >
-                              ⭐ {episodeStats[ep.id].averageRating} (
-                              {episodeStats[ep.id].totalVotes}{" "}
-                              {episodeStats[ep.id].totalVotes === 1
-                                ? "vote"
-                                : "votes"}
-                              )
-                            </span>
-                          </>
-                        )}
+                              <h3>{ep.title}</h3>
+                              {ep.isFinal && (
+                                <span className="final-badge">FINAL</span>
+                              )}
+                            </div>
 
-                        {canRateEpisode(ep.airDate) && (
-                          <button
-                            className="rate-btn"
-                            onClick={() =>
-                              setRatingModal({ open: true, episodeId: ep.id })
-                            }
-                          >
-                            ⭐{" "}
-                            {userRatings[ep.id]
-                              ? `Your rating: ${userRatings[ep.id]}`
-                              : "Rate"}
-                          </button>
-                        )}
-                      </div>
+                            <div className="episode-meta">
+                              {ep.airDate && (
+                                <span>{formatDate(ep.airDate)}</span>
+                              )}
+                              {ep.airDate && ep.duration && <span>•</span>}
+                              {ep.duration && (
+                                <span>{formatDuration(ep.duration)}</span>
+                              )}
+                            </div>
 
-                      <p
-                        style={{
-                          textAlign: "start",
-                        }}
-                      >
-                        {ep.description}
-                      </p>
+                            <div>
+                              {episodeStats[ep.id]?.averageRating > 0 && (
+                                <>
+                                  <span
+                                    style={{
+                                      marginRight: "10px",
+                                    }}
+                                  >
+                                    ⭐ {episodeStats[ep.id].averageRating} (
+                                    {episodeStats[ep.id].totalVotes}{" "}
+                                    {episodeStats[ep.id].totalVotes === 1
+                                      ? "vote"
+                                      : "votes"}
+                                    )
+                                  </span>
+                                </>
+                              )}
+
+                              {canRateEpisode(ep.airDate) && (
+                                <button
+                                  className="rate-btn"
+                                  onClick={() =>
+                                    setRatingModal({
+                                      open: true,
+                                      episodeId: ep.id,
+                                    })
+                                  }
+                                >
+                                  ⭐{" "}
+                                  {userRatings[ep.id]
+                                    ? `Your rating: ${userRatings[ep.id]}`
+                                    : "Rate"}
+                                </button>
+                              )}
+                            </div>
+
+                            <p
+                              style={{
+                                textAlign: "start",
+                              }}
+                            >
+                              {ep.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                  )}
+                </div>
+              ))}
+          </>
+        )}
+
+        {/* 🔥 DETAILS */}
+        {activeTab === "details" && (
+          <div className="details">
+            <h2>Details</h2>
+
+            <p>
+              <strong>Type:</strong> {entry.type}
+            </p>
+
+            {entry.releaseDate && (
+              <p>
+                <strong>Release Date:</strong> {formatDate(entry.releaseDate)}
+              </p>
+            )}
+
+            {entry.duration && (
+              <p>
+                <strong>Duration:</strong> {formatDuration(entry.duration)}
+              </p>
+            )}
+
+            {entry.genres?.length > 0 && (
+              <p>
+                <strong>Genres:</strong> {entry.genres.join(", ")}
+              </p>
+            )}
+
+            {entry.language?.length > 0 && (
+              <p>
+                <strong>Language:</strong> {entry.language.join(", ")}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* 🔥 CAST */}
+        {activeTab === "cast" && (
+          <div className="cast">
+            <h2>Cast</h2>
+            <p style={{ color: "#777" }}>Coming soon 👀</p>
+          </div>
+        )}
       </div>
       {ratingModal.open && (
         <div className="modal-overlay">
