@@ -53,10 +53,24 @@ export const updateEpisode = async (req, res) => {
 
     let thumbnail = episode.thumbnail;
 
+    // 🔥 NOVA IMAGEM
     if (req.file && req.file.buffer) {
+
+      // 🗑️ apagar antiga (ver passo 2 abaixo)
+      if (episode.thumbnail) {
+        const publicId = episode.thumbnail.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`episodes/${publicId}`);
+      }
+
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-        { folder: "episodes" }
+        {
+          folder: "episodes",
+          transformation: [
+            { width: 400, crop: "scale" },
+            { quality: "auto" }
+          ]
+        }
       );
 
       thumbnail = result.secure_url;

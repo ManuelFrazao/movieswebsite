@@ -151,7 +151,16 @@ export default function EditEntry() {
 
   const handleUpdateEpisode = async (id, seasonId) => {
     try {
-      await api.put(`/episodes/${id}`, editData);
+      const formData = new FormData();
+
+      formData.append("title", editData.title);
+      formData.append("number", editData.number);
+
+      if (editData.image) {
+        formData.append("image", editData.image);
+      }
+
+      await api.put(`/episodes/${id}`, formData);
 
       setEditingEpisode(null);
       fetchEpisodes(seasonId);
@@ -318,6 +327,20 @@ export default function EditEntry() {
                         setEditData({ ...editData, number: e.target.value })
                       }
                     />
+
+                    <Button variant="outlined" component="label">
+                      Change Image
+                      <input
+                        type="file"
+                        hidden
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            image: e.target.files[0],
+                          })
+                        }
+                      />
+                    </Button>
 
                     <Button
                       variant="contained"
