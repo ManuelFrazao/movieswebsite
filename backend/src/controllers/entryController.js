@@ -20,7 +20,7 @@ export const createEntry = async (req, res) => {
     if (req.file) {
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-        { folder: "entries" }
+        { folder: "entries" },
       );
 
       imageUrl = result.secure_url;
@@ -35,7 +35,6 @@ export const createEntry = async (req, res) => {
     });
 
     res.json(entry);
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -107,7 +106,6 @@ export const getEntryBySlug = async (req, res) => {
     }
 
     res.json(entry);
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -127,10 +125,10 @@ export const updateEntry = async (req, res) => {
     let imageUrl = entry.coverImage;
 
     // 🔥 se nova imagem
-    if (req.file) {
+    if (req.file && req.file.buffer) {
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-        { folder: "entries" }
+        { folder: "entries" },
       );
 
       imageUrl = result.secure_url;
@@ -149,7 +147,6 @@ export const updateEntry = async (req, res) => {
     });
 
     res.json(entry);
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

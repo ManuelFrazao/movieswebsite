@@ -64,17 +64,16 @@ export default function Dashboard() {
     e.preventDefault();
 
     const formData = new FormData();
+
     formData.append("title", newEntry.title);
     formData.append("type", newEntry.type);
     formData.append("description", newEntry.description);
 
-    if (imageFile) formData.append("image", imageFile);
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
 
-    await api.post("/entries", formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    await api.post("/entries", formData);
 
     fetchEntries();
     setShowForm(false);
@@ -120,7 +119,16 @@ export default function Dashboard() {
       field: "actions",
       headerName: "Actions",
       renderCell: (params) => (
-        <div style={{ display: "flex", gap: 8, display: "flex", justifyContent: "center", alignItems:"center", height: "inherit"}}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "inherit",
+          }}
+        >
           {/* 🔥 EDIT */}
           <Button
             variant="outlined"

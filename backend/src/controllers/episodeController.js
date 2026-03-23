@@ -1,22 +1,18 @@
 import { Episode } from "../models/index.js";
 import cloudinary from "../utils/cloudinary.js";
-import fs from "fs";
 
 // CREATE
 export const createEpisode = async (req, res) => {
   try {
     let thumbnail = null;
 
-    // 🔥 upload imagem
-    if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path);
-      thumbnail = result.secure_url;
+    if (req.file && req.file.buffer) {
+      const result = await cloudinary.uploader.upload(
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        { folder: "episodes" }
+      );
 
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (err) {
-        console.log("File cleanup error:", err);
-      }
+      thumbnail = result.secure_url;
     }
 
     const episode = await Episode.create({
@@ -55,9 +51,24 @@ export const updateEpisode = async (req, res) => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    await episode.update(req.body);
+    let thumbnail = episode.thumbnail;
+
+    if (req.file && req.file.buffer) {
+      const result = await cloudinary.uploader.upload(
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        { folder: "episodes" }
+      );
+
+      thumbnail = result.secure_url;
+    }
+
+    await episode.update({
+      ...req.body,
+      thumbnail,
+    });
 
     res.json(episode);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
