@@ -152,17 +152,30 @@ export default function EditEntry() {
       const formData = new FormData();
 
       formData.append("title", editData.title);
-      formData.append("number", editData.number);
       formData.append("description", editData.description || "");
-      formData.append("duration", editData.duration || "");
-      formData.append("airDate", editData.airDate || "");
-      formData.append("isFinal", editData.isFinal);
+      formData.append(
+        "duration",
+        editData.duration ? Number(editData.duration) : "",
+      );
+      if (editData.airDate) {
+        formData.append("airDate", editData.airDate);
+      }
+      formData.append("isFinal", String(editData.isFinal));
 
       if (editData.image) {
         formData.append("image", editData.image);
       }
 
       await api.put(`/episodes/${id}`, formData);
+
+      const updatedEpisode = res.data;
+
+      setEpisodes((prev) => ({
+        ...prev,
+        [seasonId]: prev[seasonId].map((ep) =>
+          ep.id === id ? updatedEpisode : ep,
+        ),
+      }));
 
       setEditingEpisode(null);
       fetchEpisodes(seasonId);
@@ -296,7 +309,13 @@ export default function EditEntry() {
 
             {/* EPISODES LIST */}
             {episodes[season.id]?.map((ep) => (
-              <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+              <Box
+                key={ep.id}
+                mt={2}
+                display="flex"
+                flexDirection="column"
+                gap={2}
+              >
                 {ep.thumbnail && (
                   <img
                     src={ep.thumbnail}
@@ -348,19 +367,20 @@ export default function EditEntry() {
                       }
                     />
 
-                    <label>
-                      Final Episode
-                      <input
-                        type="checkbox"
-                        checked={editData.isFinal || false}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            isFinal: e.target.checked,
-                          })
-                        }
-                      />
-                    </label>
+                    <Button
+                      color="warning"
+                      variant={editData.isFinal ? "contained" : "outlined"}
+                      onClick={() =>
+                        setEditData({
+                          ...editData,
+                          isFinal: !editData.isFinal,
+                        })
+                      }
+                    >
+                      {editData.isFinal
+                        ? "Final Episode ✓"
+                        : "Mark as Series Finale"}
+                    </Button>
 
                     <Button variant="outlined" component="label">
                       Change Image
@@ -400,10 +420,10 @@ export default function EditEntry() {
                         setEditData({
                           title: ep.title,
                           number: ep.number,
-                          description: ep.description,
-                          duration: ep.duration,
+                          description: ep.description || "",
+                          duration: ep.duration || "",
                           airDate: ep.airDate ? ep.airDate.split("T")[0] : "",
-                          isFinal: ep.isFinal,
+                          isFinal: ep.isFinal ?? false,
                         });
                       }}
                     >

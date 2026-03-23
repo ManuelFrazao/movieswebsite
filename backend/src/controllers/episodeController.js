@@ -11,7 +11,7 @@ export const createEpisode = async (req, res) => {
     if (req.file && req.file.buffer) {
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-        { folder: "episodes" }
+        { folder: "episodes" },
       );
 
       thumbnail = result.secure_url;
@@ -67,37 +67,35 @@ export const updateEpisode = async (req, res) => {
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
         {
           folder: "episodes",
-          transformation: [
-            { width: 400, crop: "scale" },
-            { quality: "auto" }
-          ]
-        }
+          transformation: [{ width: 400, crop: "scale" }, { quality: "auto" }],
+        },
       );
 
       thumbnail = result.secure_url;
     }
 
-    const isFinal =
-      req.body.isFinal === "true" || req.body.isFinal === true;
+    const isFinal = req.body?.isFinal === "true" || req.body?.isFinal === true;
 
-    // 🔥 se este for final → remover outros
+    // 🔥 se for final → garantir unicidade
     if (isFinal) {
       const season = await episode.getSeason();
       const entry = await season.getEntry();
-      const seasons = await entry.getSeasons();
 
+      // 🔥 buscar TODAS as seasons da série
+      const seasons = await entry.getSeasons();
       const seasonIds = seasons.map((s) => s.id);
 
+      // 🔥 remover qualquer outro episódio final
       await Episode.update(
         { isFinal: false },
         {
           where: {
             seasonId: seasonIds,
           },
-        }
+        },
       );
 
-      // 🔥 atualizar endingYear da série
+      // 🔥 atualizar data de fim da série
       if (req.body.airDate) {
         await entry.update({
           endingYear: new Date(req.body.airDate).getFullYear(),

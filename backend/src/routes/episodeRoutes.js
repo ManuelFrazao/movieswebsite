@@ -19,7 +19,13 @@ router.post(
   createEpisode,
 );
 router.get("/season/:seasonId", getEpisodesBySeason);
-router.put("/:id", protect, isAdmin, updateEpisode);
+router.put(
+  "/:id",
+  protect,
+  isAdmin,
+  upload.single("image"), // 🔥 FALTA ISTO
+  updateEpisode
+);
 router.delete("/:id", protect, isAdmin, deleteEpisode);
 
 export default router;
