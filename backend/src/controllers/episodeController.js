@@ -12,8 +12,11 @@ export const createEpisode = async (req, res) => {
       const result = await cloudinary.uploader.upload(req.file.path);
       thumbnail = result.secure_url;
 
-      // 🔥 apagar ficheiro local
-      fs.unlinkSync(req.file.path);
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (err) {
+        console.log("File cleanup error:", err);
+      }
     }
 
     const episode = await Episode.create({
