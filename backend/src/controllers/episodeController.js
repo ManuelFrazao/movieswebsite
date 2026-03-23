@@ -1,9 +1,22 @@
 import { Episode } from "../models/index.js";
+import cloudinary from "../config/cloudinary.js";
 
 // CREATE
 export const createEpisode = async (req, res) => {
   try {
-    const episode = await Episode.create(req.body);
+    let thumbnail = null;
+
+    // 🔥 upload imagem
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path);
+      thumbnail = result.secure_url;
+    }
+
+    const episode = await Episode.create({
+      ...req.body,
+      thumbnail,
+    });
+
     res.json(episode);
   } catch (err) {
     res.status(500).json({ error: err.message });

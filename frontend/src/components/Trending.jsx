@@ -20,19 +20,75 @@ export default function Trending() {
     fetchEntries();
   }, []);
 
+  // 🔥 dividir por tipo
+  const movies = entries.filter((e) => e.type === "movie");
+  const series = entries.filter((e) => e.type === "series");
+
   return (
     <div className="trending">
-      <h2>🔥 Top últimos 7 dias</h2>
 
-      <div className="cards">
-        {entries.slice(0, 10).map((entry) => (
+      {/* 🔥 ALL */}
+      <Section
+        title="🔥 Top Overall"
+        entries={entries}
+        navigate={navigate}
+      />
+
+      {/* 🎬 MOVIES */}
+      <Section
+        title="🎬 Top Movies"
+        entries={movies}
+        navigate={navigate}
+      />
+
+      {/* 📺 SERIES */}
+      <Section
+        title="📺 Top Series"
+        entries={series}
+        navigate={navigate}
+      />
+
+    </div>
+  );
+}
+
+/* 🔥 COMPONENTE REUTILIZÁVEL */
+function Section({ title, entries, navigate }) {
+  return (
+    <div className="section">
+      <h2>{title}</h2>
+
+      <div className="table">
+        {entries.slice(0, 10).map((entry, index) => (
           <div
             key={entry.id}
-            className="card"
-            onClick={() => navigate(`/entry/${entry.id}`)}
+            className="row"
+            onClick={() => navigate(`/entry/${entry.slug}`)}
           >
+            <div className="rank">{index + 1}</div>
+
             <img src={entry.coverImage} alt={entry.title} />
-            <p>{entry.title}</p>
+
+            <div className="info">
+              <h3>{entry.title}</h3>
+              <p className="meta">{entry.type}</p>
+            </div>
+
+            <div className="score">
+              <div className="bar">
+                <div
+                  className="fill"
+                  style={{
+                    width: `${Math.random() * 100}%`,
+                  }}
+                />
+              </div>
+              <span>{(Math.random() * 100).toFixed(2)}</span>
+            </div>
+
+            <div className="graph">
+              <div className="line" />
+            </div>
           </div>
         ))}
       </div>

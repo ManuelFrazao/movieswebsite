@@ -3,6 +3,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminRoute from "./components/AdminRoute";
+import EditEntry from "./pages/admin/EditEntry";
 import Entry from "./pages/Entry";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
             </AdminRoute>
           }
         />
+        <Route path="/admin/entries/:id" element={<EditEntry />} />
 
         <Route path="/entry/:slug" element={<Entry />} />
       </Routes>

@@ -1,53 +1,122 @@
 .entry {
-  background: #111;
+  background: #0f0f0f;
   color: white;
   min-height: 100vh;
 }
 
 /* HERO */
 .hero {
+  height: 350px;
+  background-size: cover;
+  background-position: center;
   position: relative;
-  height: 400px;
 }
 
-.hero img {
+.hero-overlay {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4), #0f0f0f);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
-.overlay {
+/* BACK BUTTON */
+.back-btn {
   position: absolute;
-  bottom: 20px;
+  top: 20px;
   left: 20px;
-  max-width: 500px;
+  background: rgba(0,0,0,0.6);
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* HERO CONTENT */
+.hero-content h1 {
+  font-size: 40px;
+}
+
+.meta {
+  margin: 10px 0;
+}
+
+.badge {
+  background: #e50914;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* PLAY BUTTON */
+.play-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: #e50914;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.play-btn:hover {
+  background: #ff1f1f;
 }
 
 /* CONTENT */
 .content {
-  padding: 20px;
+  padding: 30px;
 }
 
+/* SEASON */
 .season {
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
+/* EPISODES */
 .episodes {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.episode {
+/* CARD */
+.episode-card {
   display: flex;
   gap: 15px;
-  background: #1c1c1c;
-  padding: 10px;
-  border-radius: 8px;
+  background: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: 0.2s;
 }
 
-.episode img {
-  width: 120px;
-  height: 70px;
+.episode-card:hover {
+  transform: scale(1.02);
+}
+
+.episode-card img {
+  width: 160px;
+  height: 90px;
   object-fit: cover;
+}
+
+.episode-info {
+  padding: 10px;
+}
+
+.episode-info p {
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* LOADING */
+.loading {
+  text-align: center;
+  margin-top: 50px;
 }

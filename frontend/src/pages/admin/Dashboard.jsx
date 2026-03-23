@@ -1,12 +1,36 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
-import "./Dashboard.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
+// MUI
+import {
+  Box,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  TextField,
+  MenuItem,
+} from "@mui/material";
+
+import { DataGrid } from "@mui/x-data-grid";
 
 export default function Dashboard() {
   const [users, setUsers] = useState([]);
   const [entries, setEntries] = useState([]);
-  const [activeTab, setActiveTab] = useState("users");
+  const location = useLocation();
+
+  const params = new URLSearchParams(location.search);
+  const tabFromUrl = params.get("tab");
+
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
+  const [showForm, setShowForm] = useState(false);
 
   const [newEntry, setNewEntry] = useState({
     title: "",
@@ -17,7 +41,6 @@ export default function Dashboard() {
   const [imageFile, setImageFile] = useState(null);
 
   const navigate = useNavigate();
-
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -26,58 +49,43 @@ export default function Dashboard() {
   }, []);
 
   const fetchUsers = async () => {
-    try {
-      const res = await api.get("/admin/users", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUsers(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await api.get("/admin/users", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setUsers(res.data);
   };
 
   const fetchEntries = async () => {
-    try {
-      const res = await api.get("/entries");
-      setEntries(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await api.get("/entries");
+    setEntries(res.data);
   };
 
   const handleCreateEntry = async (e) => {
     e.preventDefault();
 
-    try {
-      const formData = new FormData();
+    const formData = new FormData();
+    formData.append("title", newEntry.title);
+    formData.append("type", newEntry.type);
+    formData.append("description", newEntry.description);
 
-      formData.append("title", newEntry.title);
-      formData.append("type", newEntry.type);
-      formData.append("description", newEntry.description);
+    if (imageFile) formData.append("image", imageFile);
 
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
+    await api.post("/entries", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      await api.post("/entries", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    fetchEntries();
+    setShowForm(false);
+  };
 
-      fetchEntries();
+  const handleDeleteEntry = async (id) => {
+    await api.delete(`/entries/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      setNewEntry({
-        title: "",
-        type: "movie",
-        description: "",
-      });
-
-      setImageFile(null);
-    } catch (err) {
-      console.error(err);
-    }
+    setEntries(entries.filter((e) => e.id !== id));
   };
 
   const handleLogout = () => {
@@ -85,104 +93,251 @@ export default function Dashboard() {
     navigate("/");
   };
 
+  // 🔥 TABLE COLUMNS
+
+  const userColumns = [
+    { field: "email", headerName: "Email", flex: 1 },
+    { field: "role", headerName: "Role", width: 120 },
+  ];
+
+  const entryColumns = [
+    {
+      field: "coverImage",
+      headerName: "Cover",
+      renderCell: (params) => (
+        <img
+          src={params.value}
+          alt=""
+          style={{ width: 40, height: 60, objectFit: "cover" }}
+        />
+      ),
+      width: 80,
+    },
+    { field: "title", headerName: "Title", flex: 1 },
+    { field: "type", headerName: "Type", width: 120 },
+
+    {
+      field: "actions",
+      headerName: "Actions",
+      renderCell: (params) => (
+        <div style={{ display: "flex", gap: 8, display: "flex", justifyContent: "center", alignItems:"center", height: "inherit"}}>
+          {/* 🔥 EDIT */}
+          <Button
+            variant="outlined"
+            onClick={() => navigate(`/admin/entries/${params.row.id}`)}
+          >
+            Edit
+          </Button>
+
+          {/* DELETE */}
+          <Button
+            color="error"
+            onClick={() => handleDeleteEntry(params.row.id)}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+      width: 200,
+    },
+  ];
+
   return (
-    <div className="dashboard">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <h2>🎬 Admin</h2>
+    <Box sx={{ display: "flex" }}>
+      {/* SIDEBAR */}
+      <Drawer variant="permanent">
+        <Box sx={{ width: 220, p: 2 }}>
+          <Typography variant="h6">🎬 Admin</Typography>
 
-        <button onClick={() => setActiveTab("users")}>Users</button>
-        <button onClick={() => setActiveTab("entries")}>Entries</button>
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => setActiveTab("overview")}>
+                <ListItemText primary="Overview" />
+              </ListItemButton>
+            </ListItem>
 
-        <button onClick={handleLogout}>Logout</button>
-      </aside>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => setActiveTab("users")}>
+                <ListItemText primary="Users" />
+              </ListItemButton>
+            </ListItem>
 
-      {/* Main */}
-      <main className="main">
-        <h1>Dashboard 👑</h1>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => setActiveTab("entries")}>
+                <ListItemText primary="Entries" />
+              </ListItemButton>
+            </ListItem>
 
-        {/* USERS */}
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleLogout}>
+                <ListItemText primary="Logout" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </Box>
+      </Drawer>
+
+      {/* MAIN */}
+      <Box sx={{ flex: 1, p: 3 }}>
+        {/* OVERVIEW */}
+        {activeTab === "overview" && (
+          <Grid container spacing={2}>
+            <Grid item xs={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6">Users</Typography>
+                  <Typography variant="h4">{users.length}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6">Movies</Typography>
+                  <Typography variant="h4">
+                    {entries.filter((e) => e.type === "movie").length}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6">Series</Typography>
+                  <Typography variant="h4">
+                    {entries.filter((e) => e.type === "series").length}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* USERS TABLE */}
         {activeTab === "users" && (
-          <div className="card">
-            <h2>Users</h2>
+          <Box>
+            <Typography variant="h5" mb={2}>
+              Users
+            </Typography>
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Email</th>
-                  <th>Role</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td>{user.email}</td>
-                    <td>{user.role}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            <DataGrid
+              rows={users}
+              columns={userColumns}
+              getRowId={(row) => row.id}
+              autoHeight
+            />
+          </Box>
         )}
 
-        {/* ENTRIES */}
+        {/* ENTRIES TABLE */}
         {activeTab === "entries" && (
-          <div className="card">
-            <h2>Entries</h2>
+          <Box>
+            <Box display="flex" justifyContent="space-between" mb={2}>
+              <Typography variant="h5">Entries</Typography>
 
-            {/* CREATE FORM */}
-            <form onSubmit={handleCreateEntry} className="form">
-              <input
-                placeholder="Title"
-                value={newEntry.title}
-                onChange={(e) =>
-                  setNewEntry({ ...newEntry, title: e.target.value })
-                }
-              />
-
-              <select
-                value={newEntry.type}
-                onChange={(e) =>
-                  setNewEntry({ ...newEntry, type: e.target.value })
-                }
+              <Button
+                variant="contained"
+                onClick={() => setShowForm(!showForm)}
               >
-                <option value="movie">Movie</option>
-                <option value="series">Series</option>
-                <option value="anime">Anime</option>
-              </select>
+                + Add
+              </Button>
+            </Box>
 
-              <input
-                type="file"
-                onChange={(e) => setImageFile(e.target.files[0])}
-              />
+            {/* FORM */}
+            {showForm && (
+              <Box component="form" onSubmit={handleCreateEntry} mb={3}>
+                <TextField
+                  label="Title"
+                  fullWidth
+                  margin="normal"
+                  onChange={(e) =>
+                    setNewEntry({ ...newEntry, title: e.target.value })
+                  }
+                />
 
-              <textarea
-                placeholder="Description"
-                value={newEntry.description}
-                onChange={(e) =>
-                  setNewEntry({ ...newEntry, description: e.target.value })
-                }
-              />
+                <TextField
+                  select
+                  label="Type"
+                  fullWidth
+                  margin="normal"
+                  value={newEntry.type}
+                  onChange={(e) =>
+                    setNewEntry({ ...newEntry, type: e.target.value })
+                  }
+                >
+                  <MenuItem value="movie">Movie</MenuItem>
+                  <MenuItem value="series">Series</MenuItem>
+                </TextField>
 
-              <button type="submit">Add Entry</button>
-            </form>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <Button variant="outlined" component="label">
+                    Upload Image
+                    <input
+                      type="file"
+                      hidden
+                      onChange={(e) => setImageFile(e.target.files[0])}
+                    />
+                  </Button>
 
-            {/* LIST */}
-            <div className="entries-list">
-              {entries.map((entry) => (
-                <div key={entry.id} className="entry-item">
-                  <img src={entry.coverImage} alt="" />
-                  <div>
-                    <h3>{entry.title}</h3>
-                    <p>{entry.type}</p>
-                  </div>
+                  {imageFile && (
+                    <>
+                      <img
+                        src={URL.createObjectURL(imageFile)}
+                        alt="preview"
+                        style={{
+                          width: 100,
+                          borderRadius: 8,
+                        }}
+                      />
+
+                      <p>{imageFile.name}</p>
+
+                      {/* 🔥 BOTÃO REMOVER */}
+                      <Button
+                        variant="text"
+                        color="error"
+                        onClick={() => setImageFile(null)}
+                      >
+                        Remove Image
+                      </Button>
+                    </>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
+                <TextField
+                  label="Description"
+                  fullWidth
+                  multiline
+                  rows={3}
+                  margin="normal"
+                  onChange={(e) =>
+                    setNewEntry({ ...newEntry, description: e.target.value })
+                  }
+                />
+
+                <Button type="submit" variant="contained">
+                  Create
+                </Button>
+              </Box>
+            )}
+
+            <DataGrid
+              rows={entries}
+              columns={entryColumns}
+              getRowId={(row) => row.id}
+              autoHeight
+            />
+          </Box>
         )}
-      </main>
-    </div>
+      </Box>
+    </Box>
   );
 }
