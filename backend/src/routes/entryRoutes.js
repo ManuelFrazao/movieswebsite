@@ -4,6 +4,7 @@ import {
   getEntries,
   getEntryById,
   getEntryBySlug,
+  updateEntry,
   deleteEntry,
 } from "../controllers/entryController.js";
 import upload from "../middleware/upload.js";
@@ -16,6 +17,7 @@ router.post("/", protect, isAdmin, upload.single("image"), createEntry);
 router.get("/", getEntries);
 router.get("/:id", getEntryById);
 router.get("/slug/:slug", getEntryBySlug);
+router.put("/:id", protect, isAdmin, upload.single("image"), updateEntry);
 router.delete("/:id", protect, isAdmin, deleteEntry);
 
 export default router;
