@@ -9,24 +9,16 @@ export default function Trending() {
   const [trendingData, setTrendingData] = useState({});
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchEntries = async () => {
+    const fetchTrending = async () => {
       try {
-        const res = await api.get("/entries", {
-          signal: controller.signal,
-        });
+        const res = await api.get("/votes/trending");
         setEntries(res.data);
       } catch (err) {
-        if (err.code === "ERR_CANCELED" || err.name === "CanceledError") return;
-
         console.error(err);
       }
     };
 
-    fetchEntries();
-
-    return () => controller.abort(); // 🔥 cleanup
+    fetchTrending();
   }, []);
 
   useEffect(() => {
@@ -110,8 +102,8 @@ function Section({ title, entries, navigate, trendingData }) {
     const max = Math.max(...values, 1); // evitar divisão por 0
 
     if (!data || Object.keys(data).length === 0) {
-  return <div className="graph-empty">No activity</div>;
-}
+      return <div className="graph-empty">No activity</div>;
+    }
 
     return (
       <div className="graph">
@@ -134,7 +126,7 @@ function Section({ title, entries, navigate, trendingData }) {
 
       <div className="table">
         {entries.slice(0, 10).map((entry, index) => {
-          const score = entries.topRank || 50;
+          const score = entry.score || 0;
 
           return (
             <div
@@ -152,9 +144,20 @@ function Section({ title, entries, navigate, trendingData }) {
               </div>
               <div className="score">
                 <div className="bar">
-                  <div className="fill" style={{ width: `${score}%` }} />
-                  <span>{score.toFixed(1)}</span>
+                  <div
+                    className="fill"
+                    style={{ width: `${Math.min(score * 10, 100)}%` }}
+                  />
                 </div>
+
+                <span>
+                  ⭐ {entry.avg} ({entry.totalVotes})
+                </span>
+                {entry.recentVotes > 0 && (
+                  <span className="trend-badge">
+                    🔥 +{entry.recentVotes} this week
+                  </span>
+                )}
               </div>
               <div className="graph">
                 <Graph data={trendingData[entry.id]} />

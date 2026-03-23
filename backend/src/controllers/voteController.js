@@ -153,6 +153,76 @@ export const getEntryTrending = async (req, res) => {
   }
 };
 
+export const getTrendingEntries = async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000
+    );
+
+    // 🔥 buscar todos os entries com episódios
+    const entries = await Entry.findAll({
+      include: {
+        model: Episode,
+        as: "episodes",
+        attributes: ["id"],
+      },
+    });
+
+    const results = [];
+
+    for (const entry of entries) {
+      const episodeIds = entry.episodes.map((ep) => ep.id);
+
+      if (!episodeIds.length) continue;
+
+      // 🔥 todos os votos
+      const allVotes = await Vote.findAll({
+        where: {
+          episodeId: episodeIds,
+        },
+      });
+
+      const totalVotes = allVotes.length;
+
+      const avg =
+        totalVotes === 0
+          ? 0
+          : allVotes.reduce((sum, v) => sum + v.value, 0) /
+            totalVotes;
+
+      // 🔥 votos recentes
+      const recentVotes = await Vote.count({
+        where: {
+          episodeId: episodeIds,
+          createdAt: {
+            [Op.gte]: sevenDaysAgo,
+          },
+        },
+      });
+
+      const trendingBoost = recentVotes * 2;
+
+      const score =
+        avg * Math.log10(totalVotes + 1) + trendingBoost;
+
+      results.push({
+        ...entry.toJSON(),
+        score,
+        totalVotes,
+        avg: avg.toFixed(1),
+        recentVotes,
+      });
+    }
+
+    // 🔥 ordenar por score
+    results.sort((a, b) => b.score - a.score);
+
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // =====================
 // DELETE VOTE
 // =====================
