@@ -20,6 +20,8 @@ const Vote = VoteModel(sequelize);
 Entry.hasMany(Season, {
   foreignKey: "entryId",
   as: "seasons",
+    onDelete: "CASCADE",
+  hooks: true,
 });
 
 Season.belongsTo(Entry, {
@@ -31,6 +33,8 @@ Season.belongsTo(Entry, {
 Season.hasMany(Episode, {
   foreignKey: "seasonId",
   as: "episodes",
+    onDelete: "CASCADE",
+  hooks: true,
 });
 
 Episode.belongsTo(Season, {

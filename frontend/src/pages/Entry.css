@@ -44,7 +44,34 @@
 }
 
 .meta {
+  display: flex;
+  gap: 10px;
   margin: 10px 0;
+  opacity: 0.9;
+}
+
+.description {
+  max-width: 600px;
+}
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.secondary-btn {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.season-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .badge {
@@ -90,19 +117,20 @@
 .episode-card {
   display: flex;
   gap: 15px;
-  background: #1a1a1a;
+  background: #111;
   border-radius: 10px;
   overflow: hidden;
   transition: 0.2s;
 }
 
 .episode-card:hover {
-  transform: scale(1.02);
+  background: #1c1c1c;
+  transform: scale(1.01);
 }
 
 .episode-card img {
-  width: 160px;
-  height: 90px;
+  width: 180px;
+  height: 100px;
   object-fit: cover;
 }
 
@@ -113,6 +141,15 @@
 .episode-info p {
   color: #aaa;
   font-size: 14px;
+}
+
+
+.episode-meta {
+  font-size: 12px;
+  opacity: 0.7;
+  display: flex;
+  gap: 10px;
+  margin: 5px 0;
 }
 
 /* LOADING */

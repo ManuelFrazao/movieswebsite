@@ -6,6 +6,10 @@ const generateSlug = (title) => {
     title
       .toLowerCase()
       .replace(/ /g, "-")
+      .normalize("NFD") // remove acentos
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
       .replace(/[^\w-]+/g, "") +
     "-" +
     Date.now()
@@ -98,6 +102,15 @@ export const getEntryBySlug = async (req, res) => {
             },
           ],
         },
+      ],
+      order: [
+        [{ model: Season, as: "seasons" }, "seasonNumber", "ASC"],
+        [
+          { model: Season, as: "seasons" },
+          { model: Episode, as: "episodes" },
+          "number",
+          "ASC",
+        ],
       ],
     });
 
