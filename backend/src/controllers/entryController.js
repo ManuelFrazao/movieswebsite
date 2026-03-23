@@ -153,8 +153,14 @@ export const updateEntry = async (req, res) => {
       slug = generateSlug(req.body.title);
     }
 
-    await entry.update({
+    const parsedData = {
       ...req.body,
+      duration: req.body.duration ? Number(req.body.duration) : null,
+      releaseDate: req.body.releaseDate ? new Date(req.body.releaseDate) : null,
+    };
+
+    await entry.update({
+      ...parsedData,
       slug,
       coverImage: imageUrl,
     });
