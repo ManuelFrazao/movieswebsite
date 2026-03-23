@@ -7,6 +7,7 @@ export default function Entry() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [entry, setEntry] = useState(null);
+  const [episodeStats, setEpisodeStats] = useState({});
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -23,9 +24,142 @@ export default function Entry() {
 
   console.log(entry);
 
+  const fetchEpisodeStats = async (episodeId) => {
+    try {
+      const res = await api.get(`/votes/episode/${episodeId}/stats`);
+
+      setEpisodeStats((prev) => ({
+        ...prev,
+        [episodeId]: res.data,
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (!entry?.seasons) return;
+
+    entry.seasons.forEach((season) => {
+      season.episodes?.forEach((ep) => {
+        fetchEpisodeStats(ep.id);
+      });
+    });
+  }, [entry]);
+
   if (!entry) return <p className="loading">Loading...</p>;
 
   const isSeries = entry.type === "series";
+
+  const formatDuration = (minutes) => {
+    if (!minutes) return null;
+
+    if (minutes < 60) return `${minutes} min`;
+
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+  };
+
+  const formatDate = (date) => {
+    if (!date) return null;
+
+    return new Date(date).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const getFirstAirYear = (seasons) => {
+    if (!seasons) return null;
+
+    const allEpisodes = seasons.flatMap((s) => s.episodes || []);
+
+    if (allEpisodes.length === 0) return null;
+
+    const dates = allEpisodes
+      .map((ep) => ep.airDate)
+      .filter(Boolean)
+      .map((d) => new Date(d));
+
+    if (dates.length === 0) return null;
+
+    const firstDate = new Date(Math.min(...dates));
+
+    return firstDate.getFullYear();
+  };
+
+  const getTotalDuration = (seasons) => {
+    if (!seasons) return 0;
+
+    const totalMinutes = seasons
+      .flatMap((s) => s.episodes || [])
+      .reduce((sum, ep) => sum + (ep.duration || 0), 0);
+
+    return totalMinutes;
+  };
+
+  const getAverageDuration = (seasons) => {
+    if (!seasons) return 0;
+
+    const episodes = seasons.flatMap((s) => s.episodes || []);
+
+    if (episodes.length === 0) return 0;
+
+    const totalMinutes = episodes.reduce(
+      (sum, ep) => sum + (ep.duration || 0),
+      0,
+    );
+
+    return Math.round(totalMinutes / episodes.length);
+  };
+
+  const formatTotalDuration = (minutes) => {
+    if (!minutes) return null;
+
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+  };
+
+  const totalSeasons = entry.seasons?.length || 0;
+
+  const totalEpisodes =
+    entry.seasons?.reduce((sum, s) => sum + (s.episodes?.length || 0), 0) || 0;
+
+  const firstYear = getFirstAirYear(entry.seasons);
+  const endingYear = entry.endingYear;
+  const totalDuration = getTotalDuration(entry.seasons);
+  const avgDuration = getAverageDuration(entry.seasons);
+
+  const formatYears = (start, end) => {
+    if (!start) return null;
+
+    if (!end || start === end) return start;
+
+    return `${start}–${end}`;
+  };
+
+  const seasonLabel = totalSeasons === 1 ? "Season" : "Seasons";
+  const episodeLabel = totalEpisodes === 1 ? "Episode" : "Episodes";
+
+  const handleVote = async (episodeId, value) => {
+    try {
+      await api.post("/votes", {
+        value,
+        type: "episode",
+        episodeId,
+      });
+
+      fetchEpisodeStats(episodeId); // 🔥 refresh
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="entry">
@@ -43,16 +177,47 @@ export default function Entry() {
             <h1>{entry.title}</h1>
 
             <div className="meta">
-              <span className="badge">{entry.type}</span>
+              <span
+                style={{
+                  textTransform: "capitalize",
+                }}
+              >
+                {entry.type}
+              </span>
 
-              {entry.year && <span>{entry.year}</span>}
-              {entry.duration && <span>{entry.duration} min</span>}
+              {firstYear && (
+                <>
+                  <span>•</span>
+                  <span>
+                    {formatYears(firstYear, endingYear)}
+                    {!endingYear && <span className="ongoing"> (Ongoing)</span>}
+                  </span>
+                </>
+              )}
+
+              {totalSeasons > 0 && <span>•</span>}
+              {totalSeasons > 0 && (
+                <span>
+                  {totalSeasons} {seasonLabel}
+                </span>
+              )}
+
+              {totalEpisodes > 0 && <span>•</span>}
+              {totalEpisodes > 0 && (
+                <span>
+                  {totalEpisodes} {episodeLabel}
+                </span>
+              )}
+
+              {avgDuration > 0 && <span>•</span>}
+              {avgDuration > 0 && (
+                <span>{formatTotalDuration(avgDuration)}</span>
+              )}
             </div>
 
             <p className="description">{entry.description}</p>
 
             <div className="actions">
-              <button className="play-btn">▶ Watch</button>
               <button className="secondary-btn">+ My List</button>
             </div>
           </div>
@@ -74,32 +239,75 @@ export default function Entry() {
           entry.seasons?.map((season) => (
             <div key={season.id} className="season">
               <div className="season-header">
-                <h2>Season {season.seasonNumber}</h2>
-                {season.releaseDate && (
-                  <span>{new Date(season.releaseDate).getFullYear()}</span>
-                )}
+                <div
+                  style={{
+                    display: "flex",
+                  }}
+                >
+                  <h2
+                    style={{
+                      color: "#ccc",
+                      fontWeight: "bold",
+                      marginRight: "10px",
+                    }}
+                  >
+                    Season {season.seasonNumber}
+                  </h2>
+                  <span className="season-sub">
+                    {season.episodes?.length} episodes
+                  </span>
+                </div>
               </div>
 
               <div className="episodes">
                 {season.episodes?.map((ep) => (
-                  <div key={ep.id} className="episode-card">
+                  <div key={ep.id} className="episode-row">
+                    <div className="episode-number">{ep.number}.</div>
                     <img src={ep.thumbnail} alt={ep.title} />
 
                     <div className="episode-info">
-                      <h3>
-                        {ep.number}. {ep.title}
-                      </h3>
-
-                      <div className="episode-meta">
-                        {ep.duration && <span>{ep.duration} min</span>}
-                        {ep.airDate && (
-                          <span>
-                            {new Date(ep.airDate).toLocaleDateString()}
-                          </span>
+                      <div
+                        style={{
+                          display: "flex",
+                        }}
+                      >
+                        <h3>{ep.title}</h3>
+                        {ep.isFinal && (
+                          <span className="final-badge">FINAL</span>
                         )}
                       </div>
 
+                      <div className="episode-meta">
+                        {ep.airDate && <span>{formatDate(ep.airDate)}</span>}
+                        {ep.airDate && ep.duration && <span>•</span>}
+                        {ep.duration && (
+                          <span>{formatDuration(ep.duration)}</span>
+                        )}
+                      </div>
+
+                      {episodeStats[ep.id]?.averageRating > 0 && (
+                        <>
+                          <span>•</span>
+                          <span>
+                            ⭐ {episodeStats[ep.id].averageRating} (
+                            {episodeStats[ep.id].totalVotes}{" "}
+                            {episodeStats[ep.id].totalVotes === 1
+                              ? "vote"
+                              : "votes"}
+                            )
+                          </span>
+                        </>
+                      )}
+
                       <p>{ep.description}</p>
+
+                      <div className="vote-buttons">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
+                          <button key={v} onClick={() => handleVote(ep.id, v)}>
+                            {v}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}

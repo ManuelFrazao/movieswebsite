@@ -151,25 +151,25 @@ export default function EditEntry() {
     try {
       const formData = new FormData();
 
-      formData.append("title", editData.title);
+      formData.append("title", `${editData.prefix} ${editData.title}`.trim());
       formData.append("description", editData.description || "");
-      formData.append(
-        "duration",
-        editData.duration ? Number(editData.duration) : "",
-      );
+      formData.append("duration", editData.duration || "");
+
       if (editData.airDate) {
         formData.append("airDate", editData.airDate);
       }
+
       formData.append("isFinal", String(editData.isFinal));
 
       if (editData.image) {
         formData.append("image", editData.image);
       }
 
-      await api.put(`/episodes/${id}`, formData);
+      const res = await api.put(`/episodes/${id}`, formData); // ✅ aqui
 
       const updatedEpisode = res.data;
 
+      // 🔥 update local
       setEpisodes((prev) => ({
         ...prev,
         [seasonId]: prev[seasonId].map((ep) =>
@@ -178,7 +178,6 @@ export default function EditEntry() {
       }));
 
       setEditingEpisode(null);
-      fetchEpisodes(seasonId);
     } catch (err) {
       console.error(err);
     }
@@ -190,6 +189,17 @@ export default function EditEntry() {
     await api.delete(`/episodes/${id}`);
 
     fetchEpisodes(seasonId);
+  };
+
+  const formatDate = (date) => {
+    if (!date) return null;
+
+    return new Date(date).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   if (!entry) return <p>Loading...</p>;
@@ -313,7 +323,8 @@ export default function EditEntry() {
                 key={ep.id}
                 mt={2}
                 display="flex"
-                flexDirection="column"
+                flexDirection={editingEpisode === ep.id ? "column" : "row"}
+                alignItems={editingEpisode === ep.id ? "" : "center"}
                 gap={2}
               >
                 {ep.thumbnail && (
@@ -327,13 +338,22 @@ export default function EditEntry() {
                 {/* 🔥 SE ESTIVER A EDITAR */}
                 {editingEpisode === ep.id ? (
                   <>
-                    <TextField
-                      label="Title"
-                      value={editData.title}
-                      onChange={(e) =>
-                        setEditData({ ...editData, title: e.target.value })
-                      }
-                    />
+                    <Box display="flex" gap={1} width="100%">
+                      <TextField
+                        value={editData.prefix}
+                        disabled
+                        sx={{ width: 100 }}
+                      />
+
+                      <TextField
+                        label="Title"
+                        fullWidth
+                        value={editData.title}
+                        onChange={(e) =>
+                          setEditData({ ...editData, title: e.target.value })
+                        }
+                      />
+                    </Box>
 
                     <TextField
                       label="Description"
@@ -395,6 +415,28 @@ export default function EditEntry() {
                         }
                       />
                     </Button>
+                    <img
+                      src={
+                        editingEpisode === ep.id && editData.image
+                          ? URL.createObjectURL(editData.image)
+                          : ep.thumbnail
+                      }
+                      alt=""
+                      style={{
+                        width: 80,
+                        borderRadius: 6,
+                        alignSelf: "center",
+                        border:
+                          editingEpisode === ep.id
+                            ? "2px solid #e50914"
+                            : "none",
+                      }}
+                    />
+                    {editingEpisode === ep.id && editData.image && (
+                      <span style={{ fontSize: 12, color: "#aaa" }}>
+                        New image preview
+                      </span>
+                    )}
 
                     <Button
                       variant="contained"
@@ -410,15 +452,20 @@ export default function EditEntry() {
                 ) : (
                   <>
                     <Typography>
-                      {ep.number}. {ep.title}
+                      {ep.title} - {formatDate(ep.airDate)}
                     </Typography>
 
                     <Button
                       size="small"
                       onClick={() => {
                         setEditingEpisode(ep.id);
+                        const prefix = `S${season.seasonNumber}.E${ep.number}`;
+                        const cleanTitle = ep.title
+                          .replace(new RegExp(`^(${prefix}\\s*)+`), "")
+                          .trim();
                         setEditData({
-                          title: ep.title,
+                          prefix,
+                          title: cleanTitle,
                           number: ep.number,
                           description: ep.description || "",
                           duration: ep.duration || "",

@@ -8,46 +8,44 @@ export default function Trending() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchEntries = async () => {
       try {
-        const res = await api.get("/entries");
+        const res = await api.get("/entries", {
+          signal: controller.signal,
+        });
         setEntries(res.data);
       } catch (err) {
+        if (err.code === "ERR_CANCELED" || err.name === "CanceledError") return;
+
         console.error(err);
       }
     };
 
     fetchEntries();
+
+    return () => controller.abort(); // 🔥 cleanup
   }, []);
 
   // 🔥 dividir por tipo
   const movies = entries.filter((e) => e.type === "movie");
   const series = entries.filter((e) => e.type === "series");
 
+  const sortedEntries = [...entries].sort(
+  (a, b) => (b.topRank || 0) - (a.topRank || 0)
+);
+
   return (
     <div className="trending">
-
       {/* 🎬 MOVIES */}
-      <Section
-        title="🎬 Top Movies"
-        entries={movies}
-        navigate={navigate}
-      />
+      <Section title="🎬 Top Movies" entries={movies} navigate={navigate} />
 
       {/* 📺 SERIES */}
-      <Section
-        title="📺 Top Series"
-        entries={series}
-        navigate={navigate}
-      />
+      <Section title="📺 Top Series" entries={series} navigate={navigate} />
 
       {/* 🔥 ALL */}
-      <Section
-        title="🔥 Top Overall"
-        entries={entries}
-        navigate={navigate}
-      />
-
+      <Section title="🔥 Top Overall" entries={sortedEntries} navigate={navigate} />
     </div>
   );
 }
@@ -59,38 +57,33 @@ function Section({ title, entries, navigate }) {
       <h2>{title}</h2>
 
       <div className="table">
-        {entries.slice(0, 10).map((entry, index) => (
-          <div
-            key={entry.id}
-            className="row"
-            onClick={() => navigate(`/entry/${entry.slug}`)}
-          >
-            <div className="rank">{index + 1}</div>
+        {entries.slice(0, 10).map((entry, index) => {
+          const score = entries.topRank || 50;
 
-            <img src={entry.coverImage} alt={entry.title} />
+          return (
+            <div
+              key={entry.id}
+              className="row"
+              onClick={() => navigate(`/entry/${entry.slug}`)}
+            >
+              <div className="rank">{index + 1}</div>
 
-            <div className="info">
-              <h3>{entry.title}</h3>
-              <p className="meta">{entry.type}</p>
-            </div>
+              <img src={entry.coverImage} alt={entry.title} />
 
-            <div className="score">
-              <div className="bar">
-                <div
-                  className="fill"
-                  style={{
-                    width: `${Math.random() * 100}%`,
-                  }}
-                />
+              <div className="info">
+                <h3>{entry.title}</h3>
+                <p className="meta">{entry.type}</p>
               </div>
-              <span>{(Math.random() * 100).toFixed(2)}</span>
-            </div>
 
-            <div className="graph">
-              <div className="line" />
+              <div className="score">
+                <div className="bar">
+                  <div className="fill" style={{ width: `${score}%` }} />
+                  <span>{score.toFixed(1)}</span>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

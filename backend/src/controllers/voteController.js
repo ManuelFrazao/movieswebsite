@@ -50,6 +50,33 @@ export const createVote = async (req, res) => {
 };
 
 // =====================
+// GET EPISODE STATS
+// =====================
+export const getEpisodeStats = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const votes = await Vote.findAll({
+      where: { episodeId: id },
+    });
+
+    const totalVotes = votes.length;
+
+    const avg =
+      totalVotes === 0
+        ? 0
+        : votes.reduce((sum, v) => sum + v.value, 0) / totalVotes;
+
+    res.json({
+      totalVotes,
+      averageRating: avg.toFixed(1),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// =====================
 // GET ENTRY STATS
 // =====================
 export const getEntryStats = async (req, res) => {
