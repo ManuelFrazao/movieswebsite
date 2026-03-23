@@ -3,7 +3,7 @@ import { Season } from "../models/index.js";
 // CREATE
 export const createSeason = async (req, res) => {
   try {
-    const { entryId } = req.params;
+    const entryId = req.params.entryId || req.body.entryId;
 
     const season = await Season.create({
       ...req.body,

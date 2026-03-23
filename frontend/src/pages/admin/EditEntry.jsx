@@ -73,8 +73,7 @@ export default function EditEntry() {
     try {
       const seasonNumber = getNextSeasonNumber();
 
-      await api.post("/seasons", {
-        entryId: id,
+      await api.post(`/seasons/entries/${id}`, {
         seasonNumber,
       });
 
@@ -102,13 +101,12 @@ export default function EditEntry() {
 
       formData.append("title", title);
       formData.append("number", episodeNumber);
-      formData.append("seasonId", season.id);
 
       if (episodeImages[season.id]) {
         formData.append("image", episodeImages[season.id]);
       }
 
-      await api.post("/episodes", formData);
+      await api.post(`/seasons/${season.id}/episodes`, formData);
 
       fetchEpisodes(season.id);
 
@@ -210,7 +208,7 @@ export default function EditEntry() {
         Save
       </Button>
 
-      {entry.type != "movie" && (
+      {entry.type === "series" && (
         <>
           <Typography mt={4} variant="h6">
             Seasons
