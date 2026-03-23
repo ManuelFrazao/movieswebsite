@@ -25,7 +25,7 @@ export default function Entry() {
 
   if (!entry) return <p className="loading">Loading...</p>;
 
-  const isSeries = entry.type === "serie";
+  const isSeries = entry.type === "series";
 
   return (
     <div className="entry">

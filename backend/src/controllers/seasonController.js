@@ -3,7 +3,13 @@ import { Season } from "../models/index.js";
 // CREATE
 export const createSeason = async (req, res) => {
   try {
-    const season = await Season.create(req.body);
+    const { entryId } = req.params;
+
+    const season = await Season.create({
+      ...req.body,
+      entryId,
+    });
+
     res.json(season);
   } catch (err) {
     res.status(500).json({ error: err.message });

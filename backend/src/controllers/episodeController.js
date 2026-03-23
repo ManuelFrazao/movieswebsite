@@ -4,6 +4,8 @@ import cloudinary from "../utils/cloudinary.js";
 // CREATE
 export const createEpisode = async (req, res) => {
   try {
+    const { seasonId } = req.params;
+
     let thumbnail = null;
 
     if (req.file && req.file.buffer) {
@@ -18,6 +20,7 @@ export const createEpisode = async (req, res) => {
     const episode = await Episode.create({
       ...req.body,
       thumbnail,
+      seasonId: req.body.seasonId, // 🔥 ESSENCIAL
     });
 
     res.json(episode);
