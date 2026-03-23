@@ -7,7 +7,7 @@ const SeasonModel = (sequelize) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    number: {
+    seasonNumber: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
