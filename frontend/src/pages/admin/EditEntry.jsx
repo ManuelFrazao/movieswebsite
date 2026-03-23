@@ -296,7 +296,7 @@ export default function EditEntry() {
 
             {/* EPISODES LIST */}
             {episodes[season.id]?.map((ep) => (
-<Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+              <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
                 {ep.thumbnail && (
                   <img
                     src={ep.thumbnail}

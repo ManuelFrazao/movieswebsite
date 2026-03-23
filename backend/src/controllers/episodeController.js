@@ -56,10 +56,8 @@ export const updateEpisode = async (req, res) => {
 
     let thumbnail = episode.thumbnail;
 
-    // 🔥 NOVA IMAGEM
+    // 🖼️ upload imagem
     if (req.file && req.file.buffer) {
-
-      // 🗑️ apagar antiga (ver passo 2 abaixo)
       if (episode.thumbnail) {
         const publicId = episode.thumbnail.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`episodes/${publicId}`);
@@ -79,14 +77,41 @@ export const updateEpisode = async (req, res) => {
       thumbnail = result.secure_url;
     }
 
+    const isFinal =
+      req.body.isFinal === "true" || req.body.isFinal === true;
+
+    // 🔥 se este for final → remover outros
+    if (isFinal) {
+      const season = await episode.getSeason();
+      const entry = await season.getEntry();
+      const seasons = await entry.getSeasons();
+
+      const seasonIds = seasons.map((s) => s.id);
+
+      await Episode.update(
+        { isFinal: false },
+        {
+          where: {
+            seasonId: seasonIds,
+          },
+        }
+      );
+
+      // 🔥 atualizar endingYear da série
+      if (req.body.airDate) {
+        await entry.update({
+          endingYear: new Date(req.body.airDate).getFullYear(),
+        });
+      }
+    }
+
     await episode.update({
       ...req.body,
-      isFinal: req.body.isFinal === "false",
+      isFinal,
       thumbnail,
     });
 
     res.json(episode);
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
