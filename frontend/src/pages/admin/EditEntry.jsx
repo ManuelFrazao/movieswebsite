@@ -16,6 +16,8 @@ export default function EditEntry() {
   // 🔥 NOVO STATE
   const [episodeImages, setEpisodeImages] = useState({});
   const [entryImage, setEntryImage] = useState(null);
+  const [editingEpisode, setEditingEpisode] = useState(null);
+  const [editData, setEditData] = useState({});
 
   const [newSeason, setNewSeason] = useState({
     seasonNumber: "",
@@ -147,6 +149,17 @@ export default function EditEntry() {
     fetchSeasons();
   };
 
+  const handleUpdateEpisode = async (id, seasonId) => {
+    try {
+      await api.put(`/episodes/${id}`, editData);
+
+      setEditingEpisode(null);
+      fetchEpisodes(seasonId);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleDeleteEpisode = async (id, seasonId) => {
     if (!window.confirm("Delete episode?")) return;
 
@@ -188,29 +201,40 @@ export default function EditEntry() {
         Save
       </Button>
 
-      <Typography mt={4} variant="h6">
-        Seasons
-      </Typography>
+      {entry.type != "movie" && (
+        <>
+          <Typography mt={4} variant="h6">
+            Seasons
+          </Typography>
 
-      {/* ADD SEASON */}
-      <Box display="flex" gap={2} mt={2} alignItems="center" flexWrap="wrap">
-        <Button variant="contained" onClick={handleCreateSeason}>
-          + Add Season
-        </Button>
-      </Box>
+          {/* ADD SEASON */}
+          <Box
+            display="flex"
+            gap={2}
+            mt={2}
+            alignItems="center"
+            flexWrap="wrap"
+          >
+            <Button variant="contained" onClick={handleCreateSeason}>
+              + Add Season
+            </Button>
+          </Box>
+        </>
+      )}
 
       {/* LIST SEASONS */}
       {seasons.map((season) => (
         <Accordion key={season.id} sx={{ mt: 2 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Season {season.seasonNumber}
-                <Button
-              color="error"
-              size="small"
-              onClick={() => handleDeleteSeason(season.id)}
-            >
-              Delete Season
-            </Button>
+            <Typography>
+              Season {season.seasonNumber}
+              <Button
+                color="error"
+                size="small"
+                onClick={() => handleDeleteSeason(season.id)}
+              >
+                Delete Season
+              </Button>
             </Typography>
           </AccordionSummary>
 
@@ -278,16 +302,62 @@ export default function EditEntry() {
                   />
                 )}
 
-                <Typography>
-                  {ep.number}. {ep.title}
-                </Typography>
-                <Button
-                  color="error"
-                  size="small"
-                  onClick={() => handleDeleteEpisode(ep.id, season.id)}
-                >
-                  Delete
-                </Button>
+                {/* 🔥 SE ESTIVER A EDITAR */}
+                {editingEpisode === ep.id ? (
+                  <>
+                    <TextField
+                      value={editData.title}
+                      onChange={(e) =>
+                        setEditData({ ...editData, title: e.target.value })
+                      }
+                    />
+
+                    <TextField
+                      value={editData.number}
+                      onChange={(e) =>
+                        setEditData({ ...editData, number: e.target.value })
+                      }
+                    />
+
+                    <Button
+                      variant="contained"
+                      onClick={() => handleUpdateEpisode(ep.id, season.id)}
+                    >
+                      Save
+                    </Button>
+
+                    <Button onClick={() => setEditingEpisode(null)}>
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Typography>
+                      {ep.number}. {ep.title}
+                    </Typography>
+
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        setEditingEpisode(ep.id);
+                        setEditData({
+                          title: ep.title,
+                          number: ep.number,
+                        });
+                      }}
+                    >
+                      Edit
+                    </Button>
+
+                    <Button
+                      color="error"
+                      size="small"
+                      onClick={() => handleDeleteEpisode(ep.id, season.id)}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                )}
               </Box>
             ))}
           </AccordionDetails>
