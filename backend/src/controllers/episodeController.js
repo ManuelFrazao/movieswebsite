@@ -1,5 +1,6 @@
-import { Episode, Season } from "../models/index.js";
+import { Episode, Season, Entry } from "../models/index.js";
 import cloudinary from "../utils/cloudinary.js";
+import { Op } from "sequelize";
 
 // CREATE
 export const createEpisode = async (req, res) => {
@@ -16,6 +17,7 @@ export const createEpisode = async (req, res) => {
 
       thumbnail = result.secure_url;
     }
+
     const season = await Season.findByPk(seasonId);
 
     const episode = await Episode.create({
@@ -24,6 +26,28 @@ export const createEpisode = async (req, res) => {
       seasonId,
       entryId: season.entryId,
     });
+
+    // 🔥 NOVO: atualizar releaseDate da série
+    if (episode.airDate) {
+      const allEpisodes = await Episode.findAll({
+        where: { entryId: season.entryId },
+        attributes: ["airDate"],
+      });
+
+      const validDates = allEpisodes
+        .map((ep) => ep.airDate)
+        .filter(Boolean)
+        .map((d) => new Date(d));
+
+      if (validDates.length > 0) {
+        const firstDate = new Date(Math.min(...validDates));
+
+        await Entry.update(
+          { releaseDate: firstDate },
+          { where: { id: season.entryId } }
+        );
+      }
+    }
 
     res.json(episode);
   } catch (err) {

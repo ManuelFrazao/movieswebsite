@@ -232,28 +232,26 @@ export default function EditEntry() {
         onChange={(e) => setEntry({ ...entry, title: e.target.value })}
       />
 
-      {entry.type === "movie" && (
-        <Box mt={2} display="flex" gap={2}>
-          <TextField
-            label="Duration (min)"
-            type="number"
-            value={entry.duration || ""}
-            onChange={(e) => setEntry({ ...entry, duration: e.target.value })}
-            fullWidth
-          />
+      <Box mt={2} display="flex" gap={2}>
+        <TextField
+          label="Duration (min)"
+          type="number"
+          value={entry.duration || ""}
+          onChange={(e) => setEntry({ ...entry, duration: e.target.value })}
+          fullWidth
+          disabled={entry.type === "series"} // 🔥 bloqueia séries
+        />
 
-          <TextField
-            label="Release Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={entry.releaseDate ? entry.releaseDate.split("T")[0] : ""}
-            onChange={(e) =>
-              setEntry({ ...entry, releaseDate: e.target.value })
-            }
-            fullWidth
-          />
-        </Box>
-      )}
+        <TextField
+          label="Release Date"
+          type="date"
+          InputLabelProps={{ shrink: true }}
+          value={entry.releaseDate ? entry.releaseDate.split("T")[0] : ""}
+          onChange={(e) => setEntry({ ...entry, releaseDate: e.target.value })}
+          fullWidth
+          disabled={entry.type === "series"} // 🔥 bloqueia séries
+        />
+      </Box>
 
       <TextField
         label="Description"
