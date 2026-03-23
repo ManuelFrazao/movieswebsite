@@ -81,6 +81,7 @@ export const updateEpisode = async (req, res) => {
 
     await episode.update({
       ...req.body,
+      isFinal: req.body.isFinal === "false",
       thumbnail,
     });
 

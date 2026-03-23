@@ -153,6 +153,10 @@ export default function EditEntry() {
 
       formData.append("title", editData.title);
       formData.append("number", editData.number);
+      formData.append("description", editData.description || "");
+      formData.append("duration", editData.duration || "");
+      formData.append("airDate", editData.airDate || "");
+      formData.append("isFinal", editData.isFinal);
 
       if (editData.image) {
         formData.append("image", editData.image);
@@ -292,13 +296,7 @@ export default function EditEntry() {
 
             {/* EPISODES LIST */}
             {episodes[season.id]?.map((ep) => (
-              <Box
-                key={ep.id}
-                mt={2}
-                display="flex"
-                gap={2}
-                alignItems="center"
-              >
+<Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
                 {ep.thumbnail && (
                   <img
                     src={ep.thumbnail}
@@ -311,6 +309,7 @@ export default function EditEntry() {
                 {editingEpisode === ep.id ? (
                   <>
                     <TextField
+                      label="Title"
                       value={editData.title}
                       onChange={(e) =>
                         setEditData({ ...editData, title: e.target.value })
@@ -318,11 +317,50 @@ export default function EditEntry() {
                     />
 
                     <TextField
-                      value={editData.number}
+                      label="Description"
+                      multiline
+                      rows={2}
+                      value={editData.description || ""}
                       onChange={(e) =>
-                        setEditData({ ...editData, number: e.target.value })
+                        setEditData({
+                          ...editData,
+                          description: e.target.value,
+                        })
                       }
                     />
+
+                    <TextField
+                      label="Duration (min)"
+                      type="number"
+                      value={editData.duration || ""}
+                      onChange={(e) =>
+                        setEditData({ ...editData, duration: e.target.value })
+                      }
+                    />
+
+                    <TextField
+                      label="Air Date"
+                      type="date"
+                      InputLabelProps={{ shrink: true }}
+                      value={editData.airDate || ""}
+                      onChange={(e) =>
+                        setEditData({ ...editData, airDate: e.target.value })
+                      }
+                    />
+
+                    <label>
+                      Final Episode
+                      <input
+                        type="checkbox"
+                        checked={editData.isFinal || false}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            isFinal: e.target.checked,
+                          })
+                        }
+                      />
+                    </label>
 
                     <Button variant="outlined" component="label">
                       Change Image
@@ -362,6 +400,10 @@ export default function EditEntry() {
                         setEditData({
                           title: ep.title,
                           number: ep.number,
+                          description: ep.description,
+                          duration: ep.duration,
+                          airDate: ep.airDate ? ep.airDate.split("T")[0] : "",
+                          isFinal: ep.isFinal,
                         });
                       }}
                     >

@@ -27,13 +27,6 @@ export default function Trending() {
   return (
     <div className="trending">
 
-      {/* 🔥 ALL */}
-      <Section
-        title="🔥 Top Overall"
-        entries={entries}
-        navigate={navigate}
-      />
-
       {/* 🎬 MOVIES */}
       <Section
         title="🎬 Top Movies"
@@ -45,6 +38,13 @@ export default function Trending() {
       <Section
         title="📺 Top Series"
         entries={series}
+        navigate={navigate}
+      />
+
+      {/* 🔥 ALL */}
+      <Section
+        title="🔥 Top Overall"
+        entries={entries}
         navigate={navigate}
       />
 
