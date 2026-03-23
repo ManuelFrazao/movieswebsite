@@ -452,7 +452,7 @@ export default function EditEntry() {
                 ) : (
                   <>
                     <Typography>
-                      {ep.title} - {formatDate(ep.airDate)}
+                      {ep.title} - {formatDate(ep.airDate)} - {ep.duration} min
                     </Typography>
 
                     <Button

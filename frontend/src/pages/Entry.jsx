@@ -174,6 +174,15 @@ export default function Entry() {
     return "#4caf50"; // 🟢
   };
 
+  const canRateEpisode = (airDate) => {
+    if (!airDate) return false;
+
+    const today = new Date();
+    const releaseDate = new Date(airDate);
+
+    return releaseDate <= today;
+  };
+
   return (
     <div className="entry">
       {/* HERO */}
@@ -224,7 +233,7 @@ export default function Entry() {
 
               {avgDuration > 0 && <span>•</span>}
               {avgDuration > 0 && (
-                <span>{formatTotalDuration(avgDuration)}</span>
+                <span>{formatDuration(avgDuration)}</span>
               )}
             </div>
 
@@ -316,20 +325,24 @@ export default function Entry() {
                           </>
                         )}
 
-                        <button
-                          className="rate-btn"
-                          onClick={() =>
-                            setRatingModal({ open: true, episodeId: ep.id })
-                          }
-                        >
-                          ⭐{" "}
-                          {userRatings[ep.id]
-                            ? `Your rating: ${userRatings[ep.id]}`
-                            : "Rate"}
-                        </button>
+                        {canRateEpisode(ep.airDate) && (
+                          <button
+                            className="rate-btn"
+                            onClick={() =>
+                              setRatingModal({ open: true, episodeId: ep.id })
+                            }
+                          >
+                            ⭐{" "}
+                            {userRatings[ep.id]
+                              ? `Your rating: ${userRatings[ep.id]}`
+                              : "Rate"}
+                          </button>
+                        )}
                       </div>
 
-                      <p>{ep.description}</p>
+                      <p style={{
+                        textAlign: "start",
+                      }}>{ep.description}</p>
                     </div>
                   </div>
                 ))}
