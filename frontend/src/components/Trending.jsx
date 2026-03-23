@@ -163,12 +163,15 @@ function Section({ title, entries, navigate, trendingData }) {
     );
   }
 
-  const isNew = (date) => {
-    const d = new Date(date);
+  const isNew = (releaseDate) => {
+    if (!releaseDate) return false;
+
+    const d = new Date(releaseDate);
     const now = new Date();
+
     const diffDays = (now - d) / (1000 * 60 * 60 * 24);
 
-    return diffDays <= 14; // 2 semanas
+    return diffDays >= 0 && diffDays <= 30; // 🔥 filmes → 30 dias
   };
 
   return (
@@ -179,6 +182,30 @@ function Section({ title, entries, navigate, trendingData }) {
         {entries.slice(0, 10).map((entry, index) => {
           const score = entry.score || 0;
 
+          const getLatestEpisodeDate = (entry) => {
+            if (!entry.seasons) return null;
+
+            const allEpisodes = entry.episodes || [];
+
+            const dates = allEpisodes
+              .map((ep) => ep.airDate)
+              .filter(Boolean)
+              .map((d) => new Date(d));
+
+            if (!dates.length) return null;
+
+            return new Date(Math.max(...dates));
+          };
+
+          const isSeries = entry.type === "series";
+
+          const releaseDate =
+            entry.type === "series"
+              ? entry.firstEpisodeDate
+              : entry.releaseDate;
+
+          const isNewRelease = isNew(releaseDate);
+
           return (
             <div
               key={entry.id}
@@ -186,7 +213,7 @@ function Section({ title, entries, navigate, trendingData }) {
               onClick={() => navigate(`/entry/${entry.slug}`)}
             >
               <div className="rank">{index + 1}</div>
-              {isNew(entry.createdAt) && <span className="badge-new">NEW</span>}
+              {isNewRelease && <span className="badge-new">NEW</span>}
 
               <img src={entry.coverImage} alt={entry.title} />
 

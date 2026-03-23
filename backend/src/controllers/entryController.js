@@ -48,8 +48,33 @@ export const createEntry = async (req, res) => {
 // GET ALL
 export const getEntries = async (req, res) => {
   try {
-    const entries = await Entry.findAll();
-    res.json(entries);
+    const entries = await Entry.findAll({
+      include: {
+        model: Episode,
+        as: "episodes",
+        attributes: ["id", "airDate"], // 🔥 essencial
+      },
+    });
+
+    const result = entries.map((entry) => {
+      const episodes = entry.episodes || [];
+
+      const dates = episodes
+        .map((ep) => ep.airDate)
+        .filter(Boolean)
+        .map((d) => new Date(d));
+
+      const firstEpisodeDate = dates.length
+        ? new Date(Math.min(...dates))
+        : null;
+
+      return {
+        ...entry.toJSON(),
+        firstEpisodeDate,
+      };
+    });
+
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

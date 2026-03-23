@@ -119,6 +119,14 @@
   border-radius: 4px;
 }
 
+.badge-added {
+  background: #0ab323;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 .score,
 .graph {
   flex-shrink: 0;
