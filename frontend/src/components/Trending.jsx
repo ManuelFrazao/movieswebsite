@@ -6,6 +6,7 @@ import "./Trending.css";
 export default function Trending() {
   const [entries, setEntries] = useState([]);
   const navigate = useNavigate();
+  const [trendingData, setTrendingData] = useState({});
 
   useEffect(() => {
     const controller = new AbortController();
@@ -28,30 +29,105 @@ export default function Trending() {
     return () => controller.abort(); // 🔥 cleanup
   }, []);
 
+  useEffect(() => {
+    if (!entries.length) return;
+
+    const fetchTrending = async (entryId) => {
+      try {
+        const res = await api.get(`/votes/entry/${entryId}/trending`);
+
+        setTrendingData((prev) => ({
+          ...prev,
+          [entryId]: res.data,
+        }));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    entries.forEach((entry) => {
+      fetchTrending(entry.id);
+    });
+  }, [entries]);
+
   // 🔥 dividir por tipo
   const movies = entries.filter((e) => e.type === "movie");
   const series = entries.filter((e) => e.type === "series");
 
   const sortedEntries = [...entries].sort(
-  (a, b) => (b.topRank || 0) - (a.topRank || 0)
-);
+    (a, b) => (b.topRank || 0) - (a.topRank || 0),
+  );
 
   return (
     <div className="trending">
       {/* 🎬 MOVIES */}
-      <Section title="🎬 Top Movies" entries={movies} navigate={navigate} />
+      <Section
+        title="🎬 Top Movies"
+        entries={movies}
+        navigate={navigate}
+        trendingData={trendingData}
+      />
 
       {/* 📺 SERIES */}
-      <Section title="📺 Top Series" entries={series} navigate={navigate} />
+      <Section
+        title="📺 Top Series"
+        entries={series}
+        navigate={navigate}
+        trendingData={trendingData}
+      />
 
       {/* 🔥 ALL */}
-      <Section title="🔥 Top Overall" entries={sortedEntries} navigate={navigate} />
+      <Section
+        title="🔥 Top Overall"
+        entries={sortedEntries}
+        navigate={navigate}
+        trendingData={trendingData}
+      />
     </div>
   );
 }
 
+const getLast7Days = () => {
+  const days = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+
+    days.push(d.toISOString().split("T")[0]);
+  }
+
+  return days;
+};
+
 /* 🔥 COMPONENTE REUTILIZÁVEL */
-function Section({ title, entries, navigate }) {
+function Section({ title, entries, navigate, trendingData }) {
+  function Graph({ data }) {
+    const days = getLast7Days();
+
+    const values = days.map((day) => data?.[day] || 0);
+
+    const max = Math.max(...values, 1); // evitar divisão por 0
+
+    if (!data || Object.keys(data).length === 0) {
+  return <div className="graph-empty">No activity</div>;
+}
+
+    return (
+      <div className="graph">
+        {values.map((v, i) => (
+          <div
+            key={i}
+            className="bar-day"
+            style={{
+              height: `${(v / max) * 100}%`,
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="section">
       <h2>{title}</h2>
@@ -74,12 +150,14 @@ function Section({ title, entries, navigate }) {
                 <h3>{entry.title}</h3>
                 <p className="meta">{entry.type}</p>
               </div>
-
               <div className="score">
                 <div className="bar">
                   <div className="fill" style={{ width: `${score}%` }} />
                   <span>{score.toFixed(1)}</span>
                 </div>
+              </div>
+              <div className="graph">
+                <Graph data={trendingData[entry.id]} />
               </div>
             </div>
           );

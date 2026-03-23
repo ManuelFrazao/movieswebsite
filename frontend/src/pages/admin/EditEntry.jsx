@@ -231,6 +231,35 @@ export default function EditEntry() {
         onChange={(e) => setEntry({ ...entry, description: e.target.value })}
       />
 
+      <Box mt={2} display="flex" flexDirection={"column"} alignItems="center" gap={2}>
+        <Button variant="outlined" component="label">
+          Change Cover
+          <input
+            type="file"
+            hidden
+            onChange={(e) => setEntryImage(e.target.files[0])}
+          />
+        </Button>
+
+        <img
+          src={entryImage ? URL.createObjectURL(entryImage) : entry.coverImage}
+          alt=""
+          style={{
+            width: 120,
+            borderRadius: 8,
+            border: entryImage ? "2px solid #e50914" : "none",
+            objectFit: "cover",
+            cursor: "pointer",
+            transition: "0.2s",
+            marginBottom: "10px"
+          }}
+        />
+
+        {entryImage && (
+          <span style={{ fontSize: 12, color: "#aaa", marginBottom:"10px"}}>New cover preview</span>
+        )}
+      </Box>
+
       <Button variant="contained" onClick={handleUpdate}>
         Save
       </Button>
@@ -318,176 +347,185 @@ export default function EditEntry() {
             </Box>
 
             {/* EPISODES LIST */}
-            {episodes[season.id]?.map((ep) => (
-              <Box
-                key={ep.id}
-                mt={2}
-                display="flex"
-                flexDirection={editingEpisode === ep.id ? "column" : "row"}
-                alignItems={editingEpisode === ep.id ? "" : "center"}
-                gap={2}
-              >
-                {ep.thumbnail && (
-                  <img
-                    src={ep.thumbnail}
-                    alt=""
-                    style={{ width: 80, borderRadius: 6 }}
-                  />
-                )}
-
-                {/* 🔥 SE ESTIVER A EDITAR */}
-                {editingEpisode === ep.id ? (
-                  <>
-                    <Box display="flex" gap={1} width="100%">
-                      <TextField
-                        value={editData.prefix}
-                        disabled
-                        sx={{ width: 100 }}
-                      />
-
-                      <TextField
-                        label="Title"
-                        fullWidth
-                        value={editData.title}
-                        onChange={(e) =>
-                          setEditData({ ...editData, title: e.target.value })
-                        }
-                      />
-                    </Box>
-
-                    <TextField
-                      label="Description"
-                      multiline
-                      rows={2}
-                      value={editData.description || ""}
-                      onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          description: e.target.value,
-                        })
-                      }
-                    />
-
-                    <TextField
-                      label="Duration (min)"
-                      type="number"
-                      value={editData.duration || ""}
-                      onChange={(e) =>
-                        setEditData({ ...editData, duration: e.target.value })
-                      }
-                    />
-
-                    <TextField
-                      label="Air Date"
-                      type="date"
-                      InputLabelProps={{ shrink: true }}
-                      value={editData.airDate || ""}
-                      onChange={(e) =>
-                        setEditData({ ...editData, airDate: e.target.value })
-                      }
-                    />
-
-                    <Button
-                      color="warning"
-                      variant={editData.isFinal ? "contained" : "outlined"}
-                      onClick={() =>
-                        setEditData({
-                          ...editData,
-                          isFinal: !editData.isFinal,
-                        })
-                      }
-                    >
-                      {editData.isFinal
-                        ? "Final Episode ✓"
-                        : "Mark as Series Finale"}
-                    </Button>
-
-                    <Button variant="outlined" component="label">
-                      Change Image
-                      <input
-                        type="file"
-                        hidden
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            image: e.target.files[0],
-                          })
-                        }
-                      />
-                    </Button>
+            {episodes[season.id]
+              ?.slice() // 🔥 evita mutar o estado
+              .sort((a, b) => a.number - b.number)
+              .map((ep) => (
+                <Box
+                  key={ep.id}
+                  mt={2}
+                  display="flex"
+                  flexDirection={editingEpisode === ep.id ? "column" : "row"}
+                  alignItems={editingEpisode === ep.id ? "" : "center"}
+                  gap={2}
+                >
+                  {ep.thumbnail && (
                     <img
-                      src={
-                        editingEpisode === ep.id && editData.image
-                          ? URL.createObjectURL(editData.image)
-                          : ep.thumbnail
-                      }
+                      src={ep.thumbnail}
                       alt=""
                       style={{
                         width: 80,
                         borderRadius: 6,
-                        alignSelf: "center",
-                        border:
-                          editingEpisode === ep.id
-                            ? "2px solid #e50914"
-                            : "none",
+                        height: 45.2,
+                        objectFit: "cover",
                       }}
                     />
-                    {editingEpisode === ep.id && editData.image && (
-                      <span style={{ fontSize: 12, color: "#aaa" }}>
-                        New image preview
-                      </span>
-                    )}
+                  )}
 
-                    <Button
-                      variant="contained"
-                      onClick={() => handleUpdateEpisode(ep.id, season.id)}
-                    >
-                      Save
-                    </Button>
+                  {/* 🔥 SE ESTIVER A EDITAR */}
+                  {editingEpisode === ep.id ? (
+                    <>
+                      <Box display="flex" gap={1} width="100%">
+                        <TextField
+                          value={editData.prefix}
+                          disabled
+                          sx={{ width: 100 }}
+                        />
 
-                    <Button onClick={() => setEditingEpisode(null)}>
-                      Cancel
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Typography>
-                      {ep.title} - {formatDate(ep.airDate)} - {ep.duration} min
-                    </Typography>
+                        <TextField
+                          label="Title"
+                          fullWidth
+                          value={editData.title}
+                          onChange={(e) =>
+                            setEditData({ ...editData, title: e.target.value })
+                          }
+                        />
+                      </Box>
 
-                    <Button
-                      size="small"
-                      onClick={() => {
-                        setEditingEpisode(ep.id);
-                        const prefix = `S${season.seasonNumber}.E${ep.number}`;
-                        const cleanTitle = ep.title
-                          .replace(new RegExp(`^(${prefix}\\s*)+`), "")
-                          .trim();
-                        setEditData({
-                          prefix,
-                          title: cleanTitle,
-                          number: ep.number,
-                          description: ep.description || "",
-                          duration: ep.duration || "",
-                          airDate: ep.airDate ? ep.airDate.split("T")[0] : "",
-                          isFinal: ep.isFinal ?? false,
-                        });
-                      }}
-                    >
-                      Edit
-                    </Button>
+                      <TextField
+                        label="Description"
+                        multiline
+                        rows={2}
+                        value={editData.description || ""}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            description: e.target.value,
+                          })
+                        }
+                      />
 
-                    <Button
-                      color="error"
-                      size="small"
-                      onClick={() => handleDeleteEpisode(ep.id, season.id)}
-                    >
-                      Delete
-                    </Button>
-                  </>
-                )}
-              </Box>
-            ))}
+                      <TextField
+                        label="Duration (min)"
+                        type="number"
+                        value={editData.duration || ""}
+                        onChange={(e) =>
+                          setEditData({ ...editData, duration: e.target.value })
+                        }
+                      />
+
+                      <TextField
+                        label="Air Date"
+                        type="date"
+                        InputLabelProps={{ shrink: true }}
+                        value={editData.airDate || ""}
+                        onChange={(e) =>
+                          setEditData({ ...editData, airDate: e.target.value })
+                        }
+                      />
+
+                      <Button
+                        color="warning"
+                        variant={editData.isFinal ? "contained" : "outlined"}
+                        onClick={() =>
+                          setEditData({
+                            ...editData,
+                            isFinal: !editData.isFinal,
+                          })
+                        }
+                      >
+                        {editData.isFinal
+                          ? "Final Episode ✓"
+                          : "Mark as Series Finale"}
+                      </Button>
+
+                      <Button variant="outlined" component="label">
+                        Change Image
+                        <input
+                          type="file"
+                          hidden
+                          onChange={(e) =>
+                            setEditData({
+                              ...editData,
+                              image: e.target.files[0],
+                            })
+                          }
+                        />
+                      </Button>
+                      <img
+                        src={
+                          editingEpisode === ep.id && editData.image
+                            ? URL.createObjectURL(editData.image)
+                            : ep.thumbnail
+                        }
+                        alt=""
+                        style={{
+                          width: 80,
+                          borderRadius: 6,
+                          alignSelf: "center",
+                          border:
+                            editingEpisode === ep.id
+                              ? "2px solid #e50914"
+                              : "none",
+                        }}
+                      />
+                      {editingEpisode === ep.id && editData.image && (
+                        <span style={{ fontSize: 12, color: "#aaa" }}>
+                          New image preview
+                        </span>
+                      )}
+
+                      <Button
+                        variant="contained"
+                        onClick={() => handleUpdateEpisode(ep.id, season.id)}
+                      >
+                        Save
+                      </Button>
+
+                      <Button onClick={() => setEditingEpisode(null)}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Typography>
+                        {ep.title} - {formatDate(ep.airDate)} - {ep.duration}{" "}
+                        min
+                      </Typography>
+
+                      <Button
+                        size="small"
+                        onClick={() => {
+                          setEditingEpisode(ep.id);
+                          const prefix = `S${season.seasonNumber}.E${ep.number}`;
+                          const cleanTitle = ep.title
+                            .replace(new RegExp(`^(${prefix}\\s*)+`), "")
+                            .trim();
+                          setEditData({
+                            prefix,
+                            title: cleanTitle,
+                            number: ep.number,
+                            description: ep.description || "",
+                            duration: ep.duration || "",
+                            airDate: ep.airDate ? ep.airDate.split("T")[0] : "",
+                            isFinal: ep.isFinal ?? false,
+                          });
+                        }}
+                      >
+                        Edit
+                      </Button>
+
+                      <Button
+                        color="error"
+                        size="small"
+                        onClick={() => handleDeleteEpisode(ep.id, season.id)}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  )}
+                </Box>
+              ))}
           </AccordionDetails>
         </Accordion>
       ))}

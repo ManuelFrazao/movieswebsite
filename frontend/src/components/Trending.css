@@ -93,3 +93,24 @@
 .section {
   margin-bottom: 40px;
 }
+
+.graph {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 40px;
+  width: 80px;
+}
+
+.bar-day {
+  flex: 1;
+  background: #e50914;
+  border-radius: 2px;
+  opacity: 0.8;
+  transition: 0.2s;
+}
+
+.bar-day:hover {
+  opacity: 1;
+  transform: scaleY(1.2);
+}

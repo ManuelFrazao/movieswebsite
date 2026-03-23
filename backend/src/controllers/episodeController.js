@@ -1,4 +1,4 @@
-import { Episode } from "../models/index.js";
+import { Episode, Season } from "../models/index.js";
 import cloudinary from "../utils/cloudinary.js";
 
 // CREATE
@@ -16,11 +16,13 @@ export const createEpisode = async (req, res) => {
 
       thumbnail = result.secure_url;
     }
+    const season = await Season.findByPk(seasonId);
 
     const episode = await Episode.create({
       ...req.body,
       thumbnail,
-      seasonId, // 🔥 ESSENCIAL
+      seasonId,
+      entryId: season.entryId,
     });
 
     res.json(episode);

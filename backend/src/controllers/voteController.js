@@ -9,19 +9,11 @@ export const createVote = async (req, res) => {
     const { value, type, entryId, episodeId } = req.body;
     const userId = req.user.id;
 
-    // validação
     if (!value || !type) {
       return res.status(400).json({ message: "Dados inválidos" });
     }
 
-    if (type === "entry" && !entryId) {
-      return res.status(400).json({ message: "entryId necessário" });
-    }
-
-    if (type === "episode" && !episodeId) {
-      return res.status(400).json({ message: "episodeId necessário" });
-    }
-
+    // 🔥 criar voto PRIMEIRO
     const vote = await Vote.create({
       value,
       type,
@@ -29,6 +21,39 @@ export const createVote = async (req, res) => {
       entryId: entryId || null,
       episodeId: episodeId || null,
     });
+
+    // 🔥 se for episódio → atualizar entry
+    if (type === "episode" && episodeId) {
+      const episode = await Episode.findByPk(episodeId);
+
+      if (episode?.entryId) {
+        const entryId = episode.entryId;
+
+        // 🔥 TODOS os votos dos episódios desta entry
+        const votes = await Vote.findAll({
+          include: {
+            model: Episode,
+            as: "episode",
+            where: { entryId },
+          },
+        });
+
+        const totalVotes = votes.length;
+
+        const avg =
+          totalVotes === 0
+            ? 0
+            : votes.reduce((sum, v) => sum + v.value, 0) / totalVotes;
+
+        await Entry.update(
+          {
+            totalVotes,
+            topRank: Math.round(avg * 10),
+          },
+          { where: { id: entryId } },
+        );
+      }
+    }
 
     res.json(vote);
   } catch (err) {
@@ -100,8 +125,12 @@ export const getEntryTrending = async (req, res) => {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const votes = await Vote.findAll({
+      include: {
+        model: Episode,
+        as: "episode",
+        where: { entryId: id },
+      },
       where: {
-        entryId: id,
         createdAt: {
           [Op.gte]: sevenDaysAgo,
         },
