@@ -223,6 +223,29 @@ export default function EditEntry() {
         onChange={(e) => setEntry({ ...entry, title: e.target.value })}
       />
 
+      {entry.type === "movie" && (
+        <Box mt={2} display="flex" gap={2}>
+          <TextField
+            label="Duration (min)"
+            type="number"
+            value={entry.duration || ""}
+            onChange={(e) => setEntry({ ...entry, duration: e.target.value })}
+            fullWidth
+          />
+
+          <TextField
+            label="Release Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={entry.releaseDate ? entry.releaseDate.split("T")[0] : ""}
+            onChange={(e) =>
+              setEntry({ ...entry, releaseDate: e.target.value })
+            }
+            fullWidth
+          />
+        </Box>
+      )}
+
       <TextField
         label="Description"
         fullWidth
@@ -231,7 +254,13 @@ export default function EditEntry() {
         onChange={(e) => setEntry({ ...entry, description: e.target.value })}
       />
 
-      <Box mt={2} display="flex" flexDirection={"column"} alignItems="center" gap={2}>
+      <Box
+        mt={2}
+        display="flex"
+        flexDirection={"column"}
+        alignItems="center"
+        gap={2}
+      >
         <Button variant="outlined" component="label">
           Change Cover
           <input
@@ -251,12 +280,14 @@ export default function EditEntry() {
             objectFit: "cover",
             cursor: "pointer",
             transition: "0.2s",
-            marginBottom: "10px"
+            marginBottom: "10px",
           }}
         />
 
         {entryImage && (
-          <span style={{ fontSize: 12, color: "#aaa", marginBottom:"10px"}}>New cover preview</span>
+          <span style={{ fontSize: 12, color: "#aaa", marginBottom: "10px" }}>
+            New cover preview
+          </span>
         )}
       </Box>
 

@@ -136,31 +136,33 @@ const getLast7Days = () => {
 /* 🔥 COMPONENTE REUTILIZÁVEL */
 function Section({ title, entries, navigate, trendingData }) {
   
-  function Graph({ data }) {
-    const days = getLast7Days();
+function Graph({ data }) {
+  const days = getLast7Days();
 
-    const values = days.map((day) => data?.[day] || 0);
+  // 🔥 usar count (votos)
+  const values = days.map((day) => data?.[day]?.count || 0);
 
-    const max = Math.max(...values, 1); // evitar divisão por 0
+  const max = Math.max(...values, 1);
 
-    if (!data || Object.keys(data).length === 0) {
-      return <div className="graph-empty">No activity</div>;
-    }
-
-    return (
-      <div className="graph">
-        {values.map((v, i) => (
-          <div
-            key={i}
-            className="bar-day"
-            style={{
-              height: `${(v / max) * 100}%`,
-            }}
-          ></div>
-        ))}
-      </div>
-    );
+  if (!data || Object.keys(data).length === 0) {
+    return <div className="graph-empty">No activity</div>;
   }
+
+  return (
+    <div className="graph">
+      {values.map((v, i) => (
+        <div
+          key={i}
+          className="bar-day"
+          style={{
+            height: `${(v / max) * 100}%`,
+          }}
+          title={`${v} votes`}
+        />
+      ))}
+    </div>
+  );
+}
 
   const isNew = (date) => {
     const d = new Date(date);

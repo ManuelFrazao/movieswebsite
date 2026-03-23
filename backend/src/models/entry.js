@@ -76,6 +76,9 @@ const EntryModel = (sequelize) => {
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
+    duration: {
+      type: DataTypes.INTEGER,
+    },
   });
 
   return Entry;
