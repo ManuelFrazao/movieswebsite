@@ -106,7 +106,7 @@ export default function EditEntry() {
         formData.append("image", episodeImages[season.id]);
       }
 
-      await api.post(`/seasons/${season.id}/episodes`, formData);
+      await api.post(`/episodes/season/${season.id}`, formData);
 
       fetchEpisodes(season.id);
 
@@ -233,19 +233,17 @@ export default function EditEntry() {
       {seasons.map((season) => (
         <Accordion key={season.id} sx={{ mt: 2 }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>
-              Season {season.seasonNumber}
-              <Button
-                color="error"
-                size="small"
-                onClick={() => handleDeleteSeason(season.id)}
-              >
-                Delete Season
-              </Button>
-            </Typography>
+            <Typography>Season {season.seasonNumber}</Typography>
           </AccordionSummary>
 
           <AccordionDetails>
+            <Button
+              color="error"
+              size="small"
+              onClick={() => handleDeleteSeason(season.id)}
+            >
+              Delete Season
+            </Button>
             {/* LOAD EPISODES */}
             <Button size="small" onClick={() => fetchEpisodes(season.id)}>
               Load Episodes

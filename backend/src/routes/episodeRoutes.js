@@ -11,7 +11,13 @@ import { protect, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", protect, isAdmin, upload.single("image"), createEpisode);
+router.post(
+  "/season/:seasonId",
+  protect,
+  isAdmin,
+  upload.single("image"),
+  createEpisode,
+);
 router.get("/season/:seasonId", getEpisodesBySeason);
 router.put("/:id", protect, isAdmin, updateEpisode);
 router.delete("/:id", protect, isAdmin, deleteEpisode);

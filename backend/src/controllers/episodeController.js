@@ -20,7 +20,7 @@ export const createEpisode = async (req, res) => {
     const episode = await Episode.create({
       ...req.body,
       thumbnail,
-      seasonId: req.body.seasonId, // 🔥 ESSENCIAL
+      seasonId, // 🔥 ESSENCIAL
     });
 
     res.json(episode);
