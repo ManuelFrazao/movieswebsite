@@ -1,5 +1,5 @@
 import { Episode } from "../models/index.js";
-import cloudinary from "../config/cloudinary.js";
+import cloudinary from "../utils/cloudinary.js";
 import fs from "fs";
 
 // CREATE
