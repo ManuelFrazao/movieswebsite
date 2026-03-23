@@ -1,5 +1,6 @@
 import { Episode } from "../models/index.js";
 import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
 
 // CREATE
 export const createEpisode = async (req, res) => {
@@ -10,6 +11,9 @@ export const createEpisode = async (req, res) => {
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path);
       thumbnail = result.secure_url;
+
+      // 🔥 apagar ficheiro local
+      fs.unlinkSync(req.file.path);
     }
 
     const episode = await Episode.create({
