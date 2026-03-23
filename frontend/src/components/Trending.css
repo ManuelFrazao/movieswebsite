@@ -21,14 +21,14 @@
 
 /* ROW */
 .row {
-  display: grid;
-  grid-template-columns: 40px 60px 1fr 150px 100px;
+  display: flex;
   align-items: center;
   background: white;
   padding: 10px;
   border-radius: 10px;
   cursor: pointer;
   transition: 0.2s;
+  gap: 16px;
 }
 
 .row:hover {
@@ -40,6 +40,7 @@
 .rank {
   font-weight: bold;
   text-align: center;
+  width: 30px;
 }
 
 /* IMAGE */
@@ -50,9 +51,14 @@
   border-radius: 6px;
 }
 
+.info {
+  flex: 1;
+}
+
 /* INFO */
 .info h3 {
   margin: 0;
+  font-size: 16px;
 }
 
 .meta {
@@ -63,27 +69,17 @@
 /* SCORE */
 .score {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  gap: 10px;
+  min-width: 220px;
 }
 
-.bar {
-  height: 6px;
-  background: #ddd;
-  border-radius: 10px;
-}
-
-.fill {
-  height: 100%;
-  background: #4caf50;
-  border-radius: 10px;
+.score span {
+  font-size: 15px;
+  white-space: nowrap;
 }
 
 /* GRAPH */
-.graph {
-  height: 30px;
-}
-
 .line {
   width: 100%;
   height: 2px;
@@ -97,17 +93,17 @@
 .graph {
   display: flex;
   align-items: flex-end;
-  gap: 3px;
-  height: 40px;
-  width: 80px;
+  gap: 4px;
+  height: 50px;
+  min-width: 80px;
 }
 
 .bar-day {
-  flex: 1;
-  background: #e50914;
+ background: #4caf50;
   border-radius: 2px;
   opacity: 0.8;
   transition: 0.2s;
+  width: 4px;
 }
 
 .bar-day:hover {
@@ -118,8 +114,12 @@
 .badge-new {
   background: #e50914;
   color: white;
-  font-size: 11px;
-  padding: 3px 6px;
+  font-size: 10px;
+  padding: 2px 6px;
   border-radius: 4px;
-  margin-left: 8px;
+}
+
+.score,
+.graph {
+  flex-shrink: 0;
 }

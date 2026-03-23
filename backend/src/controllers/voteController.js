@@ -122,7 +122,9 @@ export const getEntryTrending = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000
+    );
 
     const votes = await Vote.findAll({
       include: {
@@ -137,17 +139,34 @@ export const getEntryTrending = async (req, res) => {
       },
     });
 
-    // agrupar por dia
+    // 🔥 agrupar por dia
     const grouped = {};
 
     votes.forEach((vote) => {
       const day = vote.createdAt.toISOString().split("T")[0];
 
-      if (!grouped[day]) grouped[day] = 0;
-      grouped[day]++;
+      if (!grouped[day]) {
+        grouped[day] = {
+          count: 0,
+          total: 0,
+        };
+      }
+
+      grouped[day].count += 1;
+      grouped[day].total += vote.value;
     });
 
-    res.json(grouped);
+    // 🔥 calcular média por dia
+    const result = {};
+
+    Object.keys(grouped).forEach((day) => {
+      result[day] = {
+        count: grouped[day].count,
+        avg: grouped[day].total / grouped[day].count,
+      };
+    });
+
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

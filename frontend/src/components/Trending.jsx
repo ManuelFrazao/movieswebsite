@@ -135,6 +135,7 @@ const getLast7Days = () => {
 
 /* 🔥 COMPONENTE REUTILIZÁVEL */
 function Section({ title, entries, navigate, trendingData }) {
+  
   function Graph({ data }) {
     const days = getLast7Days();
 
@@ -155,7 +156,7 @@ function Section({ title, entries, navigate, trendingData }) {
             style={{
               height: `${(v / max) * 100}%`,
             }}
-          />
+          ></div>
         ))}
       </div>
     );
@@ -193,12 +194,6 @@ function Section({ title, entries, navigate, trendingData }) {
                 <p className="meta">{entry.type}</p>
               </div>
               <div className="score">
-                <div className="bar">
-                  <div
-                    className="fill"
-                    style={{ width: `${Math.min(score * 10, 100)}%` }}
-                  />
-                </div>
 
                 <span>
                   ⭐ {entry.avg} ({entry.totalVotes})

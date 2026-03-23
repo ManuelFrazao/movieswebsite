@@ -15,6 +15,7 @@ export default function Entry() {
   const [selectedRating, setSelectedRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(null);
   const [userRatings, setUserRatings] = useState({});
+  const [entryTrend, setEntryTrend] = useState({});
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -52,6 +53,20 @@ export default function Entry() {
         fetchEpisodeStats(ep.id);
       });
     });
+  }, [entry]);
+
+  const fetchTrend = async (entryId) => {
+    try {
+      const res = await api.get(`/votes/entry/${entryId}/trending`);
+      setEntryTrend(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (!entry?.id) return;
+    fetchTrend(entry.id);
   }, [entry]);
 
   if (!entry) return <p className="loading">Loading...</p>;
@@ -183,6 +198,54 @@ export default function Entry() {
     return releaseDate <= today;
   };
 
+  const getLast7Days = () => {
+    const days = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days.push(d.toISOString().split("T")[0]);
+    }
+
+    return days;
+  };
+
+  function TrendGraph({ data }) {
+    const days = getLast7Days();
+
+    const counts = days.map((d) => data?.[d]?.count || 0);
+    const avgs = days.map((d) => data?.[d]?.avg || 0);
+
+    const maxVotes = Math.max(...counts, 1);
+
+    return (
+      <div className="trend-graph">
+        {days.map((day, i) => (
+          <div key={day} className="trend-day">
+            {/* 🔥 barra votos */}
+            <div className="trend-bar">
+              <div
+                className="trend-bar-fill"
+                style={{
+                  height: `${(counts[i] / maxVotes) * 100}%`,
+                }}
+              />
+            </div>
+
+            {/* 🔥 ponto rating */}
+            <div
+              className="trend-dot"
+              style={{
+                bottom: `${(avgs[i] / 10) * 100}%`,
+              }}
+              title={`${day} → ${counts[i]} votes | ⭐ ${avgs[i].toFixed(1)}`}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="entry">
       {/* HERO */}
@@ -232,9 +295,7 @@ export default function Entry() {
               )}
 
               {avgDuration > 0 && <span>•</span>}
-              {avgDuration > 0 && (
-                <span>{formatDuration(avgDuration)}</span>
-              )}
+              {avgDuration > 0 && <span>{formatDuration(avgDuration)}</span>}
             </div>
 
             <p className="description">{entry.description}</p>
@@ -253,6 +314,13 @@ export default function Entry() {
           <div className="movie-info">
             <h2>About</h2>
             <p>{entry.description}</p>
+          </div>
+        )}
+
+        {isSeries && (
+          <div className="entry-trend">
+            <h2>📊 Rating Over Time</h2>
+            <TrendGraph data={entryTrend} />
           </div>
         )}
 
@@ -340,9 +408,13 @@ export default function Entry() {
                         )}
                       </div>
 
-                      <p style={{
-                        textAlign: "start",
-                      }}>{ep.description}</p>
+                      <p
+                        style={{
+                          textAlign: "start",
+                        }}
+                      >
+                        {ep.description}
+                      </p>
                     </div>
                   </div>
                 ))}
