@@ -155,9 +155,7 @@ export const getEntryTrending = async (req, res) => {
 
 export const getTrendingEntries = async (req, res) => {
   try {
-    const sevenDaysAgo = new Date(
-      Date.now() - 7 * 24 * 60 * 60 * 1000
-    );
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     // 🔥 buscar todos os entries com episódios
     const entries = await Entry.findAll({
@@ -173,12 +171,23 @@ export const getTrendingEntries = async (req, res) => {
     for (const entry of entries) {
       const episodeIds = entry.episodes.map((ep) => ep.id);
 
-      if (!episodeIds.length) continue;
+      if (!episodeIds.length) {
+        results.push({
+          ...entry.toJSON(),
+          score: 0,
+          totalVotes: 0,
+          avg: 0,
+          recentVotes: 0,
+        });
+        continue;
+      }
 
       // 🔥 todos os votos
       const allVotes = await Vote.findAll({
         where: {
-          episodeId: episodeIds,
+          episodeId: {
+            [Op.in]: episodeIds,
+          },
         },
       });
 
@@ -187,13 +196,14 @@ export const getTrendingEntries = async (req, res) => {
       const avg =
         totalVotes === 0
           ? 0
-          : allVotes.reduce((sum, v) => sum + v.value, 0) /
-            totalVotes;
+          : allVotes.reduce((sum, v) => sum + v.value, 0) / totalVotes;
 
       // 🔥 votos recentes
       const recentVotes = await Vote.count({
         where: {
-          episodeId: episodeIds,
+          episodeId: {
+            [Op.in]: episodeIds,
+          },
           createdAt: {
             [Op.gte]: sevenDaysAgo,
           },
@@ -202,8 +212,7 @@ export const getTrendingEntries = async (req, res) => {
 
       const trendingBoost = recentVotes * 2;
 
-      const score =
-        avg * Math.log10(totalVotes + 1) + trendingBoost;
+      const score = avg * Math.log10(totalVotes + 1) + trendingBoost;
 
       results.push({
         ...entry.toJSON(),

@@ -7,18 +7,45 @@ export default function Trending() {
   const [entries, setEntries] = useState([]);
   const navigate = useNavigate();
   const [trendingData, setTrendingData] = useState({});
+  const [trendingEntries, setTrendingEntries] = useState([]);
+  const [allEntries, setAllEntries] = useState([]);
 
   useEffect(() => {
     const fetchTrending = async () => {
       try {
         const res = await api.get("/votes/trending");
-        setEntries(res.data);
+
+        // 🔥 se não houver trending → fallback para entries normais
+        if (!res.data.length) {
+          const fallback = await api.get("/entries");
+          setEntries(fallback.data);
+        } else {
+          setEntries(res.data);
+        }
       } catch (err) {
         console.error(err);
       }
     };
 
     fetchTrending();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [trendingRes, entriesRes] = await Promise.all([
+          api.get("/votes/trending"),
+          api.get("/entries"),
+        ]);
+
+        setTrendingEntries(trendingRes.data);
+        setAllEntries(entriesRes.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -43,11 +70,18 @@ export default function Trending() {
   }, [entries]);
 
   // 🔥 dividir por tipo
-  const movies = entries.filter((e) => e.type === "movie");
-  const series = entries.filter((e) => e.type === "series");
+  const movies = trendingEntries.filter((e) => e.type === "movie");
+  const series = trendingEntries.filter((e) => e.type === "series");
 
   const sortedEntries = [...entries].sort(
-    (a, b) => (b.topRank || 0) - (a.topRank || 0),
+    (a, b) => (b.score || 0) - (a.score || 0),
+  );
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const newEntries = entries.filter(
+    (e) => new Date(e.createdAt) >= thirtyDaysAgo,
   );
 
   return (
@@ -72,6 +106,13 @@ export default function Trending() {
       <Section
         title="🔥 Top Overall"
         entries={sortedEntries}
+        navigate={navigate}
+        trendingData={trendingData}
+      />
+
+      <Section
+        title="🆕 New Releases"
+        entries={newEntries}
         navigate={navigate}
         trendingData={trendingData}
       />
@@ -120,6 +161,14 @@ function Section({ title, entries, navigate, trendingData }) {
     );
   }
 
+  const isNew = (date) => {
+    const d = new Date(date);
+    const now = new Date();
+    const diffDays = (now - d) / (1000 * 60 * 60 * 24);
+
+    return diffDays <= 14; // 2 semanas
+  };
+
   return (
     <div className="section">
       <h2>{title}</h2>
@@ -135,6 +184,7 @@ function Section({ title, entries, navigate, trendingData }) {
               onClick={() => navigate(`/entry/${entry.slug}`)}
             >
               <div className="rank">{index + 1}</div>
+              {isNew(entry.createdAt) && <span className="badge-new">NEW</span>}
 
               <img src={entry.coverImage} alt={entry.title} />
 
