@@ -241,13 +241,23 @@ export const getTrendingEntries = async (req, res) => {
       }
 
       // 🔥 todos os votos
-      const allVotes = await Vote.findAll({
-        where: {
-          episodeId: {
-            [Op.in]: episodeIds,
+      let allVotes = [];
+
+      if (entry.type === "movie") {
+        // 🎬 votos diretos
+        allVotes = await Vote.findAll({
+          where: { entryId: entry.id },
+        });
+      } else {
+        // 📺 votos dos episódios
+        allVotes = await Vote.findAll({
+          where: {
+            episodeId: {
+              [Op.in]: episodeIds,
+            },
           },
-        },
-      });
+        });
+      }
 
       const totalVotes = allVotes.length;
 
@@ -257,16 +267,29 @@ export const getTrendingEntries = async (req, res) => {
           : allVotes.reduce((sum, v) => sum + v.value, 0) / totalVotes;
 
       // 🔥 votos recentes
-      const recentVotes = await Vote.count({
-        where: {
-          episodeId: {
-            [Op.in]: episodeIds,
+      let recentVotes = 0;
+
+      if (entry.type === "movie") {
+        recentVotes = await Vote.count({
+          where: {
+            entryId: entry.id,
+            createdAt: {
+              [Op.gte]: sevenDaysAgo,
+            },
           },
-          createdAt: {
-            [Op.gte]: sevenDaysAgo,
+        });
+      } else {
+        recentVotes = await Vote.count({
+          where: {
+            episodeId: {
+              [Op.in]: episodeIds,
+            },
+            createdAt: {
+              [Op.gte]: sevenDaysAgo,
+            },
           },
-        },
-      });
+        });
+      }
 
       const trendingBoost = recentVotes * 2;
 
