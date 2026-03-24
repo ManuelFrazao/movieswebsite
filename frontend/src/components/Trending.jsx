@@ -336,8 +336,11 @@ function Section({ title, entries, navigate, trendingData }) {
                 <p className="meta">{entry.type}</p>
               </div>
               <div className="score">
-                {entry.totalVotes > 0 && entry.avg > 0 && (
-                  <RatingBadge value={entry.avg} votes={entry.totalVotes} />
+                {entry.totalVotes > 0 && Number(entry.avg) > 0 && (
+                  <RatingBadge
+                    value={Number(entry.avg)}
+                    votes={entry.totalVotes}
+                  />
                 )}
                 {entry.recentVotes > 0 && (
                   <span className="trend-badge">

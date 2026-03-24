@@ -229,7 +229,7 @@ export const getTrendingEntries = async (req, res) => {
     for (const entry of entries) {
       const episodeIds = entry.episodes.map((ep) => ep.id);
 
-      if (!episodeIds.length) {
+      if (!episodeIds.length && entry.type !== "movie") {
         results.push({
           ...entry.toJSON(),
           score: 0,
