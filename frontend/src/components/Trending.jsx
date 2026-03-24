@@ -327,7 +327,7 @@ function Section({ title, entries, navigate, trendingData }) {
               onClick={() => navigate(`/entry/${entry.slug}`)}
             >
               <div className="rank">{index + 1}</div>
-              {isNewRelease && <span className="badge-new">NEW</span>}
+              {/*{isNewRelease && <span className="badge-new">NEW</span>}*/}
 
               <img src={entry.coverImage} alt={entry.title} />
 

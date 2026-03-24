@@ -21,6 +21,20 @@ export default function Entry() {
   const [activeTab, setActiveTab] = useState("overview");
   const [openSeason, setOpenSeason] = useState(null);
   const [episodeTrends, setEpisodeTrends] = useState({});
+const [episodeDistribution, setEpisodeDistribution] = useState({});
+
+  const fetchDistribution = async (episodeId) => {
+  try {
+    const res = await api.get(`/votes/episode/${episodeId}/distribution`);
+
+    setEpisodeDistribution((prev) => ({
+      ...prev,
+      [episodeId]: res.data,
+    }));
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -269,6 +283,15 @@ export default function Entry() {
     }
 
     return days;
+  };
+
+  const getEpisodeWeeklyVotes = (episodeId) => {
+    const data = episodeTrends[episodeId];
+    if (!data) return 0;
+
+    return Object.values(data).reduce((sum, day) => {
+      return sum + (day.count || 0);
+    }, 0);
   };
 
   function TrendGraph({ data }) {
@@ -1093,11 +1116,22 @@ export default function Entry() {
                                       gap: "6px",
                                     }}
                                   >
-                                    {/* 🔥 RATING BADGE */}
                                     <RatingBadge
                                       value={episodeStats[ep.id].averageRating}
                                       votes={episodeStats[ep.id].totalVotes}
                                     />
+
+                                    {getEpisodeWeeklyVotes(ep.id) > 0 && (
+                                      <span
+                                        style={{
+                                          color: "#c7c7c7",
+                                          fontSize: "0.65rem",
+                                        }}
+                                      >
+                                        ( +{getEpisodeWeeklyVotes(ep.id)} this
+                                        week )
+                                      </span>
+                                    )}
                                   </span>
                                 )}
 

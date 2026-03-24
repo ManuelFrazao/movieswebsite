@@ -160,7 +160,7 @@ export default function EditEntry() {
     try {
       const formData = new FormData();
 
-      formData.append("title", `${editData.prefix} ${editData.title}`.trim());
+      formData.append("title", editData.title.trim());
       formData.append("description", editData.description || "");
       formData.append("duration", editData.duration || "");
 

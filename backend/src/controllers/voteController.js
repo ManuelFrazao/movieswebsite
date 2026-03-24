@@ -425,6 +425,31 @@ export const getEntryEpisodesTrending = async (req, res) => {
   }
 };
 
+export const getEpisodeDistribution = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const votes = await Vote.findAll({
+      where: { episodeId: id },
+    });
+
+    const distribution = {};
+
+    // 🔥 inicializar 1–10
+    for (let i = 1; i <= 10; i++) {
+      distribution[i] = 0;
+    }
+
+    votes.forEach((vote) => {
+      distribution[vote.value] += 1;
+    });
+
+    res.json(distribution);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // =====================
 // DELETE VOTE
 // =====================
