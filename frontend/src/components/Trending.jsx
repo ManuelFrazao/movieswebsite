@@ -24,6 +24,9 @@ export default function Trending() {
           setEntries(res.data);
         }
       } catch (err) {
+        if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+          return; // 🔥 ignora
+        }
         console.error(err);
       }
     };
@@ -42,6 +45,9 @@ export default function Trending() {
         setTrendingEntries(trendingRes.data);
         setAllEntries(entriesRes.data);
       } catch (err) {
+        if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+          return; // 🔥 ignora
+        }
         console.error(err);
       }
     };
@@ -61,6 +67,9 @@ export default function Trending() {
           [entryId]: res.data,
         }));
       } catch (err) {
+        if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+          return; // 🔥 ignora
+        }
         console.error(err);
       }
     };
