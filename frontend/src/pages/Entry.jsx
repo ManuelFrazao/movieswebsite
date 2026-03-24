@@ -38,6 +38,12 @@ export default function Entry() {
     }
   };
 
+  useEffect(() => {
+    if (!entry?.id) return;
+
+    fetchEntryDistribution();
+  }, [entry]);
+
   const fetchDistribution = async (episodeId) => {
     if (episodeDistribution[episodeId]) return;
 
@@ -391,6 +397,127 @@ export default function Entry() {
     );
   }
 
+  function RatingDistributionEpisode({ data }) {
+    if (!data) return null;
+
+    const max = Math.max(...Object.values(data), 1);
+    const containerHeight = 80; // 🔥 altura real das barras
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          gap: "10px",
+          height: "120px",
+          padding: "0 20px",
+        }}
+      >
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+          const value = data[num] || 0;
+
+          const barHeight = (value / max) * containerHeight;
+
+          const color = num >= 8 ? "#4caf50" : num >= 5 ? "#ff9800" : "#e50914";
+
+          return (
+            <div
+              key={num}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                width: "15px",
+                height: "100%",
+              }}
+            >
+              {/* valor */}
+              <span style={{ fontSize: "10px", marginBottom: "4px" }}>
+                {value}
+              </span>
+
+              {/* barra */}
+              <div
+                style={{
+                  width: "100%",
+                  height: `${barHeight}px`, // 🔥 AGORA FUNCIONA
+                  background: color,
+                  borderRadius: "4px",
+                  transition: "0.3s",
+                }}
+              />
+
+              {/* label */}
+              <span style={{ fontSize: "10px", marginTop: "4px" }}>{num}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function RatingDistributionEntry({ data }) {
+    if (!data) return null;
+
+    const isMobile = useIsMobile();
+    const max = Math.max(...Object.values(data), 1);
+    const containerHeight = 80; // 🔥 altura real das barras
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          gap: "10px",
+          height: "120px",
+          padding: "0 20px",
+        }}
+      >
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+          const value = data[num] || 0;
+
+          const barHeight = (value / max) * containerHeight;
+
+          const color = num >= 8 ? "#4caf50" : num >= 5 ? "#ff9800" : "#e50914";
+
+          return (
+            <div
+              key={num}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                width: isMobile ? "11px" : "66px",
+                height: "100%",
+              }}
+            >
+              {/* valor */}
+              <span style={{ fontSize: "10px", marginBottom: "4px" }}>
+                {value}
+              </span>
+
+              {/* barra */}
+              <div
+                style={{
+                  width: "100%",
+                  height: `${barHeight}px`, // 🔥 AGORA FUNCIONA
+                  background: color,
+                  borderRadius: "4px",
+                  transition: "0.3s",
+                }}
+              />
+
+              {/* label */}
+              <span style={{ fontSize: "10px", marginTop: "4px" }}>{num}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   function TrendGraph({ data }) {
     const isMobile = useIsMobile();
     const days = isMobile ? getLast7Days() : getLast30Days();
@@ -544,7 +671,7 @@ export default function Entry() {
 
     const [hoverIndex, setHoverIndex] = useState(null);
 
-    const width = 200;
+    const width = 240;
     const height = 50;
     const stepX = width / (days.length - 1);
 
@@ -1135,6 +1262,13 @@ export default function Entry() {
                       <h3>Votes & Rating Per Day</h3>
                       <TrendGraph data={entryTrend} />
                     </div>
+                    {entryDistribution && (
+                      <div className="entry-distribution">
+                        <h3>Score Distribution</h3>
+
+                        <RatingDistributionEntry data={entryDistribution} />
+                      </div>
+                    )}
                   </>
                 </div>
               </div>
@@ -1288,10 +1422,21 @@ export default function Entry() {
                             </div>
 
                             {episodeTrends[ep.id] && (
-                              <div style={{ marginTop: "10px" }}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
                                 <TrendGraphEpisode
                                   data={episodeTrends[ep.id] || {}}
                                 />
+                                {episodeDistribution[ep.id] && (
+                                  <RatingDistributionEpisode
+                                    data={episodeDistribution[ep.id]}
+                                  />
+                                )}
                               </div>
                             )}
                           </div>
