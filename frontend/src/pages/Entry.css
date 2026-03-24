@@ -426,3 +426,36 @@ svg {
   white-space: nowrap;
   border: 1px solid #333;
 }
+
+.rating-overlay {
+  pointer-events: none;
+}
+
+.overlay-box {
+  background: #111;
+  border: 1px solid #333;
+  padding: 12px;
+  border-radius: 8px;
+  width: 180px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.dist-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+.bar {
+  flex: 1;
+  height: 6px;
+  background: #333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+}

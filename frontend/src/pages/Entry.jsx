@@ -21,20 +21,37 @@ export default function Entry() {
   const [activeTab, setActiveTab] = useState("overview");
   const [openSeason, setOpenSeason] = useState(null);
   const [episodeTrends, setEpisodeTrends] = useState({});
-const [episodeDistribution, setEpisodeDistribution] = useState({});
+  const [episodeDistribution, setEpisodeDistribution] = useState({});
+  const [hoveredEpisode, setHoveredEpisode] = useState(null);
+  const [entryDistribution, setEntryDistribution] = useState(null);
+  const [hoverEntry, setHoverEntry] = useState(false);
+  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+
+  const fetchEntryDistribution = async () => {
+    if (entryDistribution) return;
+
+    try {
+      const res = await api.get(`/votes/entry/${entry.id}/distribution`);
+      setEntryDistribution(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchDistribution = async (episodeId) => {
-  try {
-    const res = await api.get(`/votes/episode/${episodeId}/distribution`);
+    if (episodeDistribution[episodeId]) return;
 
-    setEpisodeDistribution((prev) => ({
-      ...prev,
-      [episodeId]: res.data,
-    }));
-  } catch (err) {
-    console.error(err);
-  }
-};
+    try {
+      const res = await api.get(`/votes/episode/${episodeId}/distribution`);
+
+      setEpisodeDistribution((prev) => ({
+        ...prev,
+        [episodeId]: res.data,
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -84,6 +101,7 @@ const [episodeDistribution, setEpisodeDistribution] = useState({});
     entry.seasons.forEach((season) => {
       season.episodes?.forEach((ep) => {
         fetchEpisodeStats(ep.id);
+        fetchDistribution(ep.id);
       });
     });
   }, [entry]);
@@ -293,6 +311,85 @@ const [episodeDistribution, setEpisodeDistribution] = useState({});
       return sum + (day.count || 0);
     }, 0);
   };
+
+  function RatingOverlay({ data }) {
+    const max = Math.max(...Object.values(data), 1);
+
+    return (
+      <div className="overlay-box">
+        <h4>Rating Distribution</h4>
+
+        {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((n) => {
+          const count = data[n] || 0;
+          const width = (count / max) * 100;
+
+          return (
+            <div key={n} className="dist-row">
+              <span>{n}</span>
+              <div className="bar">
+                <div
+                  className="fill"
+                  style={{
+                    width: `${width}%`,
+                    background: getRatingColor(n),
+                  }}
+                />
+              </div>
+              <span>{count}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function RatingDistribution({ data }) {
+    if (!data) return null;
+
+    const max = Math.max(...Object.values(data), 1);
+
+    return (
+      <div style={{ width: "200px" }}>
+        {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((num) => (
+          <div
+            key={num}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "0.75rem",
+              marginBottom: "2px",
+            }}
+          >
+            <span style={{ width: "20px" }}>{num}</span>
+
+            <div
+              style={{
+                flex: 1,
+                height: "6px",
+                background: "#222",
+                borderRadius: "4px",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: `${(data[num] / max) * 100}%`,
+                  height: "100%",
+                  background:
+                    num >= 8 ? "#4caf50" : num >= 5 ? "#ff9800" : "#e50914",
+                }}
+              />
+            </div>
+
+            <span style={{ width: "20px", textAlign: "right" }}>
+              {data[num]}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   function TrendGraph({ data }) {
     const isMobile = useIsMobile();
@@ -993,7 +1090,6 @@ const [episodeDistribution, setEpisodeDistribution] = useState({});
                     {entry.description}
                   </p>
                   <>
-                    <div></div>
                     <div
                       style={{
                         display: "flex",
@@ -1002,11 +1098,21 @@ const [episodeDistribution, setEpisodeDistribution] = useState({});
                         gap: "10px",
                       }}
                     >
-                      <RatingBadge
-                        value={entry.topRank / 10}
-                        votes={entry.totalVotes}
-                        size="large"
-                      />
+                      <div
+                        onMouseEnter={(e) => {
+                          setHoverEntry(true);
+                          setHoverPosition({ x: e.clientX, y: e.clientY });
+                          fetchEntryDistribution();
+                        }}
+                        onMouseLeave={() => setHoverEntry(false)}
+                        style={{ display: "inline-block" }}
+                      >
+                        <RatingBadge
+                          value={entry.topRank / 10}
+                          votes={entry.totalVotes}
+                          size="large"
+                        />
+                      </div>
                       {entry.type === "movie" &&
                         entry.releaseDate &&
                         new Date(entry.releaseDate) <= new Date() && (
@@ -1116,10 +1222,27 @@ const [episodeDistribution, setEpisodeDistribution] = useState({});
                                       gap: "6px",
                                     }}
                                   >
-                                    <RatingBadge
-                                      value={episodeStats[ep.id].averageRating}
-                                      votes={episodeStats[ep.id].totalVotes}
-                                    />
+                                    <div
+                                      onMouseEnter={(e) => {
+                                        setHoveredEpisode(ep.id);
+                                        setHoverPosition({
+                                          x: e.clientX,
+                                          y: e.clientY,
+                                        });
+                                        fetchDistribution(ep.id);
+                                      }}
+                                      onMouseLeave={() =>
+                                        setHoveredEpisode(null)
+                                      }
+                                      style={{ display: "inline-block" }}
+                                    >
+                                      <RatingBadge
+                                        value={
+                                          episodeStats[ep.id].averageRating
+                                        }
+                                        votes={episodeStats[ep.id].totalVotes}
+                                      />
+                                    </div>
 
                                     {getEpisodeWeeklyVotes(ep.id) > 0 && (
                                       <span
@@ -1224,6 +1347,32 @@ const [episodeDistribution, setEpisodeDistribution] = useState({});
           </div>
         )}
       </div>
+      {hoverEntry && entryDistribution && (
+        <div
+          className="rating-overlay"
+          style={{
+            position: "fixed",
+            top: hoverPosition.y + 10,
+            left: hoverPosition.x + 10,
+            zIndex: 999,
+          }}
+        >
+          <RatingOverlay data={entryDistribution} />
+        </div>
+      )}
+      {hoveredEpisode && episodeDistribution[hoveredEpisode] && (
+        <div
+          className="rating-overlay"
+          style={{
+            position: "fixed",
+            top: hoverPosition.y + 10,
+            left: hoverPosition.x + 10,
+            zIndex: 999,
+          }}
+        >
+          <RatingOverlay data={episodeDistribution[hoveredEpisode]} />
+        </div>
+      )}
       {ratingModal.open && (
         <div className="modal-overlay">
           <div className="modal">

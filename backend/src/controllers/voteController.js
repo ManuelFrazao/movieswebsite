@@ -450,6 +450,46 @@ export const getEpisodeDistribution = async (req, res) => {
   }
 };
 
+export const getEntryDistribution = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const entry = await Entry.findByPk(id);
+
+    let votes = [];
+
+    if (entry.type === "movie") {
+      // 🎬 votos diretos
+      votes = await Vote.findAll({
+        where: { entryId: id },
+      });
+    } else {
+      // 📺 votos dos episódios
+      votes = await Vote.findAll({
+        include: {
+          model: Episode,
+          as: "episode",
+          where: { entryId: id },
+        },
+      });
+    }
+
+    const distribution = {};
+
+    for (let i = 1; i <= 10; i++) {
+      distribution[i] = 0;
+    }
+
+    votes.forEach((v) => {
+      distribution[v.value] += 1;
+    });
+
+    res.json(distribution);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // =====================
 // DELETE VOTE
 // =====================
