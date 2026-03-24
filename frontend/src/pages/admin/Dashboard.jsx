@@ -31,6 +31,13 @@ export default function Dashboard() {
 
   const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
   const [showForm, setShowForm] = useState(false);
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    if (!t) navigate("/login");
+    else setToken(t);
+  }, []);
 
   const [newEntry, setNewEntry] = useState({
     title: "",
@@ -44,7 +51,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-
     if (!token) {
       navigate("/login");
     }

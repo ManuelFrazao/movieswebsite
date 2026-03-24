@@ -325,7 +325,15 @@ export default function EditEntry() {
 
       {/* LIST SEASONS */}
       {seasons.map((season) => (
-        <Accordion key={season.id} sx={{ mt: 2 }}>
+        <Accordion
+          key={season.id}
+          sx={{ mt: 2 }}
+          onChange={(event, isExpanded) => {
+            if (isExpanded && !episodes[season.id]) {
+              fetchEpisodes(season.id);
+            }
+          }}
+        >
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Season {season.seasonNumber}</Typography>
           </AccordionSummary>

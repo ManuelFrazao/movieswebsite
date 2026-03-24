@@ -1438,6 +1438,7 @@ export default function Entry() {
                   <div className="actions">
                     <button className="secondary-btn">+ Add to list</button>
                   </div>
+                  {entry.totalVotes != 0 && (<>
                   <div className="movie-info-graphs">
                     <div className="entry-trend">
                       <TrendGraph7days data={entryTrend} />
@@ -1448,8 +1449,10 @@ export default function Entry() {
                           data={entryDistribution}
                         />
                       </div>
-                    )}
+                    )}                    
                   </div>
+                  </>
+                    )}
                 </div>
                 <div className="movie-info-details">
                   <h2>Synopsis</h2>
@@ -1614,9 +1617,6 @@ export default function Entry() {
                                 }}
                               >
                                 <h3>{ep.title}</h3>
-                                {ep.isFinal && (
-                                  <span className="final-badge">FINAL</span>
-                                )}
                               </div>
 
                               <div className="episode-meta">
@@ -1698,6 +1698,9 @@ export default function Entry() {
                                       ? `Your rating: ${userRatings[ep.id]}`
                                       : "Rate"}
                                   </button>
+                                )}
+                                {ep.isFinal && (
+                                  <span className="final-badge">FINAL</span>
                                 )}
                               </div>
 
@@ -1808,7 +1811,6 @@ export default function Entry() {
         {/* 🔥 CAST */}
         {activeTab === "characters" && (
           <div className="characters">
-            <h2>Characters</h2>
             <p style={{ color: "#777" }}>Coming soon 👀</p>
           </div>
         )}
