@@ -454,7 +454,7 @@ export default function Entry() {
             >
               {/* valor */}
               <span style={{ fontSize: "0.5rem", marginBottom: "4px" }}>
-                {value}
+                {value > 0 && <>{value}</>}
               </span>
 
               {/* barra */}
@@ -516,7 +516,7 @@ export default function Entry() {
             >
               {/* valor */}
               <span style={{ fontSize: "10px", marginBottom: "4px" }}>
-                {value}
+                {value > 0 && <>{value}</>}
               </span>
 
               {/* barra */}
@@ -575,7 +575,7 @@ export default function Entry() {
             >
               {/* valor */}
               <span style={{ fontSize: "10px", marginBottom: "4px" }}>
-                {value}
+                {value > 0 && <>{value}</>}
               </span>
 
               {/* barra */}
@@ -1153,136 +1153,141 @@ export default function Entry() {
     );
   }
 
-  function EpisodeVotesGraph({ entry, episodeStats }) {
-    const [hoverIndex, setHoverIndex] = useState(null);
+function EpisodeVotesGraph({ entry, episodeStats }) {
+  const [hoverIndex, setHoverIndex] = useState(null);
 
-    if (!entry?.seasons) return null;
+  if (!entry?.seasons) return null;
 
-    const episodes = entry.seasons.flatMap(
-      (s) =>
-        (s.episodes || [])
-          .map((ep) => {
-            const stats = episodeStats[ep.id] || {};
-            const votes = stats.totalVotes || 0;
+  const episodes = entry.seasons.flatMap((s) =>
+    (s.episodes || [])
+      .map((ep) => {
+        const stats = episodeStats[ep.id] || {};
+        return {
+          ...ep,
+          seasonNumber: s.seasonNumber,
+          votes: stats.totalVotes || 0,
+          rating: Number(stats.averageRating) || 0,
+        };
+      })
+      .filter((ep) => ep.votes > 0),
+  );
 
-            return {
-              ...ep,
-              seasonNumber: s.seasonNumber,
-              votes,
-              rating: Number(stats.averageRating) || 0,
-            };
-          })
-          .filter((ep) => ep.votes > 0), // 🔥 só com votos
-    );
+  if (!episodes.length) {
+    return <div style={{ color: "#777" }}>No votes yet</div>;
+  }
 
-    if (!episodes.length) {
-      return <div style={{ color: "#777" }}>No votes yet</div>;
-    }
+  const width = episodes.length * 40;
+  const height = 200;
 
-    const width = episodes.length * 40;
-    const height = 200;
+  const maxVotes = Math.max(...episodes.map((e) => e.votes), 1);
 
-    const maxVotes = Math.max(...episodes.map((e) => e.votes), 1);
+  const stepX = width / (episodes.length - 1);
 
-    const stepX = width / (episodes.length - 1);
+  const points = episodes.map((ep, i) => {
+    const x = i * stepX;
+    const y = height - (ep.votes / maxVotes) * height;
 
-    const points = episodes.map((ep, i) => {
-      const x = i * stepX;
-      const y = height - (ep.votes / maxVotes) * height;
+    return {
+      x,
+      y,
+      votes: ep.votes,
+      rating: ep.rating,
+      title: ep.title,
+      epNumber: ep.number,
+      season: ep.seasonNumber,
+    };
+  });
 
-      return {
-        x,
-        y,
-        votes: ep.votes,
-        rating: ep.rating,
-        title: ep.title,
-        epNumber: ep.number,
-        season: ep.seasonNumber,
-      };
-    });
+  // 🔥 escala suave
+  const steps = 5;
+  const stepValue = maxVotes / steps;
 
-    const steps = 5; // nº de linhas
-    const stepValue = Math.ceil(maxVotes / steps);
+  return (
+    <div className="episode-graph-wrapper">
+      <svg
+        width={width}
+        height={height + 30}
+        style={{ paddingLeft: "1rem" }}
+      >
+        {/* base */}
+        <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
 
-    return (
-      <div className="episode-graph-wrapper">
-        <svg
-          width={width}
-          height={height + 30}
+        {/* 🔥 linhas horizontais FIXED */}
+        {Array.from({ length: steps + 1 }).map((_, i) => {
+          const rawValue = i * stepValue;
+
+          // 🔥 evita overflow
+          const value = Math.min(rawValue, maxVotes);
+
+          const y = height - (value / maxVotes) * height;
+
+          return (
+            <g key={i}>
+              <line
+                x1={0}
+                x2={width}
+                y1={y}
+                y2={y}
+                stroke="rgba(255,255,255,0.08)"
+              />
+              <text
+                x={-5}
+                y={y + 3}
+                textAnchor="end"
+                fontSize="10"
+                fill="#777"
+              >
+                {Math.round(value)}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* 🔥 pontos */}
+        {points.map((p, i) => (
+          <circle
+            key={i}
+            cx={p.x}
+            cy={p.y}
+            r={hoverIndex === i ? 7 : 4}
+            fill="#639ef7"
+            onMouseEnter={() => setHoverIndex(i)}
+            onMouseLeave={() => setHoverIndex(null)}
+            style={{
+              cursor: "pointer",
+              transition: "0.2s", // 🔥 animação suave
+            }}
+          />
+        ))}
+      </svg>
+
+      {/* 🔥 tooltip */}
+      {hoverIndex !== null && (
+        <div
+          className="episode-tooltip"
           style={{
-            paddingLeft: "1rem",
+            left: `${points[hoverIndex].x}px`,
+            top: `${points[hoverIndex].y}px`,
           }}
         >
-          {/* base */}
-          <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
-
-          {/* 🔥 linhas horizontais + labels */}
-          {Array.from({ length: steps + 1 }).map((_, i) => {
-            const value = i * stepValue;
-            const y = height - (value / maxVotes) * height;
-
-            return (
-              <g key={i}>
-                <line
-                  x1={0}
-                  x2={width}
-                  y1={y}
-                  y2={y}
-                  stroke="rgba(255,255,255,0.08)"
-                />
-                <text
-                  x={-5}
-                  y={y + 3}
-                  textAnchor="end"
-                  fontSize="10"
-                  fill="#777"
-                >
-                  {value}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* pontos */}
-          {points.map((p, i) => (
-            <circle
-              key={i}
-              cx={p.x}
-              cy={p.y}
-              r={hoverIndex === i ? 7 : 4}
-              fill="#639ef7"
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          ))}
-        </svg>
-
-        {/* tooltip */}
-        {hoverIndex !== null && (
-          <div
-            className="episode-tooltip"
-            style={{
-              left: `${points[hoverIndex].x}px`,
-              top: `${points[hoverIndex].y}px`,
-            }}
-          >
-            <div>
-              S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
-            </div>
-
-            <div style={{ fontWeight: "bold" }}>{points[hoverIndex].title}</div>
-
-            <div>
-              <strong>{points[hoverIndex].votes}</strong> votes
-            </div>
-
-            <RatingBadge value={points[hoverIndex].rating} />
+          <div>
+            S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
           </div>
-        )}
-      </div>
-    );
-  }
+
+          <div style={{ fontWeight: "bold" }}>
+            {points[hoverIndex].title}
+          </div>
+
+          <div>
+            <strong>{points[hoverIndex].votes}</strong> votes
+          </div>
+
+          <RatingBadge value={points[hoverIndex].rating} />
+        </div>
+      )}
+    </div>
+  );
+}
 
   return (
     <div className="entry">
@@ -1438,21 +1443,22 @@ export default function Entry() {
                   <div className="actions">
                     <button className="secondary-btn">+ Add to list</button>
                   </div>
-                  {entry.totalVotes != 0 && (<>
-                  <div className="movie-info-graphs">
-                    <div className="entry-trend">
-                      <TrendGraph7days data={entryTrend} />
-                    </div>
-                    {entryDistribution && (
-                      <div className="entry-trend">
-                        <RatingDistributionEntrySmall
-                          data={entryDistribution}
-                        />
+                  {entry.totalVotes != 0 && (
+                    <>
+                      <div className="movie-info-graphs">
+                        <div className="entry-trend">
+                          <TrendGraph7days data={entryTrend} />
+                        </div>
+                        {entryDistribution && (
+                          <div className="entry-trend">
+                            <RatingDistributionEntrySmall
+                              data={entryDistribution}
+                            />
+                          </div>
+                        )}
                       </div>
-                    )}                    
-                  </div>
-                  </>
-                    )}
+                    </>
+                  )}
                 </div>
                 <div className="movie-info-details">
                   <h2>Synopsis</h2>
