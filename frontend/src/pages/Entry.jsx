@@ -426,10 +426,11 @@ export default function Entry() {
       <div
         style={{
           display: "flex",
-          alignItems: "flex-end",
+          alignItems: "center",
           gap: "10px",
           height: "120px",
           padding: "0 20px",
+          justifyContent: "center",
         }}
       >
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
@@ -487,10 +488,11 @@ export default function Entry() {
       <div
         style={{
           display: "flex",
-          alignItems: "flex-end",
+          alignItems: "center",
           gap: "10px",
           height: "120px",
           padding: "0 20px",
+          justifyContent: "center",
         }}
       >
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
@@ -1292,7 +1294,20 @@ export default function Entry() {
       >
         <div className="hero-overlay">
           <button className="back-btn" onClick={() => navigate(-1)}>
-            ← Back
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-arrow-left"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"
+              />
+            </svg>{" "}
+            Back
           </button>
 
           <div className="hero-content">
@@ -1421,7 +1436,7 @@ export default function Entry() {
                     }}
                   />
                   <div className="actions">
-                    <button className="secondary-btn">+ My List</button>
+                    <button className="secondary-btn">+ Add to list</button>
                   </div>
                   <div className="movie-info-graphs">
                     <div className="entry-trend">
@@ -1482,9 +1497,53 @@ export default function Entry() {
                     </div>
                   </>
                   <div className="entry-contents">
-                    <div className="entry-contents-card">Videos</div>
-                    <div className="entry-contents-card">Images</div>
-                    <div className="entry-contents-card">Reviews</div>
+                    <div className="entry-contents-card">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-camera-video"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"
+                        />
+                      </svg>
+                      Videos
+                    </div>
+                    <div className="entry-contents-card">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-images"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                        <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1z" />
+                      </svg>
+                      Images
+                    </div>
+                    <div className="entry-contents-card">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-pencil-square"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                        <path
+                          fill-rule="evenodd"
+                          d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                        />
+                      </svg>
+                      Reviews
+                    </div>
                   </div>
                   <div className="entry-cast">
                     <div className="entry-cast-top">
@@ -1756,6 +1815,7 @@ export default function Entry() {
       </div>
 
       {/*Modals and Hovers*/}
+      {/*
       {hoverEntry && entryDistribution && (
         <div
           className="rating-overlay"
@@ -1768,7 +1828,8 @@ export default function Entry() {
         >
           <RatingOverlay data={entryDistribution} />
         </div>
-      )}
+      )} */}
+      {/* 
       {hoveredEpisode && episodeDistribution[hoveredEpisode] && (
         <div
           className="rating-overlay"
@@ -1781,7 +1842,7 @@ export default function Entry() {
         >
           <RatingOverlay data={episodeDistribution[hoveredEpisode]} />
         </div>
-      )}
+      )}*/}
       {ratingModal.open && (
         <div className="modal-overlay">
           <div className="modal">
