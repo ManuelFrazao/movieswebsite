@@ -450,7 +450,7 @@ export default function Entry() {
 
           const barHeight = (value / max) * containerHeight;
 
-          const color = num >= 8 ? "#4caf50" : num >= 5 ? "#ff9800" : "#e50914";
+          const color = getRatingColor(num);
 
           return (
             <div
@@ -512,7 +512,7 @@ export default function Entry() {
 
           const barHeight = (value / max) * containerHeight;
 
-          const color = num >= 8 ? "#4caf50" : num >= 5 ? "#ff9800" : "#e50914";
+          const color = getRatingColor(num);
 
           return (
             <div
@@ -571,7 +571,7 @@ export default function Entry() {
 
           const barHeight = (value / max) * containerHeight;
 
-          const color = num >= 8 ? "#4caf50" : num >= 5 ? "#ff9800" : "#e50914";
+          const color = getRatingColor(num);
 
           return (
             <div
@@ -1125,9 +1125,7 @@ export default function Entry() {
 
             {/* 🔥 pontos */}
             {points.map((p, i) => {
-              let color = "#e50914";
-              if (p.rating > 6) color = "#4caf50";
-              else if (p.rating > 3) color = "#ff9800";
+              const color = getRatingColor(p.rating);
 
               return (
                 <circle
