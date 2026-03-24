@@ -303,6 +303,71 @@ export const getEpisodeTrending = async (req, res) => {
 };
 
 // =====================
+// TRENDING TODOS OS EPISÓDIOS (7 dias)
+// =====================
+export const getEntryEpisodesTrending = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const sevenDaysAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000
+    );
+
+    // 🔥 buscar episódios da entry
+    const episodes = await Episode.findAll({
+      where: { entryId: id },
+      attributes: ["id"],
+    });
+
+    const episodeIds = episodes.map((ep) => ep.id);
+
+    if (!episodeIds.length) return res.json({});
+
+    // 🔥 buscar votos
+    const votes = await Vote.findAll({
+      where: {
+        episodeId: {
+          [Op.in]: episodeIds,
+        },
+        createdAt: {
+          [Op.gte]: sevenDaysAgo,
+        },
+      },
+    });
+
+    const result = {};
+
+    votes.forEach((vote) => {
+      const day = vote.createdAt.toISOString().split("T")[0];
+      const epId = vote.episodeId;
+
+      if (!result[epId]) result[epId] = {};
+      if (!result[epId][day]) {
+        result[epId][day] = { count: 0, total: 0 };
+      }
+
+      result[epId][day].count += 1;
+      result[epId][day].total += vote.value;
+    });
+
+    // 🔥 calcular médias
+    Object.keys(result).forEach((epId) => {
+      Object.keys(result[epId]).forEach((day) => {
+        const d = result[epId][day];
+        result[epId][day] = {
+          count: d.count,
+          avg: d.total / d.count,
+        };
+      });
+    });
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// =====================
 // DELETE VOTE
 // =====================
 export const deleteVote = async (req, res) => {
