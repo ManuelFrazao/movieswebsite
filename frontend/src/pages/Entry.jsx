@@ -303,6 +303,18 @@ export default function Entry() {
     return isMobile;
   };
 
+  function useWindowWidth() {
+    const [width, setWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+      const handleResize = () => setWidth(window.innerWidth);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    return width;
+  }
+
   const getLast7Days = () => {
     const days = [];
 
@@ -510,6 +522,7 @@ export default function Entry() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "flex-end",
+                flex: 1,
                 width: isMobile ? "11px" : "66px",
                 height: "100%",
               }}
@@ -1025,6 +1038,9 @@ export default function Entry() {
 
   function EpisodeRatingGraph({ entry, episodeStats }) {
     const [hoverIndex, setHoverIndex] = useState(null);
+    const screenWidth = useWindowWidth();
+
+    const isSmall = screenWidth < 900;
 
     if (!entry?.seasons) return null;
 
@@ -1048,7 +1064,8 @@ export default function Entry() {
 
     if (!episodes.length) return null;
 
-    const width = episodes.length * 40;
+    const spacing = isSmall ? 25 : 40;
+    const width = episodes.length * spacing;
     const height = 200;
 
     const stepX = width / (episodes.length - 1);
@@ -1153,141 +1170,139 @@ export default function Entry() {
     );
   }
 
-function EpisodeVotesGraph({ entry, episodeStats }) {
-  const [hoverIndex, setHoverIndex] = useState(null);
+  function EpisodeVotesGraph({ entry, episodeStats }) {
+    const [hoverIndex, setHoverIndex] = useState(null);
+    const screenWidth = useWindowWidth();
 
-  if (!entry?.seasons) return null;
+    const isSmall = screenWidth < 900;
 
-  const episodes = entry.seasons.flatMap((s) =>
-    (s.episodes || [])
-      .map((ep) => {
-        const stats = episodeStats[ep.id] || {};
-        return {
-          ...ep,
-          seasonNumber: s.seasonNumber,
-          votes: stats.totalVotes || 0,
-          rating: Number(stats.averageRating) || 0,
-        };
-      })
-      .filter((ep) => ep.votes > 0),
-  );
+    if (!entry?.seasons) return null;
 
-  if (!episodes.length) {
-    return <div style={{ color: "#777" }}>No votes yet</div>;
-  }
+    const episodes = entry.seasons.flatMap((s) =>
+      (s.episodes || [])
+        .map((ep) => {
+          const stats = episodeStats[ep.id] || {};
+          return {
+            ...ep,
+            seasonNumber: s.seasonNumber,
+            votes: stats.totalVotes || 0,
+            rating: Number(stats.averageRating) || 0,
+          };
+        })
+        .filter((ep) => ep.votes > 0),
+    );
 
-  const width = episodes.length * 40;
-  const height = 200;
+    if (!episodes.length) {
+      return <div style={{ color: "#777" }}>No votes yet</div>;
+    }
 
-  const maxVotes = Math.max(...episodes.map((e) => e.votes), 1);
+    const spacing = isSmall ? 25 : 40;
+    const width = episodes.length * spacing;
+    const height = 200;
 
-  const stepX = width / (episodes.length - 1);
+    const maxVotes = Math.max(...episodes.map((e) => e.votes), 1);
 
-  const points = episodes.map((ep, i) => {
-    const x = i * stepX;
-    const y = height - (ep.votes / maxVotes) * height;
+    const stepX = width / (episodes.length - 1);
 
-    return {
-      x,
-      y,
-      votes: ep.votes,
-      rating: ep.rating,
-      title: ep.title,
-      epNumber: ep.number,
-      season: ep.seasonNumber,
-    };
-  });
+    const points = episodes.map((ep, i) => {
+      const x = i * stepX;
+      const y = height - (ep.votes / maxVotes) * height;
 
-  // 🔥 escala suave
-  const steps = 5;
-  const stepValue = maxVotes / steps;
+      return {
+        x,
+        y,
+        votes: ep.votes,
+        rating: ep.rating,
+        title: ep.title,
+        epNumber: ep.number,
+        season: ep.seasonNumber,
+      };
+    });
 
-  return (
-    <div className="episode-graph-wrapper">
-      <svg
-        width={width}
-        height={height + 30}
-        style={{ paddingLeft: "1rem" }}
-      >
-        {/* base */}
-        <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
+    // 🔥 escala suave
+    const steps = 5;
+    const stepValue = maxVotes / steps;
 
-        {/* 🔥 linhas horizontais FIXED */}
-        {Array.from({ length: steps + 1 }).map((_, i) => {
-          const rawValue = i * stepValue;
+    return (
+      <div className="episode-graph-wrapper">
+        <svg width={width} height={height + 30} style={{ paddingLeft: "1rem" }}>
+          {/* base */}
+          <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
 
-          // 🔥 evita overflow
-          const value = Math.min(rawValue, maxVotes);
+          {/* 🔥 linhas horizontais FIXED */}
+          {Array.from({ length: steps + 1 }).map((_, i) => {
+            const rawValue = i * stepValue;
 
-          const y = height - (value / maxVotes) * height;
+            // 🔥 evita overflow
+            const value = Math.min(rawValue, maxVotes);
 
-          return (
-            <g key={i}>
-              <line
-                x1={0}
-                x2={width}
-                y1={y}
-                y2={y}
-                stroke="rgba(255,255,255,0.08)"
-              />
-              <text
-                x={-5}
-                y={y + 3}
-                textAnchor="end"
-                fontSize="10"
-                fill="#777"
-              >
-                {Math.round(value)}
-              </text>
-            </g>
-          );
-        })}
+            const y = height - (value / maxVotes) * height;
 
-        {/* 🔥 pontos */}
-        {points.map((p, i) => (
-          <circle
-            key={i}
-            cx={p.x}
-            cy={p.y}
-            r={hoverIndex === i ? 7 : 4}
-            fill="#639ef7"
-            onMouseEnter={() => setHoverIndex(i)}
-            onMouseLeave={() => setHoverIndex(null)}
+            return (
+              <g key={i}>
+                <line
+                  x1={0}
+                  x2={width}
+                  y1={y}
+                  y2={y}
+                  stroke="rgba(255,255,255,0.08)"
+                />
+                <text
+                  x={-5}
+                  y={y + 3}
+                  textAnchor="end"
+                  fontSize="10"
+                  fill="#777"
+                >
+                  {Math.round(value)}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* 🔥 pontos */}
+          {points.map((p, i) => (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={hoverIndex === i ? 7 : 4}
+              fill="#639ef7"
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{
+                cursor: "pointer",
+                transition: "0.2s", // 🔥 animação suave
+              }}
+            />
+          ))}
+        </svg>
+
+        {/* 🔥 tooltip */}
+        {hoverIndex !== null && (
+          <div
+            className="episode-tooltip"
             style={{
-              cursor: "pointer",
-              transition: "0.2s", // 🔥 animação suave
+              left: `${points[hoverIndex].x}px`,
+              top: `${points[hoverIndex].y}px`,
             }}
-          />
-        ))}
-      </svg>
+          >
+            <div>
+              S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
+            </div>
 
-      {/* 🔥 tooltip */}
-      {hoverIndex !== null && (
-        <div
-          className="episode-tooltip"
-          style={{
-            left: `${points[hoverIndex].x}px`,
-            top: `${points[hoverIndex].y}px`,
-          }}
-        >
-          <div>
-            S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
+            <div style={{ fontWeight: "bold" }}>{points[hoverIndex].title}</div>
+
+            <div>
+              <strong>{points[hoverIndex].votes}</strong> votes
+            </div>
+
+            <RatingBadge value={points[hoverIndex].rating} />
           </div>
-
-          <div style={{ fontWeight: "bold" }}>
-            {points[hoverIndex].title}
-          </div>
-
-          <div>
-            <strong>{points[hoverIndex].votes}</strong> votes
-          </div>
-
-          <RatingBadge value={points[hoverIndex].rating} />
-        </div>
-      )}
-    </div>
-  );
-}
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="entry">

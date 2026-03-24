@@ -454,15 +454,14 @@ svg {
 }
 
 .episode-graph-wrapper {
-  position: relative;
-  padding-top: 20px;
   width: max-content;
+  position: relative;
   margin: 0 auto;
 }
 
 .episode-tooltip {
   position: absolute;
-  transform: translate(-38%, -100%);
+  transform: translate(-38%, -120%);
   background: #0f0f0f;
   color: white;
   font-size: 12px;
