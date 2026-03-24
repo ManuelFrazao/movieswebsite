@@ -969,23 +969,24 @@ export default function Entry() {
                   >
                     {entry.description}
                   </p>
-                  {entry.releaseDate != "" && (
-                    <>
-                      <div></div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          margin: "0.5rem 0",
-                          gap: "10px",
-                        }}
-                      >
-                        <RatingBadge
-                          value={entry.topRank / 10}
-                          votes={entry.totalVotes}
-                          size="large"
-                        />
-                        {entry.type === "movie" && (
+                  <>
+                    <div></div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        margin: "0.5rem 0",
+                        gap: "10px",
+                      }}
+                    >
+                      <RatingBadge
+                        value={entry.topRank / 10}
+                        votes={entry.totalVotes}
+                        size="large"
+                      />
+                      {entry.type === "movie" &&
+                        entry.releaseDate &&
+                        new Date(entry.releaseDate) <= new Date() && (
                           <button
                             className="rate-btn"
                             onClick={() =>
@@ -1000,13 +1001,12 @@ export default function Entry() {
                             Rate
                           </button>
                         )}
-                      </div>
-                      <div className="entry-trend">
-                        <h3>Votes & Rating Per Day</h3>
-                        <TrendGraph data={entryTrend} />
-                      </div>
-                    </>
-                  )}
+                    </div>
+                    <div className="entry-trend">
+                      <h3>Votes & Rating Per Day</h3>
+                      <TrendGraph data={entryTrend} />
+                    </div>
+                  </>
                 </div>
               </div>
             </div>

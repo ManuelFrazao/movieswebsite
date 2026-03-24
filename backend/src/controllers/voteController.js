@@ -42,7 +42,7 @@ export const createVote = async (req, res) => {
           totalVotes,
           topRank: Math.round(avg * 10),
         },
-        { where: { id: entryId } }
+        { where: { id: entryId } },
       );
     }
 
@@ -75,7 +75,7 @@ export const createVote = async (req, res) => {
             totalVotes,
             topRank: Math.round(avg * 10),
           },
-          { where: { id: entryIdFromEpisode } }
+          { where: { id: entryIdFromEpisode } },
         );
       }
     }
@@ -149,20 +149,37 @@ export const getEntryTrending = async (req, res) => {
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    const votes = await Vote.findAll({
-      include: {
-        model: Episode,
-        as: "episode",
-        where: { entryId: id },
-      },
-      where: {
-        createdAt: {
-          [Op.gte]: sevenDaysAgo,
-        },
-      },
-    });
+    // 🔥 buscar entry
+    const entry = await Entry.findByPk(id);
 
-    // 🔥 agrupar por dia
+    let votes = [];
+
+    if (entry.type === "movie") {
+      // 🎬 votos diretos
+      votes = await Vote.findAll({
+        where: {
+          entryId: id,
+          createdAt: {
+            [Op.gte]: sevenDaysAgo,
+          },
+        },
+      });
+    } else {
+      // 📺 votos dos episódios
+      votes = await Vote.findAll({
+        include: {
+          model: Episode,
+          as: "episode",
+          where: { entryId: id },
+        },
+        where: {
+          createdAt: {
+            [Op.gte]: sevenDaysAgo,
+          },
+        },
+      });
+    }
+
     const grouped = {};
 
     votes.forEach((vote) => {
@@ -179,7 +196,6 @@ export const getEntryTrending = async (req, res) => {
       grouped[day].total += vote.value;
     });
 
-    // 🔥 calcular média por dia
     const result = {};
 
     Object.keys(grouped).forEach((day) => {
