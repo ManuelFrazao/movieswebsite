@@ -549,6 +549,8 @@ svg {
   color: steelblue;
 }
 
+
+
 @media (width <= 1100px) {
   .episode-row {
     display: block;
@@ -571,6 +573,7 @@ svg {
   }
   .entry-trend{
     width: inherit;
+    overflow: auto;
   }
   .entry-contents {
     display: grid;

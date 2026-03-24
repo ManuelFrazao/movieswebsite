@@ -503,7 +503,7 @@ export default function Entry() {
           alignItems: "center",
           gap: "10px",
           height: "120px",
-          padding: "0 20px",
+          padding: isMobile ? "0 0" : "0 20px",
           justifyContent: "center",
         }}
       >
@@ -522,8 +522,7 @@ export default function Entry() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "flex-end",
-                flex: 1,
-                width: isMobile ? "11px" : "66px",
+                width: isMobile ? "24px" : "66px",
                 height: "100%",
               }}
             >
@@ -622,7 +621,7 @@ export default function Entry() {
 
     const [hoverIndex, setHoverIndex] = useState(null);
 
-    const width = isMobile ? 200 : days.length * 25;
+    const width = isMobile ? 300 : days.length * 22;
     const height = 75;
     const stepX = width / (days.length - 1);
 
@@ -1086,86 +1085,90 @@ export default function Entry() {
     });
 
     return (
-      <div className="episode-graph-wrapper">
-        <svg
-          width={width}
-          height={height + 30}
-          style={{
-            paddingLeft: "1rem",
-          }}
-        >
-          {/* eixo base */}
-          <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
-
-          {/* linhas horizontais (ratings) */}
-          {[2, 4, 6, 8, 10].map((r) => {
-            const y = height - (r / 10) * height;
-
-            return (
-              <g key={r}>
-                <line
-                  x1={0}
-                  x2={width}
-                  y1={y}
-                  y2={y}
-                  stroke="rgba(255,255,255,0.08)"
-                />
-                <text
-                  x={-5}
-                  y={y + 3}
-                  textAnchor="end"
-                  fontSize="10"
-                  fill="#777"
-                >
-                  {r}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* 🔥 pontos */}
-          {points.map((p, i) => {
-            let color = "#e50914";
-            if (p.rating > 6) color = "#4caf50";
-            else if (p.rating > 3) color = "#ff9800";
-
-            return (
-              <circle
-                key={i}
-                cx={p.x}
-                cy={p.y}
-                r={hoverIndex === i ? 7 : 4}
-                fill={color}
-                style={{ cursor: "pointer" }}
-                onMouseEnter={() => setHoverIndex(i)}
-                onMouseLeave={() => setHoverIndex(null)}
-              />
-            );
-          })}
-        </svg>
-
-        {/* 🔥 TOOLTIP */}
-        {hoverIndex !== null && (
-          <div
-            className="episode-tooltip"
+      <div>
+        <div className="episode-graph-wrapper">
+          <svg
+            width={width}
+            height={height + 30}
             style={{
-              left: `${points[hoverIndex].x}px`,
-              top: `${points[hoverIndex].y}px`,
+              paddingLeft: "1rem",
             }}
           >
-            <div>
-              S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
+            {/* eixo base */}
+            <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
+
+            {/* linhas horizontais (ratings) */}
+            {[2, 4, 6, 8, 10].map((r) => {
+              const y = height - (r / 10) * height;
+
+              return (
+                <g key={r}>
+                  <line
+                    x1={0}
+                    x2={width}
+                    y1={y}
+                    y2={y}
+                    stroke="rgba(255,255,255,0.08)"
+                  />
+                  <text
+                    x={-5}
+                    y={y + 3}
+                    textAnchor="end"
+                    fontSize="10"
+                    fill="#777"
+                  >
+                    {r}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* 🔥 pontos */}
+            {points.map((p, i) => {
+              let color = "#e50914";
+              if (p.rating > 6) color = "#4caf50";
+              else if (p.rating > 3) color = "#ff9800";
+
+              return (
+                <circle
+                  key={i}
+                  cx={p.x}
+                  cy={p.y}
+                  r={hoverIndex === i ? 7 : 4}
+                  fill={color}
+                  style={{ cursor: "pointer" }}
+                  onMouseEnter={() => setHoverIndex(i)}
+                  onMouseLeave={() => setHoverIndex(null)}
+                />
+              );
+            })}
+          </svg>
+
+          {/* 🔥 TOOLTIP */}
+          {hoverIndex !== null && (
+            <div
+              className="episode-tooltip"
+              style={{
+                left: `${points[hoverIndex].x}px`,
+                top: `${points[hoverIndex].y}px`,
+              }}
+            >
+              <div>
+                S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
+              </div>
+
+              <div style={{ fontWeight: "bold" }}>
+                {points[hoverIndex].title}
+              </div>
+
+              <RatingBadge value={points[hoverIndex].rating} />
+
+              <div>
+                <strong>{points[hoverIndex].votes}</strong> votes
+              </div>
             </div>
-
-            <div style={{ fontWeight: "bold" }}>{points[hoverIndex].title}</div>
-
-            <RatingBadge value={points[hoverIndex].rating} />
-
-            <div>
-              <strong>{points[hoverIndex].votes}</strong> votes
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   }
