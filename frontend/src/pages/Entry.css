@@ -21,6 +21,10 @@
   justify-content: flex-end;
 }
 
+.hero-content {
+  padding-bottom: 2rem;
+}
+
 /* BACK BUTTON */
 .back-btn {
   position: absolute;
@@ -205,12 +209,14 @@
 
 /* BOTÃO */
 .rate-btn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  border: none;
   color: #fff;
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .rate-btn:hover {
@@ -292,15 +298,18 @@
 }
 
 .entry-trend {
-  margin: 30px 0;
-  background: #111;
-  padding: 20px;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   width: max-content;
+  height: max-content;
+  margin: 10px 0;
+}
+
+.entry-trend h3 {
+  margin-top: 0;
 }
 
 .trend-graph {
@@ -370,4 +379,48 @@
 
 .movie-info h2 {
   color: white;
+}
+
+.trend-wrapper {
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 12px;
+  position: relative;
+}
+
+svg {
+  overflow: visible;
+}
+
+.trend-tooltip {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  background: #0f0f0f;
+  color: white;
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  pointer-events: none;
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+  z-index: 20;
+  backdrop-filter: blur(6px);
+}
+
+.episode-graph-wrapper {
+  position: relative;
+  margin-top: 20px;
+}
+
+.episode-tooltip {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  background: #111;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+  border: 1px solid #333;
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "./Entry.css";
+import RatingBadge from "../components/RatingBadge";
 
 export default function Entry() {
   const { slug } = useParams();
@@ -18,6 +19,7 @@ export default function Entry() {
   const [entryTrend, setEntryTrend] = useState({});
   const [activeTab, setActiveTab] = useState("overview");
   const [openSeason, setOpenSeason] = useState(null);
+  const [episodeTrends, setEpisodeTrends] = useState({});
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -47,12 +49,26 @@ export default function Entry() {
     }
   };
 
+  const fetchEpisodeTrend = async (episodeId) => {
+    try {
+      const res = await api.get(`/votes/episode/${episodeId}/trending`);
+
+      setEpisodeTrends((prev) => ({
+        ...prev,
+        [episodeId]: res.data,
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (!entry?.seasons) return;
 
     entry.seasons.forEach((season) => {
       season.episodes?.forEach((ep) => {
         fetchEpisodeStats(ep.id);
+        fetchEpisodeTrend(ep.id);
       });
     });
   }, [entry]);
@@ -186,9 +202,11 @@ export default function Entry() {
   };
 
   const getRatingColor = (value) => {
-    if (value <= 3) return "#e50914"; // 🔴
-    if (value <= 6) return "#ff9800"; // 🟠
-    return "#4caf50"; // 🟢
+    if (value <= 3) return "#e50914"; // 🔴 péssimo
+    if (value <= 5) return "#ff7043"; // laranja/vermelho
+    if (value <= 7) return "#ff9800"; // 🟠 médio
+    if (value <= 8.5) return "#8bc34a"; // verde claro
+    return "#4caf50"; // 🟢 excelente
   };
 
   const canRateEpisode = (airDate) => {
@@ -198,6 +216,21 @@ export default function Entry() {
     const releaseDate = new Date(airDate);
 
     return releaseDate <= today;
+  };
+
+  const useIsMobile = () => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth < 768);
+      };
+
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    return isMobile;
   };
 
   const getLast7Days = () => {
@@ -212,38 +245,413 @@ export default function Entry() {
     return days;
   };
 
+  const getLast30Days = () => {
+    const days = [];
+
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+
+      days.push(d.toISOString().split("T")[0]);
+    }
+
+    return days;
+  };
+
   function TrendGraph({ data }) {
-    const days = getLast7Days();
+    const isMobile = useIsMobile();
+    const days = isMobile ? getLast7Days() : getLast30Days();
 
     const counts = days.map((d) => data?.[d]?.count || 0);
     const avgs = days.map((d) => data?.[d]?.avg || 0);
 
-    const maxVotes = Math.max(...counts, 1);
+    const max = Math.max(...counts, 1);
+
+    const [hoverIndex, setHoverIndex] = useState(null);
+
+    const width = isMobile ? 200 : days.length * 25;
+    const height = 120;
+    const stepX = width / (days.length - 1);
+
+    const points = counts.map((v, i) => {
+      const x = i * stepX;
+      const y = height - (v / max) * height;
+      return { x, y, value: v };
+    });
+
+    // 🔥 curva suave (quadratic bezier)
+    const smoothPath = (points) => {
+      let d = `M ${points[0].x} ${points[0].y}`;
+
+      for (let i = 1; i < points.length; i++) {
+        const prev = points[i - 1];
+        const curr = points[i];
+
+        const midX = (prev.x + curr.x) / 2;
+        const midY = (prev.y + curr.y) / 2;
+
+        d += ` Q ${prev.x} ${prev.y}, ${midX} ${midY}`;
+      }
+
+      const last = points[points.length - 1];
+      d += ` T ${last.x} ${last.y}`;
+
+      return d;
+    };
+
+    const linePath = smoothPath(points);
+
+    const areaPath = `
+    ${linePath}
+    L ${width},${height}
+    L 0,${height}
+    Z
+  `;
 
     return (
-      <div className="trend-graph">
-        {days.map((day, i) => (
-          <div key={day} className="trend-day">
-            {/* 🔥 barra votos */}
-            <div className="trend-bar">
-              <div
-                className="trend-bar-fill"
-                style={{
-                  height: `${(counts[i] / maxVotes) * 100}%`,
-                }}
-              />
+      <div className="trend-wrapper">
+        <svg width={width} height={height + 30}>
+          {/* 🔥 gradient */}
+          <defs>
+            <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#4caf50" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#4caf50" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {/* 🔥 área */}
+          <path d={areaPath} fill="url(#trendGradient)" />
+
+          {/* 🔥 linha */}
+          <path d={linePath} fill="none" stroke="#4caf50" strokeWidth="3" />
+
+          {/* 🔥 crosshair */}
+          {hoverIndex !== null && (
+            <line
+              x1={points[hoverIndex].x}
+              x2={points[hoverIndex].x}
+              y1={0}
+              y2={height}
+              stroke="rgba(255,255,255,0.2)"
+              strokeDasharray="4"
+            />
+          )}
+
+          {/* 🔥 pontos */}
+          {points.map((p, i) => (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={hoverIndex === i ? 6 : 3}
+              fill="#4caf50"
+              style={{ cursor: "pointer" }}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+            />
+          ))}
+
+          {/* 🔥 dias */}
+          {points.map((p, i) => (
+            <text
+              key={i}
+              x={p.x}
+              y={height + 15}
+              textAnchor="middle"
+              fontSize="10"
+              fill="#777"
+            >
+              {new Date(days[i]).getDate()}
+            </text>
+          ))}
+        </svg>
+
+        {/* 🔥 TOOLTIP */}
+        {hoverIndex !== null && (
+          <div
+            className="trend-tooltip"
+            style={{
+              left: `${points[hoverIndex].x}px`,
+              top: `${points[hoverIndex].y}px`,
+            }}
+          >
+            <div>
+              {new Date(days[hoverIndex]).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
             </div>
 
-            {/* 🔥 ponto rating */}
-            <div
-              className="trend-dot"
-              style={{
-                bottom: `${(avgs[i] / 10) * 100}%`,
-              }}
-              title={`${day} → ${counts[i]} votes | ⭐ ${avgs[i].toFixed(1)}`}
-            />
+            <RatingBadge value={avgs[hoverIndex]} />
+
+            <div>
+              <strong>{counts[hoverIndex]}</strong> votes
+            </div>
           </div>
-        ))}
+        )}
+      </div>
+    );
+  }
+
+  function EpisodeRatingGraph({ entry, episodeStats }) {
+    const [hoverIndex, setHoverIndex] = useState(null);
+
+    if (!entry?.seasons) return null;
+
+    // 🔥 flatten episódios
+    const episodes = entry.seasons.flatMap(
+      (s) =>
+        (s.episodes || [])
+          .map((ep) => {
+            const stats = episodeStats[ep.id] || {};
+            const rating = Number(stats.averageRating);
+
+            return {
+              ...ep,
+              seasonNumber: s.seasonNumber,
+              rating,
+              votes: stats.totalVotes || 0,
+            };
+          })
+          .filter((ep) => ep.rating > 0), // 🔥 FILTRO AQUI
+    );
+
+    if (!episodes.length) return null;
+
+    const width = episodes.length * 40;
+    const height = 200;
+
+    const stepX = width / (episodes.length - 1);
+
+    const points = episodes.map((ep, i) => {
+      const x = i * stepX;
+      const y = height - (ep.rating / 10) * height;
+
+      return {
+        x,
+        y,
+        rating: ep.rating,
+        title: ep.title,
+        votes: ep.votes,
+        epNumber: ep.number,
+        season: ep.seasonNumber,
+      };
+    });
+
+    return (
+      <div className="episode-graph-wrapper">
+        <svg
+          width={width}
+          height={height + 30}
+          style={{
+            paddingLeft: "1rem",
+          }}
+        >
+          {/* eixo base */}
+          <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
+
+          {/* linhas horizontais (ratings) */}
+          {[2, 4, 6, 8, 10].map((r) => {
+            const y = height - (r / 10) * height;
+
+            return (
+              <g key={r}>
+                <line
+                  x1={0}
+                  x2={width}
+                  y1={y}
+                  y2={y}
+                  stroke="rgba(255,255,255,0.08)"
+                />
+                <text
+                  x={-5}
+                  y={y + 3}
+                  textAnchor="end"
+                  fontSize="10"
+                  fill="#777"
+                >
+                  {r}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* 🔥 pontos */}
+          {points.map((p, i) => {
+            let color = "#e50914";
+            if (p.rating > 6) color = "#4caf50";
+            else if (p.rating > 3) color = "#ff9800";
+
+            return (
+              <circle
+                key={i}
+                cx={p.x}
+                cy={p.y}
+                r={hoverIndex === i ? 7 : 4}
+                fill={color}
+                style={{ cursor: "pointer" }}
+                onMouseEnter={() => setHoverIndex(i)}
+                onMouseLeave={() => setHoverIndex(null)}
+              />
+            );
+          })}
+        </svg>
+
+        {/* 🔥 TOOLTIP */}
+        {hoverIndex !== null && (
+          <div
+            className="episode-tooltip"
+            style={{
+              left: `${points[hoverIndex].x}px`,
+              top: `${points[hoverIndex].y}px`,
+            }}
+          >
+            <div>
+              S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
+            </div>
+
+            <div style={{ fontWeight: "bold" }}>{points[hoverIndex].title}</div>
+
+            <RatingBadge value={points[hoverIndex].rating} />
+
+            <div>
+              <strong>{points[hoverIndex].votes}</strong> votes
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function EpisodeVotesGraph({ entry, episodeStats }) {
+    const [hoverIndex, setHoverIndex] = useState(null);
+
+    if (!entry?.seasons) return null;
+
+    const episodes = entry.seasons.flatMap(
+      (s) =>
+        (s.episodes || [])
+          .map((ep) => {
+            const stats = episodeStats[ep.id] || {};
+            const votes = stats.totalVotes || 0;
+
+            return {
+              ...ep,
+              seasonNumber: s.seasonNumber,
+              votes,
+              rating: Number(stats.averageRating) || 0,
+            };
+          })
+          .filter((ep) => ep.votes > 0), // 🔥 só com votos
+    );
+
+    if (!episodes.length) {
+      return <div style={{ color: "#777" }}>No votes yet</div>;
+    }
+
+    const width = episodes.length * 40;
+    const height = 200;
+
+    const maxVotes = Math.max(...episodes.map((e) => e.votes), 1);
+
+    const stepX = width / (episodes.length - 1);
+
+    const points = episodes.map((ep, i) => {
+      const x = i * stepX;
+      const y = height - (ep.votes / maxVotes) * height;
+
+      return {
+        x,
+        y,
+        votes: ep.votes,
+        rating: ep.rating,
+        title: ep.title,
+        epNumber: ep.number,
+        season: ep.seasonNumber,
+      };
+    });
+
+    const steps = 5; // nº de linhas
+    const stepValue = Math.ceil(maxVotes / steps);
+
+    return (
+      <div className="episode-graph-wrapper">
+        <svg
+          width={width}
+          height={height + 30}
+          style={{
+            paddingLeft: "1rem",
+          }}
+        >
+          {/* base */}
+          <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
+
+          {/* 🔥 linhas horizontais + labels */}
+          {Array.from({ length: steps + 1 }).map((_, i) => {
+            const value = i * stepValue;
+            const y = height - (value / maxVotes) * height;
+
+            return (
+              <g key={i}>
+                <line
+                  x1={0}
+                  x2={width}
+                  y1={y}
+                  y2={y}
+                  stroke="rgba(255,255,255,0.08)"
+                />
+                <text
+                  x={-5}
+                  y={y + 3}
+                  textAnchor="end"
+                  fontSize="10"
+                  fill="#777"
+                >
+                  {value}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* pontos */}
+          {points.map((p, i) => (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={hoverIndex === i ? 7 : 4}
+              fill="#639ef7"
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          ))}
+        </svg>
+
+        {/* tooltip */}
+        {hoverIndex !== null && (
+          <div
+            className="episode-tooltip"
+            style={{
+              left: `${points[hoverIndex].x}px`,
+              top: `${points[hoverIndex].y}px`,
+            }}
+          >
+            <div>
+              S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
+            </div>
+
+            <div style={{ fontWeight: "bold" }}>{points[hoverIndex].title}</div>
+
+            <div>
+              <strong>{points[hoverIndex].votes}</strong> votes
+            </div>
+
+            <RatingBadge value={points[hoverIndex].rating} />
+          </div>
+        )}
       </div>
     );
   }
@@ -304,18 +712,6 @@ export default function Entry() {
                 </>
               )}
 
-              {isSeries && entry.totalVotes > 0 && (
-                <>
-                  <span>•</span>
-                  <div>
-                    <span style={{ color: "#aaa" }}>
-                      ⭐ {(entry.topRank / 10).toFixed(1)}
-                    </span>
-                    <span> ({entry.totalVotes})</span>
-                  </div>
-                </>
-              )}
-
               {/* 🔥 MOVIE */}
               {!isSeries && entry.duration && (
                 <>
@@ -331,10 +727,6 @@ export default function Entry() {
                   <span>{formatDate(entry.releaseDate)}</span>
                 </>
               )}
-            </div>
-
-            <div className="actions">
-              <button className="secondary-btn">+ My List</button>
             </div>
           </div>
         </div>
@@ -378,12 +770,75 @@ export default function Entry() {
         {activeTab === "overview" && (
           <>
             <div className="movie-info">
-              <h2>Synopsis</h2>
-              <p>{entry.description}</p>
-
+              <div
+                style={{
+                  display: "flex",
+                  marginBottom: "1rem",
+                }}
+              >
+                <div
+                  style={{
+                    marginRight: "1rem",
+                  }}
+                >
+                  <img
+                    width={180}
+                    src={entry.coverImage}
+                    alt=""
+                    style={{
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <div className="actions">
+                    <button className="secondary-btn">+ My List</button>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    textAlign: "left",
+                  }}
+                >
+                  <h2>Synopsis</h2>
+                  <p
+                    style={{
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    {entry.description}
+                  </p>
+                  {isSeries && entry.totalVotes > 0 && (
+                    <>
+                      <div></div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          marginTop: "1rem",
+                        }}
+                      >
+                        <RatingBadge
+                          value={entry.topRank / 10}
+                          votes={entry.totalVotes}
+                          size="large"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
               <div className="entry-trend">
-                <h3>Votes & Rating Over Time</h3>
+                <h3>Votes & Rating Per Day</h3>
                 <TrendGraph data={entryTrend} />
+              </div>
+              <div className="entry-trend">
+                <h3>Episode Ratings</h3>
+                <EpisodeRatingGraph entry={entry} episodeStats={episodeStats} />
+
+                <h3>Episode Votes</h3>
+                <EpisodeVotesGraph entry={entry} episodeStats={episodeStats} />
               </div>
             </div>
           </>
@@ -452,22 +907,28 @@ export default function Entry() {
                               )}
                             </div>
 
-                            <div>
+                            <div
+                              style={{
+                                display: "flex",
+                                fontSize: "0.8rem",
+                                marginTop: "0.25rem",
+                              }}
+                            >
                               {episodeStats[ep.id]?.averageRating > 0 && (
-                                <>
-                                  <span
-                                    style={{
-                                      marginRight: "10px",
-                                    }}
-                                  >
-                                    ⭐ {episodeStats[ep.id].averageRating} (
-                                    {episodeStats[ep.id].totalVotes}{" "}
-                                    {episodeStats[ep.id].totalVotes === 1
-                                      ? "vote"
-                                      : "votes"}
-                                    )
-                                  </span>
-                                </>
+                                <span
+                                  style={{
+                                    marginRight: "10px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                  }}
+                                >
+                                  {/* 🔥 RATING BADGE */}
+                                  <RatingBadge
+                                    value={episodeStats[ep.id].averageRating}
+                                    votes={episodeStats[ep.id].totalVotes}
+                                  />
+                                </span>
                               )}
 
                               {canRateEpisode(ep.airDate) && (
@@ -479,8 +940,10 @@ export default function Entry() {
                                       episodeId: ep.id,
                                     })
                                   }
+                                  style={{
+                                    color: "#639ef7",
+                                  }}
                                 >
-                                  ⭐{" "}
                                   {userRatings[ep.id]
                                     ? `Your rating: ${userRatings[ep.id]}`
                                     : "Rate"}
@@ -495,6 +958,12 @@ export default function Entry() {
                             >
                               {ep.description}
                             </p>
+
+                            {episodeTrends[ep.id] && (
+                              <div style={{ marginTop: "10px" }}>
+                                <TrendGraph data={episodeTrends[ep.id] || {}} />
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}

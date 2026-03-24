@@ -5,6 +5,7 @@ import {
   getEntryStats,
   getEntryTrending,
   getTrendingEntries,
+  getEpisodeTrending,
   deleteVote,
 } from "../controllers/voteController.js";
 
@@ -17,6 +18,7 @@ router.get("/episode/:id/stats", getEpisodeStats);
 router.get("/entry/:id/stats", getEntryStats);
 router.get("/entry/:id/trending", getEntryTrending);
 router.get("/trending", getTrendingEntries);
+router.get("/episode/:id/trending", getEpisodeTrending);
 router.delete("/:id", protect, deleteVote);
 
 export default router;

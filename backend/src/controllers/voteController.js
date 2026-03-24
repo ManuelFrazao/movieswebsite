@@ -252,6 +252,57 @@ export const getTrendingEntries = async (req, res) => {
 };
 
 // =====================
+// TRENDING POR EPISÓDIO (7 dias)
+// =====================
+export const getEpisodeTrending = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const sevenDaysAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000
+    );
+
+    const votes = await Vote.findAll({
+      where: {
+        episodeId: id,
+        createdAt: {
+          [Op.gte]: sevenDaysAgo,
+        },
+      },
+    });
+
+    const grouped = {};
+
+    votes.forEach((vote) => {
+      const day = vote.createdAt.toISOString().split("T")[0];
+
+      if (!grouped[day]) {
+        grouped[day] = {
+          count: 0,
+          total: 0,
+        };
+      }
+
+      grouped[day].count += 1;
+      grouped[day].total += vote.value;
+    });
+
+    const result = {};
+
+    Object.keys(grouped).forEach((day) => {
+      result[day] = {
+        count: grouped[day].count,
+        avg: grouped[day].total / grouped[day].count,
+      };
+    });
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// =====================
 // DELETE VOTE
 // =====================
 export const deleteVote = async (req, res) => {
