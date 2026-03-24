@@ -41,34 +41,39 @@ export default function Dashboard() {
   const [imageFile, setImageFile] = useState(null);
 
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+    }
+  }, []);
 
   useEffect(() => {
     fetchUsers();
     fetchEntries();
   }, []);
 
-const fetchUsers = async () => {
-  try {
-    const res = await api.get("/admin/users", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setUsers(res.data);
-  } catch (err) {
-    if (err.code === "ERR_CANCELED") return;
-    console.error(err);
-  }
-};
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get("/admin/users");
+      setUsers(res.data);
+    } catch (err) {
+      if (err.code === "ERR_CANCELED") return;
+      console.error(err);
+    }
+  };
 
-const fetchEntries = async () => {
-  try {
-    const res = await api.get("/entries");
-    setEntries(res.data);
-  } catch (err) {
-    if (err.code === "ERR_CANCELED") return;
-    console.error(err);
-  }
-};
+  const fetchEntries = async () => {
+    try {
+      const res = await api.get("/entries");
+      setEntries(res.data);
+    } catch (err) {
+      if (err.code === "ERR_CANCELED") return;
+      console.error(err);
+    }
+  };
 
   const handleCreateEntry = async (e) => {
     e.preventDefault();
@@ -98,7 +103,8 @@ const fetchEntries = async () => {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/");
   };
 

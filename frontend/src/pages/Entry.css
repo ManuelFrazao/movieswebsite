@@ -89,12 +89,12 @@
   border-bottom: 1px solid #222;
   padding-bottom: 10px;
   margin-bottom: 15px;
-    padding: 10px;
+  padding: 10px;
 }
 
 .season-header:hover {
-    background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
 
@@ -148,8 +148,8 @@
 }
 
 .episode-row:hover {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .episode-number {
@@ -172,7 +172,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 10px
+  gap: 10px;
 }
 
 .episode-info h3 {
@@ -222,7 +222,7 @@
 }
 
 .rate-btn:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* MODAL */
@@ -232,7 +232,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -280,15 +280,15 @@
 .rating-btn {
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
   color: white;
   cursor: pointer;
   transition: 0.2s;
 }
 
 .rating-btn:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   transform: scale(1.05);
 }
 
@@ -299,19 +299,23 @@
   font-weight: bold;
 }
 
-.entry-trend {
-  border-radius: 10px;
+.statistics {
+  display: grid;
+  gap: 3rem;
+}
+
+.movie-info-graphs{
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   width: max-content;
   height: max-content;
-  margin: 10px 0;
+  padding-bottom: 1rem;
 }
 
-.entry-distribution{
-    margin: 10px 0;
+.entry-trend {
+  border-radius: 10px;
 }
 
 .entry-trend h3 {
@@ -383,10 +387,36 @@
   border-bottom: 2px solid #e50914;
 }
 
+/*Movie Info*/
+
 .movie-info h2 {
   color: white;
 }
 
+.movie-info-content {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.movie-info-aside-left {
+  margin-right: 1rem;
+}
+
+.movie-info-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.movie-info-rating {
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+  gap: 10px;
+}
+
+/**/
 .trend-wrapper {
   background: #1a1a1a;
   padding: 20px;
@@ -408,8 +438,8 @@ svg {
   border-radius: 8px;
   pointer-events: none;
   white-space: nowrap;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
   z-index: 20;
   backdrop-filter: blur(6px);
 }
@@ -441,7 +471,7 @@ svg {
   padding: 12px;
   border-radius: 8px;
   width: 180px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .dist-row {
@@ -462,4 +492,82 @@ svg {
 
 .fill {
   height: 100%;
+}
+
+.entry-contents {
+  display: flex;
+}
+
+.entry-contents-card {
+  width: max-content;
+  height: max-content;
+  padding: 3rem;
+  background: #333;
+  border-radius: 8px;
+  margin: 0.5rem 1rem 2rem 0;
+}
+
+.entry-contents-card:hover {
+  cursor: pointer;
+  background: #1f1f1f;
+  transform: scale(1.05);
+}
+
+.entry-cast {
+  display: grid;
+  width: 100%;
+  gap: 3rem;
+}
+
+.entry-cast-top {
+  border-bottom: 1px solid;
+  padding-bottom: 0.5rem;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.entry-cast-top span:hover {
+  cursor: pointer;
+  color: steelblue;
+}
+
+@media (width <= 1100px) {
+  .episode-row {
+    display: block;
+  }
+}
+
+@media (width <= 900px) {
+  /*Overview tab*/
+  .movie-info-content {
+    display: block;
+  }
+  .movie-info-graphs{
+    margin: 0 auto;
+    align-content: center;
+  }
+  .entry-trend{
+    width: inherit;
+  }
+  .entry-contents {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin: 0 auto;
+    padding: 1rem 0rem;
+  }
+  .entry-contents-card{
+    margin: 0.5rem 1rem 0.5rem 0;
+  }
+
+  /*Episode tab*/
+  .episode-row {
+    display: block;
+  }
+  .episode-info {
+    display: block;
+  }
+  .episode-row img {
+    margin-bottom: 1rem;
+  }
 }

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "./Entry.css";
 import RatingBadge from "../components/RatingBadge";
+import Navbar from "../components/Navbar";
 
 export default function Entry() {
   const { slug } = useParams();
@@ -44,8 +45,8 @@ export default function Entry() {
     fetchEntryDistribution();
   }, [entry]);
 
-  const fetchDistribution = async (episodeId) => {
-    if (episodeDistribution[episodeId]) return;
+  const fetchDistribution = async (episodeId, force = false) => {
+    if (!force && episodeDistribution[episodeId]) return;
 
     try {
       const res = await api.get(`/votes/episode/${episodeId}/distribution`);
@@ -235,7 +236,21 @@ export default function Entry() {
           episodeId: ratingModal.episodeId,
         });
 
+        // 🔥 UPDATE LOCAL
         fetchEpisodeStats(ratingModal.episodeId);
+
+        // 🔥 UPDATE GRÁFICOS
+        fetchEpisodeTrends(entry.id);
+        fetchTrend(entry.id);
+
+        // opcional (se usares distribution no graph)
+        setEpisodeDistribution((prev) => {
+          const copy = { ...prev };
+          //delete copy[ratingModal.episodeId];
+          return copy;
+        });
+
+        fetchDistribution(ratingModal.episodeId, true);
       }
 
       if (ratingModal.entryId) {
@@ -246,6 +261,10 @@ export default function Entry() {
         });
 
         fetchTrend(ratingModal.entryId);
+
+        // 🔥 refresh distribution
+        setEntryDistribution(null);
+        fetchEntryDistribution();
       }
     } catch (err) {
       console.error(err);
@@ -433,7 +452,7 @@ export default function Entry() {
               }}
             >
               {/* valor */}
-              <span style={{ fontSize: "10px", marginBottom: "4px" }}>
+              <span style={{ fontSize: "0.5rem", marginBottom: "4px" }}>
                 {value}
               </span>
 
@@ -441,7 +460,7 @@ export default function Entry() {
               <div
                 style={{
                   width: "100%",
-                  height: `${barHeight}px`, // 🔥 AGORA FUNCIONA
+                  height: `${barHeight}px`,
                   background: color,
                   borderRadius: "4px",
                   transition: "0.3s",
@@ -518,6 +537,65 @@ export default function Entry() {
     );
   }
 
+  function RatingDistributionEntrySmall({ data }) {
+    if (!data) return null;
+    const max = Math.max(...Object.values(data), 1);
+    const containerHeight = 80; // 🔥 altura real das barras
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          gap: "10px",
+          height: "120px",
+          padding: "0 20px",
+        }}
+      >
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+          const value = data[num] || 0;
+
+          const barHeight = (value / max) * containerHeight;
+
+          const color = num >= 8 ? "#4caf50" : num >= 5 ? "#ff9800" : "#e50914";
+
+          return (
+            <div
+              key={num}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                width: "11px",
+                height: "100%",
+              }}
+            >
+              {/* valor */}
+              <span style={{ fontSize: "10px", marginBottom: "4px" }}>
+                {value}
+              </span>
+
+              {/* barra */}
+              <div
+                style={{
+                  width: "100%",
+                  height: `${barHeight}px`, // 🔥 AGORA FUNCIONA
+                  background: color,
+                  borderRadius: "4px",
+                  transition: "0.3s",
+                }}
+              />
+
+              {/* label */}
+              <span style={{ fontSize: "10px", marginTop: "4px" }}>{num}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   function TrendGraph({ data }) {
     const isMobile = useIsMobile();
     const days = isMobile ? getLast7Days() : getLast30Days();
@@ -530,6 +608,147 @@ export default function Entry() {
     const [hoverIndex, setHoverIndex] = useState(null);
 
     const width = isMobile ? 200 : days.length * 25;
+    const height = 75;
+    const stepX = width / (days.length - 1);
+
+    const points = counts.map((v, i) => {
+      const x = i * stepX;
+      const y = height - (v / max) * height;
+      return { x, y, value: v };
+    });
+
+    // 🔥 curva suave (quadratic bezier)
+    const smoothPath = (points) => {
+      let d = `M ${points[0].x} ${points[0].y}`;
+
+      for (let i = 1; i < points.length; i++) {
+        const prev = points[i - 1];
+        const curr = points[i];
+
+        const midX = (prev.x + curr.x) / 2;
+        const midY = (prev.y + curr.y) / 2;
+
+        d += ` Q ${prev.x} ${prev.y}, ${midX} ${midY}`;
+      }
+
+      const last = points[points.length - 1];
+      d += ` T ${last.x} ${last.y}`;
+
+      return d;
+    };
+
+    const linePath = smoothPath(points);
+
+    const areaPath = `
+    ${linePath}
+    L ${width},${height}
+    L 0,${height}
+    Z
+  `;
+
+    return (
+      <div
+        className="trend-wrapper"
+        style={{
+          background: "transparent",
+        }}
+      >
+        <svg width={width} height={height + 30}>
+          {/* 🔥 gradient */}
+          <defs>
+            <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#4caf50" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#4caf50" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {/* 🔥 área */}
+          <path d={areaPath} fill="url(#trendGradient)" />
+
+          {/* 🔥 linha */}
+          <path d={linePath} fill="none" stroke="#4caf50" strokeWidth="3" />
+
+          {/* 🔥 crosshair */}
+          {hoverIndex !== null && (
+            <line
+              x1={points[hoverIndex].x}
+              x2={points[hoverIndex].x}
+              y1={0}
+              y2={height}
+              stroke="rgba(255,255,255,0.2)"
+              strokeDasharray="4"
+            />
+          )}
+
+          {/* 🔥 pontos */}
+          {points.map((p, i) => (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={hoverIndex === i ? 6 : 3}
+              fill="#4caf50"
+              style={{ cursor: "pointer" }}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+            />
+          ))}
+
+          {/* 🔥 dias */}
+          {points.map((p, i) => (
+            <text
+              key={i}
+              x={p.x}
+              y={height + 15}
+              textAnchor="middle"
+              fontSize="10"
+              fill="#777"
+            >
+              {new Date(days[i]).getDate()}
+            </text>
+          ))}
+        </svg>
+
+        {/* 🔥 TOOLTIP */}
+        {hoverIndex !== null && (
+          <div
+            className="trend-tooltip"
+            style={{
+              left: `${points[hoverIndex].x}px`,
+              top: `${points[hoverIndex].y}px`,
+            }}
+          >
+            <div>
+              {new Date(days[hoverIndex]).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </div>
+
+            <RatingBadge value={avgs[hoverIndex]} />
+
+            <div>
+              <strong>{counts[hoverIndex]}</strong> votes
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function TrendGraph7days({ data }) {
+    const days = getLast7Days();
+
+    const counts = days.map((d) => data?.[d]?.count || 0);
+    const avgs = days.map((d) => data?.[d]?.avg || 0);
+
+    const max = Math.max(...counts, 1);
+
+    const [hoverIndex, setHoverIndex] = useState(null);
+
+    const width = 200;
     const height = 75;
     const stepX = width / (days.length - 1);
 
@@ -1065,6 +1284,7 @@ export default function Entry() {
 
   return (
     <div className="entry">
+      <Navbar />
       {/* HERO */}
       <div
         className="hero"
@@ -1072,7 +1292,7 @@ export default function Entry() {
       >
         <div className="hero-overlay">
           <button className="back-btn" onClick={() => navigate(-1)}>
-            ← Voltar
+            ← Back
           </button>
 
           <div className="hero-content">
@@ -1164,10 +1384,23 @@ export default function Entry() {
         </button>
 
         <button
+          className={activeTab === "statistics" ? "active" : ""}
+          onClick={() => setActiveTab("statistics")}
+        >
+          Statistics
+        </button>
+
+        <button
           className={activeTab === "cast" ? "active" : ""}
           onClick={() => setActiveTab("cast")}
         >
           Cast
+        </button>
+        <button
+          className={activeTab === "characters" ? "active" : ""}
+          onClick={() => setActiveTab("characters")}
+        >
+          Characters
         </button>
       </div>
 
@@ -1177,17 +1410,8 @@ export default function Entry() {
         {activeTab === "overview" && (
           <>
             <div className="movie-info">
-              <div
-                style={{
-                  display: "flex",
-                  marginBottom: "1rem",
-                }}
-              >
-                <div
-                  style={{
-                    marginRight: "1rem",
-                  }}
-                >
+              <div className="movie-info-content">
+                <div className="movie-info-aside-left">
                   <img
                     width={180}
                     src={entry.coverImage}
@@ -1199,15 +1423,20 @@ export default function Entry() {
                   <div className="actions">
                     <button className="secondary-btn">+ My List</button>
                   </div>
+                  <div className="movie-info-graphs">
+                    <div className="entry-trend">
+                      <TrendGraph7days data={entryTrend} />
+                    </div>
+                    {entryDistribution && (
+                      <div className="entry-trend">
+                        <RatingDistributionEntrySmall
+                          data={entryDistribution}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    textAlign: "left",
-                  }}
-                >
+                <div className="movie-info-details">
                   <h2>Synopsis</h2>
                   <p
                     style={{
@@ -1217,14 +1446,7 @@ export default function Entry() {
                     {entry.description}
                   </p>
                   <>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        margin: "0.5rem 0",
-                        gap: "10px",
-                      }}
-                    >
+                    <div className="movie-info-rating">
                       <div
                         onMouseEnter={(e) => {
                           setHoverEntry(true);
@@ -1258,18 +1480,26 @@ export default function Entry() {
                           </button>
                         )}
                     </div>
-                    <div className="entry-trend">
-                      <h3>Votes & Rating Per Day</h3>
-                      <TrendGraph data={entryTrend} />
-                    </div>
-                    {entryDistribution && (
-                      <div className="entry-distribution">
-                        <h3>Score Distribution</h3>
-
-                        <RatingDistributionEntry data={entryDistribution} />
-                      </div>
-                    )}
                   </>
+                  <div className="entry-contents">
+                    <div className="entry-contents-card">Videos</div>
+                    <div className="entry-contents-card">Images</div>
+                    <div className="entry-contents-card">Reviews</div>
+                  </div>
+                  <div className="entry-cast">
+                    <div className="entry-cast-top">
+                      <h2>Cast</h2>
+                      <span onClick={() => setActiveTab("cast")}>see more</span>
+                    </div>
+                    <div className="entry-cast-list">
+                      <div className="entry-cast-top">
+                        <h2>Characters</h2>
+                        <span onClick={() => setActiveTab("characters")}>
+                          see more
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1484,14 +1714,48 @@ export default function Entry() {
           </div>
         )}
 
-        {/* 🔥 CAST */}
+        {/* 🔥 Statistics */}
+        {activeTab === "statistics" && (
+          <div className="statistics">
+            <div className="entry-trend">
+              <h3>Votes & Rating Per Day</h3>
+              <TrendGraph data={entryTrend} />
+            </div>
+            {entryDistribution && (
+              <div className="entry-trend">
+                <h3>Score Distribution</h3>
+
+                <RatingDistributionEntry data={entryDistribution} />
+              </div>
+            )}
+            <div className="entry-trend">
+              <h3>Episode Rating Distribution</h3>
+              <EpisodeRatingGraph entry={entry} episodeStats={episodeStats} />
+            </div>
+            <div className="entry-trend">
+              <h3>Episode Votes Distribution</h3>
+              <EpisodeVotesGraph entry={entry} episodeStats={episodeStats} />
+            </div>
+          </div>
+        )}
+
+        {/* 🔥 Characters */}
         {activeTab === "cast" && (
           <div className="cast">
-            <h2>Cast</h2>
+            <p style={{ color: "#777" }}>Coming soon 👀</p>
+          </div>
+        )}
+
+        {/* 🔥 CAST */}
+        {activeTab === "characters" && (
+          <div className="characters">
+            <h2>Characters</h2>
             <p style={{ color: "#777" }}>Coming soon 👀</p>
           </div>
         )}
       </div>
+
+      {/*Modals and Hovers*/}
       {hoverEntry && entryDistribution && (
         <div
           className="rating-overlay"
