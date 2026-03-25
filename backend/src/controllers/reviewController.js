@@ -31,12 +31,21 @@ export const createReview = async (req, res) => {
       if (entry.type !== "series") {
         if (inputRating) {
           // 🔥 guarda voto automaticamente
-          await Vote.upsert({
-            userId,
-            entryId,
-            value: inputRating,
-            type: "entry",
-          });
+          if (inputRating) {
+            finalRating = inputRating;
+          } else {
+            const vote = await Vote.findOne({
+              where: { userId, entryId },
+            });
+
+            if (!vote) {
+              return res.status(400).json({
+                message: "Tens de avaliar o filme antes de fazer review",
+              });
+            }
+
+            finalRating = vote.value;
+          }
 
           finalRating = inputRating;
         } else {
@@ -80,12 +89,21 @@ export const createReview = async (req, res) => {
     // 📺 EPISODE
     if (type === "episode") {
       if (inputRating) {
-        await Vote.upsert({
-          userId,
-          episodeId,
-          value: inputRating,
-          type: "episode",
-        });
+        if (inputRating) {
+          finalRating = inputRating;
+        } else {
+          const vote = await Vote.findOne({
+            where: { userId, episodeId },
+          });
+
+          if (!vote) {
+            return res.status(400).json({
+              message: "Tens de avaliar o episódio antes de fazer review",
+            });
+          }
+
+          finalRating = vote.value;
+        }
 
         finalRating = inputRating;
       } else {
