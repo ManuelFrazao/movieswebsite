@@ -1,4 +1,5 @@
 import { Review, Vote, Episode, Like, User } from "../models/index.js";
+import { Op } from "sequelize";
 
 // =====================
 // CREATE REVIEW
