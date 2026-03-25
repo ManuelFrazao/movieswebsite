@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Box, Button, Typography, MenuItem, Select } from "@mui/material";
 import ActorAutocomplete from "./ActorAutocomplete";
 import CharacterAutocomplete from "./CharacterAutocomplete";
@@ -13,14 +13,18 @@ export default function CastManager({
   const [tempCharacter, setTempCharacter] = useState(null);
   const [roleType, setRoleType] = useState("supporting");
 
-  // 🔥 ADD CAST
+  const characterRef = useRef();
+  const actorRef = useRef();
+
+  // 🔥 ADD CAST (manual button only)
   const addCast = () => {
     if (!tempActor || !tempCharacter) return;
 
     setCastData((prev) => {
       const exists = prev.some(
         (c) =>
-          c.actor.id === tempActor.id && c.character.id === tempCharacter.id,
+          c.actor?.id === tempActor.id &&
+          c.character?.id === tempCharacter.id
       );
 
       if (exists) return prev;
@@ -34,11 +38,12 @@ export default function CastManager({
       };
 
       const updated = [...prev, newItem];
-      onChange(updated);
+      if (onChange) onChange(updated);
       return updated;
     });
 
     setTempCharacter(null);
+
     setTimeout(() => {
       characterRef.current?.focus();
     }, 0);
@@ -50,45 +55,44 @@ export default function CastManager({
       order: index + 1,
     }));
 
-  // ❌ REMOVE
   const removeCast = (id) => {
     const updated = normalizeOrder(castData.filter((c) => c.id !== id));
-
     setCastData(updated);
-    onChange(updated);
+    if (onChange) onChange(updated);
   };
 
-  // 🔼 DRAG LOGIC (simple version)
   const moveUp = (index) => {
     if (index === 0) return;
 
     const newCast = [...castData];
-    [newCast[index - 1], newCast[index]] = [newCast[index], newCast[index - 1]];
+    [newCast[index - 1], newCast[index]] = [
+      newCast[index],
+      newCast[index - 1],
+    ];
 
     const updated = normalizeOrder(newCast);
     setCastData(updated);
-    onChange(updated);
+    if (onChange) onChange(updated);
   };
 
   const moveDown = (index) => {
     if (index === castData.length - 1) return;
 
     const newCast = [...castData];
-    [newCast[index + 1], newCast[index]] = [newCast[index], newCast[index + 1]];
+    [newCast[index + 1], newCast[index]] = [
+      newCast[index],
+      newCast[index + 1],
+    ];
 
     const updated = normalizeOrder(newCast);
     setCastData(updated);
-    onChange(updated);
+    if (onChange) onChange(updated);
   };
-
-  const characterRef = useRef();
-  const actorRef = useRef();
 
   return (
     <Box mt={4}>
       <Typography variant="h6">Cast Manager</Typography>
 
-      {/* ADD FORM */}
       <Box display="flex" gap={2} mt={2} flexWrap="wrap">
         <ActorAutocomplete
           inputRef={actorRef}
@@ -99,21 +103,28 @@ export default function CastManager({
             }, 0);
           }}
         />
+
         {tempActor && (
           <Typography sx={{ alignSelf: "center" }}>
             🎭 {tempActor.name}
           </Typography>
         )}
+
         <CharacterAutocomplete
           disabled={!tempActor}
           onSelect={setTempCharacter}
           inputRef={characterRef}
         />
-        <Select value={roleType} onChange={(e) => setRoleType(e.target.value)}>
+
+        <Select
+          value={roleType}
+          onChange={(e) => setRoleType(e.target.value)}
+        >
           <MenuItem value="main">Main</MenuItem>
           <MenuItem value="supporting">Supporting</MenuItem>
           <MenuItem value="guest">Guest</MenuItem>
         </Select>
+
         {tempActor && (
           <Button
             onClick={() => {
@@ -124,6 +135,7 @@ export default function CastManager({
             Change Actor
           </Button>
         )}
+
         <Button
           variant="contained"
           onClick={addCast}
@@ -133,7 +145,6 @@ export default function CastManager({
         </Button>
       </Box>
 
-      {/* LIST */}
       {castData.map((c, index) => (
         <Box
           key={c.id}
@@ -146,8 +157,8 @@ export default function CastManager({
           borderRadius={2}
         >
           <Typography>
-            {index + 1}. {c.actor?.name || "❌ Unknown Actor"} →{" "}
-            {c.character?.name || "❌ Unknown Character"} ({c.roleType})
+            {index + 1}. {c.actor?.name || "❌"} →{" "}
+            {c.character?.name || "❌"} ({c.roleType})
           </Typography>
 
           <Button onClick={() => moveUp(index)}>↑</Button>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TextField, Box, CircularProgress } from "@mui/material";
 import api from "../services/api";
 
@@ -6,8 +6,10 @@ export default function ActorAutocomplete({ onSelect, inputRef }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  // 🔥 debounce
+  const containerRef = useRef();
+
   useEffect(() => {
     const delay = setTimeout(() => {
       if (query.length >= 2) {
@@ -20,11 +22,23 @@ export default function ActorAutocomplete({ onSelect, inputRef }) {
     return () => clearTimeout(delay);
   }, [query]);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!containerRef.current?.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const searchActors = async (q) => {
     try {
       setLoading(true);
       const res = await api.get(`/actors/search?q=${encodeURIComponent(q)}`);
       setResults(Array.isArray(res.data) ? res.data : []);
+      setOpen(true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -35,79 +49,63 @@ export default function ActorAutocomplete({ onSelect, inputRef }) {
   const handleSelect = (actor) => {
     setQuery(actor.name);
     setResults([]);
-    onSelect(actor); // 🔥 send to parent
+    setOpen(false);
+    onSelect(actor);
   };
 
   const handleCreate = async () => {
-    try {
-      const res = await api.post("/actors", { name: query });
-      handleSelect(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await api.post("/actors", { name: query });
+    handleSelect(res.data);
   };
 
   return (
-    <Box position="relative">
+    <Box position="relative" ref={containerRef}>
       <TextField
         inputRef={inputRef}
         label="Search Actor"
         fullWidth
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
       />
 
-      {/* Dropdown */}
-      {Array.isArray(results) && query.length >= 2 && (
+      {open && query.length >= 2 && (
         <Box
           sx={{
             position: "absolute",
             width: "100%",
             background: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: 1,
-            mt: 1,
             zIndex: 10,
-            maxHeight: 250,
-            overflowY: "auto",
           }}
         >
-          {results.length === 0 && (
-            <Box sx={{ p: 1, color: "#888" }}>No actors found</Box>
-          )}
+          {results.length === 0 && <Box sx={{ p: 1 }}>No actors found</Box>}
+
           {results.map((actor) => (
             <Box
               key={actor.id}
               onClick={() => handleSelect(actor)}
-              sx={{
-                p: 1,
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                cursor: "pointer",
-                "&:hover": { background: "#eee" },
-              }}
+              sx={{ p: 1, cursor: "pointer" }}
             >
-              {actor.profileImage && (
-                <img
-                  src={actor.profileImage}
-                  alt=""
-                  style={{ width: 30, height: 30, borderRadius: "50%" }}
-                />
-              )}
               {actor.name}
             </Box>
           ))}
 
-          {/* Create option */}
           <Box
             onClick={handleCreate}
             sx={{
               p: 1,
-              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              cursor: "pointer", // ✅ FIX
               borderTop: "1px solid #ddd",
               fontWeight: "bold",
-              "&:hover": { background: "#eee" },
+              "&:hover": {
+                background: "#eee",
+                transform: "scale(1.01)",
+              },
             }}
           >
             <svg
@@ -115,14 +113,13 @@ export default function ActorAutocomplete({ onSelect, inputRef }) {
               width="16"
               height="16"
               fill="currentColor"
-              className="bi bi-plus-lg"
               viewBox="0 0 16 16"
             >
               <path
-                fillRule="evenodd"
+                fillRule="evenodd" // ✅ FIX
                 d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"
               />
-            </svg>{" "}
+            </svg>
             Create "{query}"
           </Box>
         </Box>
