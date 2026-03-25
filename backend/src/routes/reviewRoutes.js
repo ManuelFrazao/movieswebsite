@@ -3,6 +3,7 @@ import {
   createReview,
   getEntryReviews,
   getEpisodeReviews,
+  getEpisodeReviewCount,
   deleteReview,
 } from "../controllers/reviewController.js";
 
@@ -13,6 +14,7 @@ const router = express.Router();
 router.post("/", protect, createReview);
 router.get("/entry/:id", getEntryReviews);
 router.get("/episode/:id", getEpisodeReviews);
+router.get("/episode/:id/count", getEpisodeReviewCount);
 router.delete("/:id", protect, deleteReview);
 
 export default router;

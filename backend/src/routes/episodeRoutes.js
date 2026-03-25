@@ -3,6 +3,7 @@ import {
   createEpisode,
   getEpisodesBySeason,
   deleteEpisode,
+  getEpisodeById,
   updateEpisode,
 } from "../controllers/episodeController.js";
 import upload from "../middleware/upload.js";
@@ -26,6 +27,7 @@ router.put(
   upload.single("image"), // 🔥 FALTA ISTO
   updateEpisode
 );
+router.get("/:id", getEpisodeById);
 router.delete("/:id", protect, isAdmin, deleteEpisode);
 
 export default router;

@@ -1851,7 +1851,7 @@ export default function Entry() {
                     {openSeason === season.id && (
                       <div className="episodes">
                         {season.episodes?.map((ep) => (
-                          <div key={ep.id} className="episode-row">
+                          <div key={ep.id} className="episode-row" onClick={() => navigate(`/episode/${ep.id}`)} style={{ cursor: "pointer" }}>
                             <div className="episode-number">{ep.number}.</div>
                             {/*{ep.isFinal && (
                                     <span className="final-badge">FINAL</span>

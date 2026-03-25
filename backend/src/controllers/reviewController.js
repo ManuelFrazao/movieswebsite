@@ -122,6 +122,20 @@ export const getEpisodeReviews = async (req, res) => {
   }
 };
 
+export const getEpisodeReviewCount = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const count = await Review.count({
+      where: { episodeId: id },
+    });
+
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 export const deleteReview = async (req, res) => {
   try {
     const { id } = req.params;

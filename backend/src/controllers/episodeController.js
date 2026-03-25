@@ -44,7 +44,7 @@ export const createEpisode = async (req, res) => {
 
         await Entry.update(
           { releaseDate: firstDate },
-          { where: { id: season.entryId } }
+          { where: { id: season.entryId } },
         );
       }
     }
@@ -134,6 +134,35 @@ export const updateEpisode = async (req, res) => {
       isFinal,
       thumbnail,
     });
+
+    res.json(episode);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getEpisodeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const episode = await Episode.findByPk(id, {
+      include: [
+        {
+          model: Season,
+          as: "season",
+          include: [
+            {
+              model: Entry,
+              as: "entry",
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!episode) {
+      return res.status(404).json({ message: "Not found" });
+    }
 
     res.json(episode);
   } catch (err) {
