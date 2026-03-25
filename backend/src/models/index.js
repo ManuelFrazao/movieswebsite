@@ -187,13 +187,6 @@ Like.belongsTo(Review, {
 // =====================
 // Character
 // =====================
-Entry.belongsToMany(Character, {
-  through: Cast,
-  foreignKey: "entryId",
-  otherKey: "characterId",
-  as: "characters",
-});
-
 Character.belongsToMany(Entry, {
   through: Cast,
   foreignKey: "characterId",
