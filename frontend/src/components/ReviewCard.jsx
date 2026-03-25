@@ -32,6 +32,24 @@ export default function ReviewCard({ review, onLike }) {
     });
   };
 
+  const formatRelativeDate = (date) => {
+    const now = new Date();
+    const past = new Date(date);
+
+    const diff = Math.floor((now - past) / 1000);
+
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+
+    return past.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="review-card">
       <div className="review-header">
@@ -40,7 +58,7 @@ export default function ReviewCard({ review, onLike }) {
           <strong>{review.user.username}</strong>
 
           <div className="review-meta">
-            <span className="review-date">{formatDate(review.createdAt)}</span>
+            <span>{formatRelativeDate(review.createdAt)}</span>
             {isSeries && review.episode && (
               <div className="review-episode">
                 Ep {review.episode.number} • {review.episode.title}
