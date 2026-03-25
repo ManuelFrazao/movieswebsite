@@ -7,6 +7,9 @@ import EpisodeModel from "./episode.js";
 import VoteModel from "./vote.js";
 import ReviewModel from "./review.js";
 import LikeModel from "./like.js";
+import CharacterModel from "./character.js";
+import CastModel from "./cast.js";
+import ActorModel from "./actor.js";
 
 const User = UserModel(sequelize);
 const Entry = EntryModel(sequelize);
@@ -15,6 +18,9 @@ const Episode = EpisodeModel(sequelize);
 const Vote = VoteModel(sequelize);
 const Review = ReviewModel(sequelize);
 const Like = LikeModel(sequelize);
+const Character = CharacterModel(sequelize);
+const Cast = CastModel(sequelize);
+const Actor = ActorModel(sequelize);
 
 // =====================
 // RELATIONS
@@ -24,7 +30,7 @@ const Like = LikeModel(sequelize);
 Entry.hasMany(Season, {
   foreignKey: "entryId",
   as: "seasons",
-    onDelete: "CASCADE",
+  onDelete: "CASCADE",
   hooks: true,
 });
 
@@ -37,7 +43,7 @@ Season.belongsTo(Entry, {
 Season.hasMany(Episode, {
   foreignKey: "seasonId",
   as: "episodes",
-    onDelete: "CASCADE",
+  onDelete: "CASCADE",
   hooks: true,
 });
 
@@ -58,7 +64,7 @@ Episode.belongsTo(Entry, {
 });
 
 // =====================
-// VOTES RELATIONS 
+// VOTES RELATIONS
 // =====================
 
 // User → Votes
@@ -178,4 +184,93 @@ Like.belongsTo(Review, {
   as: "review",
 });
 
-export { sequelize, User, Entry, Season, Episode, Vote, Review, Like };
+// =====================
+// Character
+// =====================
+Entry.belongsToMany(Character, {
+  through: Cast,
+  foreignKey: "entryId",
+  otherKey: "characterId",
+  as: "characters",
+});
+
+Character.belongsToMany(Entry, {
+  through: Cast,
+  foreignKey: "characterId",
+  otherKey: "entryId",
+  as: "entries",
+});
+
+Episode.belongsToMany(Character, {
+  through: Cast,
+  foreignKey: "episodeId",
+  otherKey: "characterId",
+  as: "characters",
+});
+
+Character.belongsToMany(Episode, {
+  through: Cast,
+  foreignKey: "characterId",
+  otherKey: "episodeId",
+  as: "episodes",
+});
+
+Character.hasMany(Cast, {
+  foreignKey: "characterId",
+  as: "castRoles",
+});
+
+Cast.belongsTo(Character, {
+  foreignKey: "characterId",
+  as: "character",
+});
+
+// =====================
+// Actor
+// =====================
+Actor.hasMany(Cast, {
+  foreignKey: "actorId",
+  as: "roles",
+});
+
+Cast.belongsTo(Actor, {
+  foreignKey: "actorId",
+  as: "actor",
+});
+
+// =====================
+// Cast
+// =====================
+Entry.hasMany(Cast, {
+  foreignKey: "entryId",
+  as: "cast",
+});
+
+Cast.belongsTo(Entry, {
+  foreignKey: "entryId",
+  as: "entry",
+});
+
+Episode.hasMany(Cast, {
+  foreignKey: "episodeId",
+  as: "cast",
+});
+
+Cast.belongsTo(Episode, {
+  foreignKey: "episodeId",
+  as: "episode",
+});
+
+export {
+  sequelize,
+  User,
+  Entry,
+  Season,
+  Episode,
+  Vote,
+  Review,
+  Like,
+  Cast,
+  Character,
+  Actor,
+};

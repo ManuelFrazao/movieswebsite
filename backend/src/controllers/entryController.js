@@ -1,5 +1,5 @@
 import cloudinary from "../utils/cloudinary.js";
-import { Entry, Season, Episode } from "../models/index.js";
+import { Entry, Season, Episode, Character } from "../models/index.js";
 
 const generateSlug = (title) => {
   return (
@@ -97,6 +97,13 @@ export const getEntryById = async (req, res) => {
             },
           ],
         },
+        {
+          model: Character,
+          as: "characters",
+          through: {
+            attributes: ["actorName", "roleType", "order"],
+          },
+        },
       ],
     });
 
@@ -124,6 +131,20 @@ export const getEntryBySlug = async (req, res) => {
             {
               model: Episode,
               as: "episodes",
+            },
+          ],
+        },
+        {
+          model: Cast,
+          as: "cast",
+          include: [
+            {
+              model: Actor,
+              as: "actor",
+            },
+            {
+              model: Character,
+              as: "character",
             },
           ],
         },
