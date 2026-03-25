@@ -46,6 +46,8 @@ export default function Entry() {
       }
 
       const res = await api.get(url);
+      
+      console.log("REVIEWS RESPONSE:", res.data);
 
       setReviews(res.data.reviews || res.data);
       setTopReview(res.data.topReview || null);
@@ -55,6 +57,7 @@ export default function Entry() {
   };
 
   useEffect(() => {
+    console.log("ENTRY:", entry);
     if (!entry?.id) return;
     fetchReviews();
   }, [entry, reviewSort]);

@@ -1,4 +1,4 @@
-import { Review, Vote, Episode, Like, User } from "../models/index.js";
+import { Review, Vote, Episode, Like, User, Season } from "../models/index.js";
 import { Op } from "sequelize";
 
 // =====================
