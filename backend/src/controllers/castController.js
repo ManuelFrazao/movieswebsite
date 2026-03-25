@@ -81,6 +81,8 @@ export const deleteCastByEntry = async (req, res) => {
 
     res.json({ message: "Cast cleared" });
   } catch (err) {
+    console.error("FULL ERROR:", err);
+    console.error("DETAILS:", err.errors);
     res.status(500).json({ error: err.message });
   }
 };
