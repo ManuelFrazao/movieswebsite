@@ -1,37 +1,65 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Button, Typography, MenuItem, Select } from "@mui/material";
 import ActorAutocomplete from "./ActorAutocomplete";
 import CharacterAutocomplete from "./CharacterAutocomplete";
 
-export default function CastManager({ entryId, onChange, castData, setCastData }) {
+export default function CastManager({
+  entryId,
+  onChange,
+  castData,
+  setCastData,
+}) {
   const [tempActor, setTempActor] = useState(null);
   const [tempCharacter, setTempCharacter] = useState(null);
   const [roleType, setRoleType] = useState("supporting");
+
+  useEffect(() => {
+    if (tempActor && tempCharacter) {
+      addCast();
+    }
+  }, [tempActor, tempCharacter]);
 
   // 🔥 ADD CAST
   const addCast = () => {
     if (!tempActor || !tempCharacter) return;
 
-    const newItem = {
-      id: Date.now(),
-      actor: tempActor,
-      character: tempCharacter,
-      roleType,
-      order: castData.length + 1,
-    };
+    setCastData((prev) => {
+      const exists = prev.some(
+        (c) =>
+          c.actor.id === tempActor.id && c.character.id === tempCharacter.id,
+      );
 
-    const updated = [...castData, newItem];
-    setCastData(updated);
-    onChange(updated);
+      if (exists) return prev;
 
-    // reset
-    setTempActor(null);
+      const newItem = {
+        id: Date.now(),
+        actor: tempActor,
+        character: tempCharacter,
+        roleType,
+        order: prev.length + 1,
+      };
+
+      const updated = [...prev, newItem];
+      onChange(updated);
+      return updated;
+    });
+
     setTempCharacter(null);
+    setTimeout(() => {
+      characterRef.current?.focus();
+    }, 0);
   };
+
+  const normalizeOrder = (list) =>
+    list.map((item, index) => ({
+      ...item,
+      order: index + 1,
+    }));
 
   // ❌ REMOVE
   const removeCast = (id) => {
-    const updated = castData.filter((c) => c.id !== id);
+    const updated = normalizeOrder(castData.filter((c) => c.id !== id));
+
     setCastData(updated);
     onChange(updated);
   };
@@ -43,8 +71,9 @@ export default function CastManager({ entryId, onChange, castData, setCastData }
     const newCast = [...castData];
     [newCast[index - 1], newCast[index]] = [newCast[index], newCast[index - 1]];
 
-    setCastData(newCast);
-    onChange(newCast);
+    const updated = normalizeOrder(newCast);
+    setCastData(updated);
+    onChange(updated);
   };
 
   const moveDown = (index) => {
@@ -53,9 +82,13 @@ export default function CastManager({ entryId, onChange, castData, setCastData }
     const newCast = [...castData];
     [newCast[index + 1], newCast[index]] = [newCast[index], newCast[index + 1]];
 
-    setCastData(newCast);
-    onChange(newCast);
+    const updated = normalizeOrder(newCast);
+    setCastData(updated);
+    onChange(updated);
   };
+
+  const characterRef = useRef();
+  const actorRef = useRef();
 
   return (
     <Box mt={4}>
@@ -63,18 +96,40 @@ export default function CastManager({ entryId, onChange, castData, setCastData }
 
       {/* ADD FORM */}
       <Box display="flex" gap={2} mt={2} flexWrap="wrap">
-        <ActorAutocomplete onSelect={setTempActor} />
-        <CharacterAutocomplete onSelect={setTempCharacter} />
-
+        <ActorAutocomplete
+          inputRef={actorRef}
+          onSelect={(actor) => {
+            setTempActor(actor);
+            setTimeout(() => {
+              characterRef.current?.focus();
+            }, 0);
+          }}
+        />
+        {tempActor && (
+          <Typography sx={{ alignSelf: "center" }}>
+            🎭 {tempActor.name}
+          </Typography>
+        )}
+        <CharacterAutocomplete
+          disabled={!tempActor}
+          onSelect={setTempCharacter}
+          inputRef={characterRef}
+        />
         <Select value={roleType} onChange={(e) => setRoleType(e.target.value)}>
           <MenuItem value="main">Main</MenuItem>
           <MenuItem value="supporting">Supporting</MenuItem>
           <MenuItem value="guest">Guest</MenuItem>
         </Select>
-
-        <Button variant="contained" onClick={addCast}>
-          Add
-        </Button>
+        {tempActor && (
+          <Button
+            onClick={() => {
+              setTempActor(null);
+              setTimeout(() => actorRef.current?.focus(), 0);
+            }}
+          >
+            Change Actor
+          </Button>
+        )}
       </Box>
 
       {/* LIST */}

@@ -1,6 +1,6 @@
 import cloudinary from "../utils/cloudinary.js";
 import { Actor } from "../models/index.js";
-import { Op, Sequelize } from "sequelize";
+import { Op, Sequelize, fn, col, where } from "sequelize";
 
 const generateSlug = (name) => {
   return (
@@ -112,30 +112,25 @@ export const updateActor = async (req, res) => {
 
 export const searchActors = async (req, res) => {
   try {
-    let { q } = req.query;
+    const { q } = req.query;
 
     if (!q) return res.json([]);
 
-    // 🔥 sanitize input (basic but important)
-    q = q.trim().replace(/'/g, "");
+    const terms = q.split(" ");
 
     const actors = await Actor.findAll({
       where: {
-        name: {
-          [Op.iLike]: `%${q}%`,
-        },
+        [Op.and]: terms.map((term) =>
+          where(fn("LOWER", col("name")), {
+            [Op.like]: `%${term.toLowerCase()}%`,
+          }),
+        ),
       },
-      order: [
-        // 🔥 prioritize names that START with query
-        [Sequelize.literal(`"name" ILIKE '${q}%'`), "DESC"],
-        ["name", "ASC"],
-      ],
       limit: 20,
     });
 
     res.json(actors);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

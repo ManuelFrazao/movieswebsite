@@ -346,6 +346,7 @@ export default function EditEntry() {
           entryId={id}
           castData={castData}
           setCastData={setCastData}
+          onChange={setCastData}
         />
 
         <Button variant="contained" onClick={handleSaveCast} sx={{ mt: 2 }}>

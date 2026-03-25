@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { TextField, Box } from "@mui/material";
 import api from "../services/api";
 
-export default function CharacterAutocomplete({ onSelect }) {
+export default function CharacterAutocomplete({
+  onSelect,
+  inputRef,
+  disabled,
+}) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
 
@@ -20,8 +24,8 @@ export default function CharacterAutocomplete({ onSelect }) {
 
   const search = async (q) => {
     try {
-      const res = await api.get(`/characters/search?q=${q}`);
-      setResults(res.data);
+      const res = await api.get(`/actors/search?q=${encodeURIComponent(q)}`);
+      setResults(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
     }
@@ -41,13 +45,15 @@ export default function CharacterAutocomplete({ onSelect }) {
   return (
     <Box position="relative">
       <TextField
+        disabled={disabled}
+        inputRef={inputRef}
         label="Character"
         fullWidth
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
 
-      {results.length > 0 && (
+      {query.length >= 2 && (
         <Box
           sx={{
             position: "absolute",
@@ -56,6 +62,9 @@ export default function CharacterAutocomplete({ onSelect }) {
             zIndex: 10,
           }}
         >
+          {results.length === 0 && (
+            <Box sx={{ p: 1, color: "#888" }}>No characters found</Box>
+          )}
           {results.map((c) => (
             <Box
               key={c.id}
@@ -71,11 +80,11 @@ export default function CharacterAutocomplete({ onSelect }) {
               width="16"
               height="16"
               fill="currentColor"
-              class="bi bi-plus-lg"
+              className="bi bi-plus-lg"
               viewBox="0 0 16 16"
             >
               <path
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"
               />
             </svg>{" "}
