@@ -1,4 +1,4 @@
-import { Vote, Entry, Episode } from "../models/index.js";
+import { Vote, Entry, Episode, Review } from "../models/index.js";
 import { Op } from "sequelize";
 
 // =====================
@@ -21,6 +21,65 @@ export const createVote = async (req, res) => {
       entryId: entryId || null,
       episodeId: episodeId || null,
     });
+
+    // =====================
+    // 🔥 UPDATE REVIEW AUTOMATICAMENTE
+    // =====================
+
+    // 📺 EPISODE
+    if (type === "episode" && episodeId) {
+      await Review.update(
+        { rating: value },
+        {
+          where: {
+            userId,
+            episodeId,
+          },
+        },
+      );
+    }
+
+    // 🎬 ENTRY (movie OU série via média)
+    if (type === "entry" && entryId) {
+      const entry = await Entry.findByPk(entryId);
+
+      if (entry?.type === "movie") {
+        // 🎬 movie → rating direto
+        await Review.update(
+          { rating: value },
+          {
+            where: {
+              userId,
+              entryId,
+            },
+          },
+        );
+      } else {
+        // 📺 série → média dos episódios
+        const votes = await Vote.findAll({
+          where: { userId },
+          include: {
+            model: Episode,
+            as: "episode",
+            where: { entryId },
+          },
+        });
+
+        if (votes.length > 0) {
+          const avg = votes.reduce((sum, v) => sum + v.value, 0) / votes.length;
+
+          await Review.update(
+            { rating: Number(avg.toFixed(1)) },
+            {
+              where: {
+                userId,
+                entryId,
+              },
+            },
+          );
+        }
+      }
+    }
 
     // =====================
     // 🎬 MOVIE (ENTRY DIRECT)

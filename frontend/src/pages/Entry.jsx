@@ -46,8 +46,6 @@ export default function Entry() {
       }
 
       const res = await api.get(url);
-      
-      console.log("REVIEWS RESPONSE:", res.data);
 
       setReviews(res.data.reviews || res.data);
       setTopReview(res.data.topReview || null);
@@ -57,10 +55,9 @@ export default function Entry() {
   };
 
   useEffect(() => {
-    console.log("ENTRY:", entry);
     if (!entry?.id) return;
     fetchReviews();
-  }, [entry, reviewSort]);
+  }, [entry?.id, reviewSort]);
 
   const fetchEntryDistribution = async () => {
     if (entryDistribution) return;
@@ -77,7 +74,7 @@ export default function Entry() {
     if (!entry?.id) return;
 
     fetchEntryDistribution();
-  }, [entry]);
+  }, [entry?.id]);
 
   const fetchDistribution = async (episodeId, force = false) => {
     if (!force && episodeDistribution[episodeId]) return;
@@ -107,8 +104,6 @@ export default function Entry() {
     fetchEntry();
   }, [slug]);
 
-  console.log(entry);
-
   const fetchEpisodeStats = async (episodeId) => {
     try {
       const res = await api.get(`/votes/episode/${episodeId}/stats`);
@@ -134,7 +129,7 @@ export default function Entry() {
   useEffect(() => {
     if (!entry?.id) return;
     fetchEpisodeTrends(entry.id);
-  }, [entry]);
+  }, [entry?.id]);
 
   useEffect(() => {
     if (!entry?.seasons) return;
@@ -146,7 +141,7 @@ export default function Entry() {
         fetchEpisodeReviewCount(ep.id);
       });
     });
-  }, [entry]);
+  }, [entry?.id]);
 
   const fetchTrend = async (entryId) => {
     try {
@@ -160,7 +155,7 @@ export default function Entry() {
   useEffect(() => {
     if (!entry?.id) return;
     fetchTrend(entry.id);
-  }, [entry]);
+  }, [entry?.id]);
 
   const fetchEpisodeReviewCount = async (episodeId) => {
     try {
@@ -182,7 +177,7 @@ export default function Entry() {
       .get(`/reviews/entry/${entry.id}/count`)
       .then((res) => setEntryReviewCount(res.data.count))
       .catch(console.error);
-  }, [entry]);
+  }, [entry?.id]);
 
   if (!entry) return <p className="loading">Loading...</p>;
 
@@ -2135,7 +2130,11 @@ export default function Entry() {
             {/* 📝 LIST */}
             <div className="reviews-list">
               {reviews.map((r) => (
-                <ReviewCard key={r.id} review={r} isSeries={entry?.type === "series"}/>
+                <ReviewCard
+                  key={r.id}
+                  review={r}
+                  isSeries={entry?.type === "series"}
+                />
               ))}
             </div>
           </div>

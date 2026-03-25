@@ -293,6 +293,26 @@ export default function Entry() {
     }
   };
 
+  const openReviewModal = async () => {
+  try {
+    let rating = 5;
+
+    if (entry.type === "series") {
+      const res = await api.get(`/votes/entry/${entry.id}/my-average`);
+      rating = res.data.avg || 5;
+    } else {
+      const res = await api.get(`/votes/entry/${entry.id}/my-vote`);
+      rating = res.data.value || 5;
+    }
+
+    setReviewRating(Math.round(rating));
+    setReviewModal(true);
+  } catch (err) {
+    console.error(err);
+    setReviewModal(true);
+  }
+};
+
   function RatingDistributionEntry({ data }) {
     if (!data) return null;
 
@@ -988,7 +1008,7 @@ export default function Entry() {
 
             <button
               className="primary-btn"
-              onClick={() => setReviewModal(true)}
+              onClick={openReviewModal}
             >
               Write Review
             </button>
