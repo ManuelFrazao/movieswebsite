@@ -80,13 +80,24 @@ export default function ActorAutocomplete({ onSelect, inputRef }) {
             zIndex: 10,
           }}
         >
-          {results.length === 0 && <Box sx={{ p: 1 }}>No actors found</Box>}
+          {results.length === 0 && (
+            <Box sx={{ p: 1, color: "#888", fontStyle: "italic" }}>
+              No actors found
+            </Box>
+          )}
 
           {results.map((actor) => (
             <Box
               key={actor.id}
               onClick={() => handleSelect(actor)}
-              sx={{ p: 1, cursor: "pointer" }}
+              sx={{
+                p: 1,
+                cursor: "pointer",
+                color: "#111", // ✅ strong readable text
+                "&:hover": {
+                  background: "#eee",
+                },
+              }}
             >
               {actor.name}
             </Box>

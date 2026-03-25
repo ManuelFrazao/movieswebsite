@@ -254,6 +254,16 @@ Cast.belongsTo(Episode, {
   as: "episode",
 });
 
+Actor.hasMany(Cast, {
+  foreignKey: "actorId",
+  as: "roles",
+});
+
+Cast.belongsTo(Actor, {
+  foreignKey: "actorId",
+  as: "actor",
+});
+
 export {
   sequelize,
   User,

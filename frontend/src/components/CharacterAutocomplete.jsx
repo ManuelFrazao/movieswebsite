@@ -83,13 +83,24 @@ export default function CharacterAutocomplete({
             zIndex: 10,
           }}
         >
-          {results.length === 0 && <Box sx={{ p: 1 }}>No characters found</Box>}
+          {results.length === 0 && (
+            <Box sx={{ p: 1, color: "#888", fontStyle: "italic" }}>
+              No characters found
+            </Box>
+          )}
 
           {results.map((c) => (
             <Box
               key={c.id}
               onClick={() => handleSelect(c)}
-              sx={{ p: 1, cursor: "pointer" }}
+              sx={{
+                p: 1,
+                cursor: "pointer",
+                color: "#111", // ✅ strong readable text
+                "&:hover": {
+                  background: "#eee",
+                },
+              }}
             >
               {c.name}
             </Box>
