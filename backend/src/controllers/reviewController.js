@@ -28,8 +28,7 @@ export const createReview = async (req, res) => {
         });
       }
 
-      const avg =
-        votes.reduce((sum, v) => sum + v.value, 0) / votes.length;
+      const avg = votes.reduce((sum, v) => sum + v.value, 0) / votes.length;
 
       rating = Number(avg.toFixed(1));
     }
@@ -131,6 +130,36 @@ export const getEpisodeReviewCount = async (req, res) => {
     });
 
     res.json({ count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getEntryReviewCount = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 🎬 reviews diretas da entry
+    const entryReviews = await Review.count({
+      where: { entryId: id },
+    });
+
+    // 📺 episódios da entry
+    const episodes = await Episode.findAll({
+      where: { entryId: id },
+      attributes: ["id"],
+    });
+
+    const episodeIds = episodes.map((e) => e.id);
+
+    // 📊 reviews dos episódios
+    const episodeReviews = await Review.count({
+      where: { episodeId: episodeIds },
+    });
+
+    res.json({
+      count: entryReviews + episodeReviews,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

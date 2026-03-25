@@ -5,6 +5,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import AdminRoute from "./components/AdminRoute";
 import EditEntry from "./pages/admin/EditEntry";
 import Entry from "./pages/Entry";
+import Episode from "./pages/Episode";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/admin/entries/:id" element={<EditEntry />} />
 
         <Route path="/entry/:slug" element={<Entry />} />
+        <Route path="/episode/:id" element={<Episode />} />
       </Routes>
     </BrowserRouter>
   );

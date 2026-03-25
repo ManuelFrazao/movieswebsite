@@ -3,6 +3,7 @@ import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import "./Trending.css";
 import RatingBadge from "../components/RatingBadge";
+import { formatVotes } from "../utils/formatVotes";
 
 export default function Trending() {
   const [entries, setEntries] = useState([]);
@@ -263,7 +264,7 @@ function Section({ title, entries, navigate, trendingData }) {
             <RatingBadge value={Number(avgs[hoverIndex]) || 0} />
 
             <div>
-              <strong>{values[hoverIndex]}</strong> votes
+              <strong>{formatVotes(values[hoverIndex])}</strong> votes
             </div>
           </div>
         )}
@@ -339,12 +340,12 @@ function Section({ title, entries, navigate, trendingData }) {
                 {entry.totalVotes > 0 && Number(entry.avg) > 0 && (
                   <RatingBadge
                     value={Number(entry.avg)}
-                    votes={entry.totalVotes}
+                    votes={formatVotes(entry.totalVotes)}
                   />
                 )}
                 {entry.recentVotes > 0 && (
                   <span className="trend-badge">
-                    +{entry.recentVotes} this week
+                    +{formatVotes(entry.recentVotes)} this week
                   </span>
                 )}
               </div>

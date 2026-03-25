@@ -32,6 +32,8 @@ export default function Entry() {
   const [reviews, setReviews] = useState([]);
   const [topReview, setTopReview] = useState(null);
   const [reviewSort, setReviewSort] = useState("recent");
+  const [episodeReviewCounts, setEpisodeReviewCounts] = useState({});
+  const [entryReviewCount, setEntryReviewCount] = useState(0);
 
   const fetchReviews = async () => {
     try {
@@ -132,6 +134,7 @@ export default function Entry() {
       season.episodes?.forEach((ep) => {
         fetchEpisodeStats(ep.id);
         fetchDistribution(ep.id);
+        fetchEpisodeReviewCount(ep.id);
       });
     });
   }, [entry]);
@@ -149,6 +152,19 @@ export default function Entry() {
     if (!entry?.id) return;
     fetchTrend(entry.id);
   }, [entry]);
+
+  const fetchEpisodeReviewCount = async (episodeId) => {
+    try {
+      const res = await api.get(`/reviews/episode/${episodeId}/count`);
+
+      setEpisodeReviewCounts((prev) => ({
+        ...prev,
+        [episodeId]: res.data.count,
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   if (!entry) return <p className="loading">Loading...</p>;
 
@@ -1717,7 +1733,10 @@ export default function Entry() {
                       </svg>
                       Images
                     </div>
-                    <div className="entry-contents-card">
+                    <div
+                      className="entry-contents-card"
+                      onClick={() => setActiveTab("reviews")}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
@@ -1851,7 +1870,12 @@ export default function Entry() {
                     {openSeason === season.id && (
                       <div className="episodes">
                         {season.episodes?.map((ep) => (
-                          <div key={ep.id} className="episode-row" onClick={() => navigate(`/episode/${ep.id}`)} style={{ cursor: "pointer" }}>
+                          <div
+                            key={ep.id}
+                            className="episode-row"
+                            onClick={() => navigate(`/episode/${ep.id}`)}
+                            style={{ cursor: "pointer" }}
+                          >
                             <div className="episode-number">{ep.number}.</div>
                             {/*{ep.isFinal && (
                                     <span className="final-badge">FINAL</span>
@@ -1959,6 +1983,19 @@ export default function Entry() {
                                 >
                                   {ep.description}
                                 </p>
+
+                                <div className="episode-reviews">
+                                  {episodeReviewCounts[ep.id] > 0 && (
+                                    <span>
+                                      {formatVotes(
+                                        episodeReviewCounts[ep.id] || 0,
+                                      )}{" "}
+                                      {(episodeReviewCounts[ep.id] || 0) === 1
+                                        ? "review"
+                                        : "reviews"}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
 
                               {episodeTrends[ep.id] && (
