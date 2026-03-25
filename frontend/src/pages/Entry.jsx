@@ -349,6 +349,28 @@ export default function Entry() {
     }, 0);
   };
 
+  const getSeasonStats = (season) => {
+    if (!season?.episodes) return { avg: 0, votes: 0 };
+
+    let totalVotes = 0;
+    let weightedSum = 0;
+
+    season.episodes.forEach((ep) => {
+      const stats = episodeStats[ep.id];
+      if (!stats || stats.totalVotes === 0) return;
+
+      totalVotes += stats.totalVotes;
+      weightedSum += stats.averageRating * stats.totalVotes;
+    });
+
+    const avg = totalVotes > 0 ? weightedSum / totalVotes : 0;
+
+    return {
+      avg,
+      votes: totalVotes,
+    };
+  };
+
   function RatingOverlay({ data }) {
     const max = Math.max(...Object.values(data), 1);
 
@@ -1035,145 +1057,337 @@ export default function Entry() {
     );
   }
 
-function EpisodeRatingGraph({ entry, episodeStats }) {
-  const [hoverIndex, setHoverIndex] = useState(null);
-  const screenWidth = useWindowWidth();
-  const svgRef = useRef(null);
+  function EpisodeRatingGraph({ entry, episodeStats }) {
+    const [hoverIndex, setHoverIndex] = useState(null);
+    const screenWidth = useWindowWidth();
+    const svgRef = useRef(null);
 
-  const isSmall = screenWidth < 900;
+    const isSmall = screenWidth < 900;
 
-  if (!entry?.seasons) return null;
+    if (!entry?.seasons) return null;
 
-  const episodes = entry.seasons.flatMap((s) =>
-    (s.episodes || [])
-      .map((ep) => {
-        const stats = episodeStats[ep.id] || {};
-        const rating = Number(stats.averageRating);
+    const episodes = entry.seasons.flatMap((s) =>
+      (s.episodes || [])
+        .map((ep) => {
+          const stats = episodeStats[ep.id] || {};
+          const rating = Number(stats.averageRating);
 
-        return {
-          ...ep,
-          seasonNumber: s.seasonNumber,
-          rating,
-          votes: stats.totalVotes || 0,
-        };
-      })
-      .filter((ep) => ep.rating > 0),
-  );
+          return {
+            ...ep,
+            seasonNumber: s.seasonNumber,
+            rating,
+            votes: stats.totalVotes || 0,
+          };
+        })
+        .filter((ep) => ep.rating > 0),
+    );
 
-  if (!episodes.length) return null;
+    if (!episodes.length) return null;
 
-  const spacing = isSmall ? 25 : 40;
-  const width = episodes.length * spacing;
-  const height = 200;
+    const spacing = isSmall ? 25 : 40;
+    const width = episodes.length * spacing;
+    const height = 200;
 
-  // 🔥 Y DINÂMICO
-  const ratings = episodes.map((ep) => ep.rating);
-  const minRating = Math.min(...ratings);
-  const maxRating = Math.max(...ratings);
+    // 🔥 Y DINÂMICO
+    const ratings = episodes.map((ep) => ep.rating);
+    const minRating = Math.min(...ratings);
+    const maxRating = Math.max(...ratings);
 
-  const padding = 0.5;
-  const minY = Math.max(0, minRating - padding);
-  const maxY = Math.min(10, maxRating + padding);
-  const range = maxY - minY || 1;
+    const padding = 0.5;
+    const minY = Math.max(0, minRating - padding);
+    const maxY = Math.min(10, maxRating + padding);
+    const range = maxY - minY || 1;
 
-  const stepX = width / (episodes.length - 1);
+    const stepX = width / (episodes.length - 1);
 
-  const points = episodes.map((ep, i) => {
-    const x = i * stepX;
-    const y = height - ((ep.rating - minY) / range) * height;
+    const points = episodes.map((ep, i) => {
+      const x = i * stepX;
+      const y = height - ((ep.rating - minY) / range) * height;
 
-    return {
-      x,
-      y,
-      rating: ep.rating,
-      title: ep.title,
-      votes: ep.votes,
-      epNumber: ep.number,
-      season: ep.seasonNumber,
+      return {
+        x,
+        y,
+        rating: ep.rating,
+        title: ep.title,
+        votes: ep.votes,
+        epNumber: ep.number,
+        season: ep.seasonNumber,
+      };
+    });
+
+    const rect = svgRef.current?.getBoundingClientRect();
+
+    // 🔥 SHAPES
+    const getSeasonShape = (season) => {
+      const shapes = ["circle", "triangle", "square", "diamond"];
+      return shapes[(season - 1) % shapes.length];
     };
-  });
 
-  const rect = svgRef.current?.getBoundingClientRect();
+    const renderPoint = (p, i, color) => {
+      const shape = getSeasonShape(p.season);
+      const size = hoverIndex === i ? 7 : 4;
 
-  // 🔥 SHAPES
-  const getSeasonShape = (season) => {
-    const shapes = ["circle", "triangle", "square", "diamond"];
-    return shapes[(season - 1) % shapes.length];
-  };
+      switch (shape) {
+        case "triangle":
+          return (
+            <polygon
+              key={i}
+              points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
 
-  const renderPoint = (p, i, color) => {
-    const shape = getSeasonShape(p.season);
-    const size = hoverIndex === i ? 7 : 4;
+        case "square":
+          return (
+            <rect
+              key={i}
+              x={p.x - size}
+              y={p.y - size}
+              width={size * 2}
+              height={size * 2}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
 
-    switch (shape) {
-      case "triangle":
-        return (
-          <polygon
-            key={i}
-            points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
-            fill={color}
-            onMouseEnter={() => setHoverIndex(i)}
-            onMouseLeave={() => setHoverIndex(null)}
-            style={{ cursor: "pointer" }}
-          />
-        );
+        case "diamond":
+          return (
+            <polygon
+              key={i}
+              points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
 
-      case "square":
-        return (
-          <rect
-            key={i}
-            x={p.x - size}
-            y={p.y - size}
-            width={size * 2}
-            height={size * 2}
-            fill={color}
-            onMouseEnter={() => setHoverIndex(i)}
-            onMouseLeave={() => setHoverIndex(null)}
-            style={{ cursor: "pointer" }}
-          />
-        );
+        default:
+          return (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={size}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+      }
+    };
 
-      case "diamond":
-        return (
-          <polygon
-            key={i}
-            points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
-            fill={color}
-            onMouseEnter={() => setHoverIndex(i)}
-            onMouseLeave={() => setHoverIndex(null)}
-            style={{ cursor: "pointer" }}
-          />
-        );
+    const steps = 5;
+    const stepSize = range / steps;
 
-      default:
-        return (
-          <circle
-            key={i}
-            cx={p.x}
-            cy={p.y}
-            r={size}
-            fill={color}
-            onMouseEnter={() => setHoverIndex(i)}
-            onMouseLeave={() => setHoverIndex(null)}
-            style={{ cursor: "pointer" }}
-          />
-        );
+    return (
+      <div>
+        <div className="episode-graph-wrapper" ref={svgRef}>
+          <svg
+            width={width}
+            height={height + 30}
+            style={{ paddingLeft: "1rem" }}
+          >
+            <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
+
+            {/* 🔥 eixo dinâmico */}
+            {Array.from({ length: steps + 1 }).map((_, i) => {
+              const value = minY + i * stepSize;
+              const y = height - ((value - minY) / range) * height;
+
+              return (
+                <g key={i}>
+                  <line
+                    x1={0}
+                    x2={width}
+                    y1={y}
+                    y2={y}
+                    stroke="rgba(255,255,255,0.08)"
+                  />
+                  <text
+                    x={-5}
+                    y={y + 3}
+                    textAnchor="end"
+                    fontSize="10"
+                    fill="#777"
+                  >
+                    {value.toFixed(1)}
+                  </text>
+                </g>
+              );
+            })}
+
+            {points.map((p, i) => renderPoint(p, i, getRatingColor(p.rating)))}
+          </svg>
+
+          {hoverIndex !== null && rect && (
+            <div
+              className="episode-tooltip"
+              style={{
+                position: "fixed",
+                left: rect.left + points[hoverIndex].x,
+                top: rect.top + points[hoverIndex].y,
+              }}
+            >
+              <div>
+                S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
+              </div>
+
+              <div style={{ fontWeight: "bold" }}>
+                {points[hoverIndex].title}
+              </div>
+
+              <RatingBadge value={points[hoverIndex].rating} />
+
+              <div>
+                <strong>{points[hoverIndex].votes}</strong> votes
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function EpisodeVotesGraph({ entry, episodeStats }) {
+    const [hoverIndex, setHoverIndex] = useState(null);
+    const screenWidth = useWindowWidth();
+    const svgRef = useRef(null);
+
+    const isSmall = screenWidth < 900;
+
+    if (!entry?.seasons) return null;
+
+    const episodes = entry.seasons.flatMap((s) =>
+      (s.episodes || [])
+        .map((ep) => {
+          const stats = episodeStats[ep.id] || {};
+          return {
+            ...ep,
+            seasonNumber: s.seasonNumber,
+            votes: stats.totalVotes || 0,
+            rating: Number(stats.averageRating) || 0,
+          };
+        })
+        .filter((ep) => ep.votes > 0),
+    );
+
+    if (!episodes.length) {
+      return <div style={{ color: "#777" }}>No votes yet</div>;
     }
-  };
 
-  const steps = 5;
-  const stepSize = range / steps;
+    const spacing = isSmall ? 25 : 40;
+    const width = episodes.length * spacing;
+    const height = 200;
 
-  return (
-    <div>
+    const votesArr = episodes.map((e) => e.votes);
+
+    const minVotes = 0;
+    const maxVotes = Math.max(...votesArr);
+    const maxY = maxVotes * 1.1;
+    const range = maxY - minVotes || 1;
+
+    const stepX = width / (episodes.length - 1);
+
+    const points = episodes.map((ep, i) => {
+      const x = i * stepX;
+      const y = height - ((ep.votes - minVotes) / range) * height;
+
+      return {
+        x,
+        y,
+        votes: ep.votes,
+        rating: ep.rating,
+        title: ep.title,
+        epNumber: ep.number,
+        season: ep.seasonNumber,
+      };
+    });
+
+    const rect = svgRef.current?.getBoundingClientRect();
+
+    const getSeasonShape = (season) => {
+      const shapes = ["circle", "triangle", "square", "diamond"];
+      return shapes[(season - 1) % shapes.length];
+    };
+
+    const renderPoint = (p, i, color) => {
+      const shape = getSeasonShape(p.season);
+      const size = hoverIndex === i ? 7 : 4;
+
+      switch (shape) {
+        case "triangle":
+          return (
+            <polygon
+              key={i}
+              points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+
+        case "square":
+          return (
+            <rect
+              key={i}
+              x={p.x - size}
+              y={p.y - size}
+              width={size * 2}
+              height={size * 2}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+
+        case "diamond":
+          return (
+            <polygon
+              key={i}
+              points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+
+        default:
+          return (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={size}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+      }
+    };
+
+    const steps = 5;
+    const stepSize = range / steps;
+
+    return (
       <div className="episode-graph-wrapper" ref={svgRef}>
         <svg width={width} height={height + 30} style={{ paddingLeft: "1rem" }}>
           <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
 
-          {/* 🔥 eixo dinâmico */}
           {Array.from({ length: steps + 1 }).map((_, i) => {
-            const value = minY + i * stepSize;
-            const y = height - ((value - minY) / range) * height;
+            const value = minVotes + i * stepSize;
+            const y = height - ((value - minVotes) / range) * height;
 
             return (
               <g key={i}>
@@ -1191,15 +1405,13 @@ function EpisodeRatingGraph({ entry, episodeStats }) {
                   fontSize="10"
                   fill="#777"
                 >
-                  {value.toFixed(1)}
+                  {Math.round(value)}
                 </text>
               </g>
             );
           })}
 
-          {points.map((p, i) =>
-            renderPoint(p, i, getRatingColor(p.rating)),
-          )}
+          {points.map((p, i) => renderPoint(p, i, "#639ef7"))}
         </svg>
 
         {hoverIndex !== null && rect && (
@@ -1215,208 +1427,18 @@ function EpisodeRatingGraph({ entry, episodeStats }) {
               S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
             </div>
 
-            <div style={{ fontWeight: "bold" }}>
-              {points[hoverIndex].title}
-            </div>
-
-            <RatingBadge value={points[hoverIndex].rating} />
+            <div style={{ fontWeight: "bold" }}>{points[hoverIndex].title}</div>
 
             <div>
               <strong>{points[hoverIndex].votes}</strong> votes
             </div>
+
+            <RatingBadge value={points[hoverIndex].rating} />
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function EpisodeVotesGraph({ entry, episodeStats }) {
-  const [hoverIndex, setHoverIndex] = useState(null);
-  const screenWidth = useWindowWidth();
-  const svgRef = useRef(null);
-
-  const isSmall = screenWidth < 900;
-
-  if (!entry?.seasons) return null;
-
-  const episodes = entry.seasons.flatMap((s) =>
-    (s.episodes || [])
-      .map((ep) => {
-        const stats = episodeStats[ep.id] || {};
-        return {
-          ...ep,
-          seasonNumber: s.seasonNumber,
-          votes: stats.totalVotes || 0,
-          rating: Number(stats.averageRating) || 0,
-        };
-      })
-      .filter((ep) => ep.votes > 0),
-  );
-
-  if (!episodes.length) {
-    return <div style={{ color: "#777" }}>No votes yet</div>;
+    );
   }
-
-  const spacing = isSmall ? 25 : 40;
-  const width = episodes.length * spacing;
-  const height = 200;
-
-  const votesArr = episodes.map((e) => e.votes);
-
-  const minVotes = 0;
-  const maxVotes = Math.max(...votesArr);
-  const maxY = maxVotes * 1.1;
-  const range = maxY - minVotes || 1;
-
-  const stepX = width / (episodes.length - 1);
-
-  const points = episodes.map((ep, i) => {
-    const x = i * stepX;
-    const y = height - ((ep.votes - minVotes) / range) * height;
-
-    return {
-      x,
-      y,
-      votes: ep.votes,
-      rating: ep.rating,
-      title: ep.title,
-      epNumber: ep.number,
-      season: ep.seasonNumber,
-    };
-  });
-
-  const rect = svgRef.current?.getBoundingClientRect();
-
-  const getSeasonShape = (season) => {
-    const shapes = ["circle", "triangle", "square", "diamond"];
-    return shapes[(season - 1) % shapes.length];
-  };
-
-  const renderPoint = (p, i, color) => {
-    const shape = getSeasonShape(p.season);
-    const size = hoverIndex === i ? 7 : 4;
-
-    switch (shape) {
-      case "triangle":
-        return (
-          <polygon
-            key={i}
-            points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
-            fill={color}
-            onMouseEnter={() => setHoverIndex(i)}
-            onMouseLeave={() => setHoverIndex(null)}
-            style={{ cursor: "pointer" }}
-          />
-        );
-
-      case "square":
-        return (
-          <rect
-            key={i}
-            x={p.x - size}
-            y={p.y - size}
-            width={size * 2}
-            height={size * 2}
-            fill={color}
-            onMouseEnter={() => setHoverIndex(i)}
-            onMouseLeave={() => setHoverIndex(null)}
-            style={{ cursor: "pointer" }}
-          />
-        );
-
-      case "diamond":
-        return (
-          <polygon
-            key={i}
-            points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
-            fill={color}
-            onMouseEnter={() => setHoverIndex(i)}
-            onMouseLeave={() => setHoverIndex(null)}
-            style={{ cursor: "pointer" }}
-          />
-        );
-
-      default:
-        return (
-          <circle
-            key={i}
-            cx={p.x}
-            cy={p.y}
-            r={size}
-            fill={color}
-            onMouseEnter={() => setHoverIndex(i)}
-            onMouseLeave={() => setHoverIndex(null)}
-            style={{ cursor: "pointer" }}
-          />
-        );
-    }
-  };
-
-  const steps = 5;
-  const stepSize = range / steps;
-
-  return (
-    <div className="episode-graph-wrapper" ref={svgRef}>
-      <svg width={width} height={height + 30} style={{ paddingLeft: "1rem" }}>
-        <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
-
-        {Array.from({ length: steps + 1 }).map((_, i) => {
-          const value = minVotes + i * stepSize;
-          const y = height - ((value - minVotes) / range) * height;
-
-          return (
-            <g key={i}>
-              <line
-                x1={0}
-                x2={width}
-                y1={y}
-                y2={y}
-                stroke="rgba(255,255,255,0.08)"
-              />
-              <text
-                x={-5}
-                y={y + 3}
-                textAnchor="end"
-                fontSize="10"
-                fill="#777"
-              >
-                {Math.round(value)}
-              </text>
-            </g>
-          );
-        })}
-
-        {points.map((p, i) => renderPoint(p, i, "#639ef7"))}
-      </svg>
-
-      {hoverIndex !== null && rect && (
-        <div
-          className="episode-tooltip"
-          style={{
-            position: "fixed",
-            left: rect.left + points[hoverIndex].x,
-            top: rect.top + points[hoverIndex].y,
-          }}
-        >
-          <div>
-            S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
-          </div>
-
-          <div style={{ fontWeight: "bold" }}>
-            {points[hoverIndex].title}
-          </div>
-
-          <div>
-            <strong>{points[hoverIndex].votes}</strong> votes
-          </div>
-
-          <RatingBadge value={points[hoverIndex].rating} />
-        </div>
-      )}
-    </div>
-  );
-}
 
   return (
     <div className="entry">
@@ -1707,172 +1729,218 @@ function EpisodeVotesGraph({ entry, episodeStats }) {
         {activeTab === "episodes" && isSeries && (
           <>
             {isSeries &&
-              entry.seasons?.map((season) => (
-                <div key={season.id} className="season">
-                  <div
-                    className="season-header"
-                    onClick={() =>
-                      setOpenSeason(openSeason === season.id ? null : season.id)
-                    }
-                  >
+              entry.seasons?.map((season) => {
+                const seasonStats = getSeasonStats(season);
+                return (
+                  <div key={season.id} className="season">
                     <div
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
+                      className="season-header"
+                      onClick={() =>
+                        setOpenSeason(
+                          openSeason === season.id ? null : season.id,
+                        )
+                      }
                     >
-                      <h2
+                      <div
                         style={{
-                          color: "#ccc",
-                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
                         }}
                       >
-                        Season {season.seasonNumber}
-                      </h2>
+                        <h2
+                          style={{
+                            color: "#ccc",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Season {season.seasonNumber}
+                        </h2>
 
-                      <span className="season-sub">
-                        {season.episodes?.length} episodes
+                        <span className="season-sub">
+                          {season.episodes?.length} episodes
+                        </span>
+                        {seasonStats.votes > 0 && (
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              marginLeft: "10px",
+                            }}
+                          >
+                            <RatingBadge
+                              value={seasonStats.avg}
+                              votes={seasonStats.votes}
+                            />
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="season-toggle">
+                        {openSeason === season.id ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="bi bi-caret-up-fill"
+                            viewBox="0 0 16 16"
+                          >
+                            <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="bi bi-caret-down-fill"
+                            viewBox="0 0 16 16"
+                          >
+                            <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                          </svg>
+                        )}
                       </span>
                     </div>
 
-                    <span className="season-toggle">
-                      {openSeason === season.id ? "▲" : "▼"}
-                    </span>
-                  </div>
+                    {openSeason === season.id && (
+                      <div className="episodes">
+                        {season.episodes?.map((ep) => (
+                          <div key={ep.id} className="episode-row">
+                            <div className="episode-number">{ep.number}.</div>
+                            <img src={ep.thumbnail} alt={ep.title} />
 
-                  {openSeason === season.id && (
-                    <div className="episodes">
-                      {season.episodes?.map((ep) => (
-                        <div key={ep.id} className="episode-row">
-                          <div className="episode-number">{ep.number}.</div>
-                          <img src={ep.thumbnail} alt={ep.title} />
+                            <div className="episode-info">
+                              <div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                  }}
+                                >
+                                  <h3>{ep.title}</h3>
+                                </div>
 
-                          <div className="episode-info">
-                            <div>
-                              <div
-                                style={{
-                                  display: "flex",
-                                }}
-                              >
-                                <h3>{ep.title}</h3>
-                              </div>
+                                <div className="episode-meta">
+                                  {ep.airDate && (
+                                    <span>{formatDate(ep.airDate)}</span>
+                                  )}
+                                  {ep.airDate && ep.duration && <span>•</span>}
+                                  {ep.duration && (
+                                    <span>{formatDuration(ep.duration)}</span>
+                                  )}
+                                </div>
 
-                              <div className="episode-meta">
-                                {ep.airDate && (
-                                  <span>{formatDate(ep.airDate)}</span>
-                                )}
-                                {ep.airDate && ep.duration && <span>•</span>}
-                                {ep.duration && (
-                                  <span>{formatDuration(ep.duration)}</span>
-                                )}
-                              </div>
-
-                              <div
-                                style={{
-                                  display: "flex",
-                                  fontSize: "0.8rem",
-                                  marginTop: "0.25rem",
-                                }}
-                              >
-                                {episodeStats[ep.id]?.averageRating > 0 && (
-                                  <span
-                                    style={{
-                                      marginRight: "10px",
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      gap: "6px",
-                                    }}
-                                  >
-                                    <div
-                                      onMouseEnter={(e) => {
-                                        setHoveredEpisode(ep.id);
-                                        setHoverPosition({
-                                          x: e.clientX,
-                                          y: e.clientY,
-                                        });
-                                        fetchDistribution(ep.id);
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    fontSize: "0.8rem",
+                                    marginTop: "0.25rem",
+                                  }}
+                                >
+                                  {episodeStats[ep.id]?.averageRating > 0 && (
+                                    <span
+                                      style={{
+                                        marginRight: "10px",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "6px",
                                       }}
-                                      onMouseLeave={() =>
-                                        setHoveredEpisode(null)
-                                      }
-                                      style={{ display: "inline-block" }}
                                     >
-                                      <RatingBadge
-                                        value={
-                                          episodeStats[ep.id].averageRating
-                                        }
-                                        votes={episodeStats[ep.id].totalVotes}
-                                      />
-                                    </div>
-
-                                    {getEpisodeWeeklyVotes(ep.id) > 0 && (
-                                      <span
-                                        style={{
-                                          color: "#c7c7c7",
-                                          fontSize: "0.65rem",
+                                      <div
+                                        onMouseEnter={(e) => {
+                                          setHoveredEpisode(ep.id);
+                                          setHoverPosition({
+                                            x: e.clientX,
+                                            y: e.clientY,
+                                          });
+                                          fetchDistribution(ep.id);
                                         }}
+                                        onMouseLeave={() =>
+                                          setHoveredEpisode(null)
+                                        }
+                                        style={{ display: "inline-block" }}
                                       >
-                                        ( +{getEpisodeWeeklyVotes(ep.id)} this
-                                        week )
-                                      </span>
-                                    )}
-                                  </span>
-                                )}
+                                        <RatingBadge
+                                          value={
+                                            episodeStats[ep.id].averageRating
+                                          }
+                                          votes={episodeStats[ep.id].totalVotes}
+                                        />
+                                      </div>
 
-                                {canRateEpisode(ep.airDate) && (
-                                  <button
-                                    className="rate-btn"
-                                    onClick={() =>
-                                      setRatingModal({
-                                        open: true,
-                                        episodeId: ep.id,
-                                      })
-                                    }
-                                    style={{
-                                      color: "#639ef7",
-                                    }}
-                                  >
-                                    {userRatings[ep.id]
-                                      ? `Your rating: ${userRatings[ep.id]}`
-                                      : "Rate"}
-                                  </button>
-                                )}
-                                {ep.isFinal && (
-                                  <span className="final-badge">FINAL</span>
-                                )}
+                                      {getEpisodeWeeklyVotes(ep.id) > 0 && (
+                                        <span
+                                          style={{
+                                            color: "#c7c7c7",
+                                            fontSize: "0.65rem",
+                                          }}
+                                        >
+                                          ( +{getEpisodeWeeklyVotes(ep.id)} this
+                                          week )
+                                        </span>
+                                      )}
+                                    </span>
+                                  )}
+
+                                  {canRateEpisode(ep.airDate) && (
+                                    <button
+                                      className="rate-btn"
+                                      onClick={() =>
+                                        setRatingModal({
+                                          open: true,
+                                          episodeId: ep.id,
+                                        })
+                                      }
+                                      style={{
+                                        color: "#639ef7",
+                                      }}
+                                    >
+                                      {userRatings[ep.id]
+                                        ? `Your rating: ${userRatings[ep.id]}`
+                                        : "Rate"}
+                                    </button>
+                                  )}
+                                  {ep.isFinal && (
+                                    <span className="final-badge">FINAL</span>
+                                  )}
+                                </div>
+
+                                <p
+                                  style={{
+                                    textAlign: "start",
+                                  }}
+                                >
+                                  {ep.description}
+                                </p>
                               </div>
 
-                              <p
-                                style={{
-                                  textAlign: "start",
-                                }}
-                              >
-                                {ep.description}
-                              </p>
-                            </div>
-
-                            {episodeTrends[ep.id] && (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <TrendGraphEpisode
-                                  data={episodeTrends[ep.id] || {}}
-                                />
-                                {episodeDistribution[ep.id] && (
-                                  <RatingDistributionEpisode
-                                    data={episodeDistribution[ep.id]}
+                              {episodeTrends[ep.id] && (
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <TrendGraphEpisode
+                                    data={episodeTrends[ep.id] || {}}
                                   />
-                                )}
-                              </div>
-                            )}
+                                  {episodeDistribution[ep.id] && (
+                                    <RatingDistributionEpisode
+                                      data={episodeDistribution[ep.id]}
+                                    />
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </>
         )}
 
