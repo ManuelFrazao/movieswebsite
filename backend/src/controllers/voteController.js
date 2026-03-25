@@ -23,34 +23,6 @@ export const createVote = async (req, res) => {
     });
 
     // =====================
-    // 🔥 UPDATE ONLY LAST REVIEW
-    // =====================
-
-    // 📺 EPISODE
-    if (type === "episode" && episodeId) {
-      const lastReview = await Review.findOne({
-        where: { userId, episodeId },
-        order: [["createdAt", "DESC"]],
-      });
-
-      if (lastReview) {
-        await lastReview.update({ rating: value });
-      }
-    }
-
-    // 🎬 ENTRY
-    if (type === "entry" && entryId) {
-      const lastReview = await Review.findOne({
-        where: { userId, entryId },
-        order: [["createdAt", "DESC"]],
-      });
-
-      if (lastReview) {
-        await lastReview.update({ rating: value });
-      }
-    }
-
-    // =====================
     // 🎬 UPDATE ENTRY STATS (MOVIE)
     // =====================
     if (type === "entry" && entryId) {
