@@ -1035,317 +1035,145 @@ export default function Entry() {
     );
   }
 
-  function EpisodeRatingGraph({ entry, episodeStats }) {
-    const [hoverIndex, setHoverIndex] = useState(null);
-    const screenWidth = useWindowWidth();
-    const svgRef = useRef(null);
+function EpisodeRatingGraph({ entry, episodeStats }) {
+  const [hoverIndex, setHoverIndex] = useState(null);
+  const screenWidth = useWindowWidth();
+  const svgRef = useRef(null);
 
-    const isSmall = screenWidth < 900;
+  const isSmall = screenWidth < 900;
 
-    if (!entry?.seasons) return null;
+  if (!entry?.seasons) return null;
 
-    const episodes = entry.seasons.flatMap((s) =>
-      (s.episodes || [])
-        .map((ep) => {
-          const stats = episodeStats[ep.id] || {};
-          const rating = Number(stats.averageRating);
+  const episodes = entry.seasons.flatMap((s) =>
+    (s.episodes || [])
+      .map((ep) => {
+        const stats = episodeStats[ep.id] || {};
+        const rating = Number(stats.averageRating);
 
-          return {
-            ...ep,
-            seasonNumber: s.seasonNumber,
-            rating,
-            votes: stats.totalVotes || 0,
-          };
-        })
-        .filter((ep) => ep.rating > 0),
-    );
+        return {
+          ...ep,
+          seasonNumber: s.seasonNumber,
+          rating,
+          votes: stats.totalVotes || 0,
+        };
+      })
+      .filter((ep) => ep.rating > 0),
+  );
 
-    if (!episodes.length) return null;
+  if (!episodes.length) return null;
 
-    const spacing = isSmall ? 25 : 40;
-    const width = episodes.length * spacing;
-    const height = 200;
+  const spacing = isSmall ? 25 : 40;
+  const width = episodes.length * spacing;
+  const height = 200;
 
-    const stepX = width / (episodes.length - 1);
+  // 🔥 Y DINÂMICO
+  const ratings = episodes.map((ep) => ep.rating);
+  const minRating = Math.min(...ratings);
+  const maxRating = Math.max(...ratings);
 
-    const points = episodes.map((ep, i) => {
-      const x = i * stepX;
-      const y = height - (ep.rating / 10) * height;
+  const padding = 0.5;
+  const minY = Math.max(0, minRating - padding);
+  const maxY = Math.min(10, maxRating + padding);
+  const range = maxY - minY || 1;
 
-      return {
-        x,
-        y,
-        rating: ep.rating,
-        title: ep.title,
-        votes: ep.votes,
-        epNumber: ep.number,
-        season: ep.seasonNumber,
-      };
-    });
+  const stepX = width / (episodes.length - 1);
 
-    // 🔥 posição global do gráfico
-    const rect = svgRef.current?.getBoundingClientRect();
+  const points = episodes.map((ep, i) => {
+    const x = i * stepX;
+    const y = height - ((ep.rating - minY) / range) * height;
 
-    const getSeasonShape = (season) => {
-      const shapes = ["circle", "triangle", "square", "diamond"];
-      return shapes[(season - 1) % shapes.length];
+    return {
+      x,
+      y,
+      rating: ep.rating,
+      title: ep.title,
+      votes: ep.votes,
+      epNumber: ep.number,
+      season: ep.seasonNumber,
     };
+  });
 
-    const renderPoint = (p, i, hoverIndex, setHoverIndex, color) => {
-      const shape = getSeasonShape(p.season);
-      const size = hoverIndex === i ? 7 : 4;
+  const rect = svgRef.current?.getBoundingClientRect();
 
-      switch (shape) {
-        case "triangle":
-          return (
-            <polygon
-              key={i}
-              points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
-              fill={color}
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          );
+  // 🔥 SHAPES
+  const getSeasonShape = (season) => {
+    const shapes = ["circle", "triangle", "square", "diamond"];
+    return shapes[(season - 1) % shapes.length];
+  };
 
-        case "square":
-          return (
-            <rect
-              key={i}
-              x={p.x - size}
-              y={p.y - size}
-              width={size * 2}
-              height={size * 2}
-              fill={color}
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          );
+  const renderPoint = (p, i, color) => {
+    const shape = getSeasonShape(p.season);
+    const size = hoverIndex === i ? 7 : 4;
 
-        case "diamond":
-          return (
-            <polygon
-              key={i}
-              points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
-              fill={color}
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          );
+    switch (shape) {
+      case "triangle":
+        return (
+          <polygon
+            key={i}
+            points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
+            fill={color}
+            onMouseEnter={() => setHoverIndex(i)}
+            onMouseLeave={() => setHoverIndex(null)}
+            style={{ cursor: "pointer" }}
+          />
+        );
 
-        default:
-          return (
-            <circle
-              key={i}
-              cx={p.x}
-              cy={p.y}
-              r={size}
-              fill={color}
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          );
-      }
-    };
+      case "square":
+        return (
+          <rect
+            key={i}
+            x={p.x - size}
+            y={p.y - size}
+            width={size * 2}
+            height={size * 2}
+            fill={color}
+            onMouseEnter={() => setHoverIndex(i)}
+            onMouseLeave={() => setHoverIndex(null)}
+            style={{ cursor: "pointer" }}
+          />
+        );
 
-    return (
-      <div>
-        <div className="episode-graph-wrapper" ref={svgRef}>
-          <svg
-            width={width}
-            height={height + 30}
-            style={{ paddingLeft: "1rem" }}
-          >
-            <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
+      case "diamond":
+        return (
+          <polygon
+            key={i}
+            points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
+            fill={color}
+            onMouseEnter={() => setHoverIndex(i)}
+            onMouseLeave={() => setHoverIndex(null)}
+            style={{ cursor: "pointer" }}
+          />
+        );
 
-            {[2, 4, 6, 8, 10].map((r) => {
-              const y = height - (r / 10) * height;
-
-              return (
-                <g key={r}>
-                  <line
-                    x1={0}
-                    x2={width}
-                    y1={y}
-                    y2={y}
-                    stroke="rgba(255,255,255,0.08)"
-                  />
-                  <text
-                    x={-5}
-                    y={y + 3}
-                    textAnchor="end"
-                    fontSize="10"
-                    fill="#777"
-                  >
-                    {r}
-                  </text>
-                </g>
-              );
-            })}
-
-            {points.map((p, i) => {
-              const color = getRatingColor(p.rating);
-              return renderPoint(p, i, hoverIndex, setHoverIndex, color);
-            })}
-          </svg>
-
-          {/* 🔥 TOOLTIP FIXED */}
-          {hoverIndex !== null && rect && (
-            <div
-              className="episode-tooltip"
-              style={{
-                position: "fixed",
-                left: rect.left + points[hoverIndex].x,
-                top: rect.top + points[hoverIndex].y,
-              }}
-            >
-              <div>
-                S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
-              </div>
-
-              <div style={{ fontWeight: "bold" }}>
-                {points[hoverIndex].title}
-              </div>
-
-              <RatingBadge value={points[hoverIndex].rating} />
-
-              <div>
-                <strong>{points[hoverIndex].votes}</strong> votes
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  function EpisodeVotesGraph({ entry, episodeStats }) {
-    const [hoverIndex, setHoverIndex] = useState(null);
-    const screenWidth = useWindowWidth();
-    const svgRef = useRef(null);
-
-    const isSmall = screenWidth < 900;
-
-    if (!entry?.seasons) return null;
-
-    const episodes = entry.seasons.flatMap((s) =>
-      (s.episodes || [])
-        .map((ep) => {
-          const stats = episodeStats[ep.id] || {};
-          return {
-            ...ep,
-            seasonNumber: s.seasonNumber,
-            votes: stats.totalVotes || 0,
-            rating: Number(stats.averageRating) || 0,
-          };
-        })
-        .filter((ep) => ep.votes > 0),
-    );
-
-    if (!episodes.length) {
-      return <div style={{ color: "#777" }}>No votes yet</div>;
+      default:
+        return (
+          <circle
+            key={i}
+            cx={p.x}
+            cy={p.y}
+            r={size}
+            fill={color}
+            onMouseEnter={() => setHoverIndex(i)}
+            onMouseLeave={() => setHoverIndex(null)}
+            style={{ cursor: "pointer" }}
+          />
+        );
     }
+  };
 
-    const spacing = isSmall ? 25 : 40;
-    const width = episodes.length * spacing;
-    const height = 200;
+  const steps = 5;
+  const stepSize = range / steps;
 
-    const maxVotes = Math.max(...episodes.map((e) => e.votes), 1);
-    const stepX = width / (episodes.length - 1);
-
-    const points = episodes.map((ep, i) => {
-      const x = i * stepX;
-      const y = height - (ep.votes / maxVotes) * height;
-
-      return {
-        x,
-        y,
-        votes: ep.votes,
-        rating: ep.rating,
-        title: ep.title,
-        epNumber: ep.number,
-        season: ep.seasonNumber,
-      };
-    });
-
-    const rect = svgRef.current?.getBoundingClientRect();
-
-    const getSeasonShape = (season) => {
-      const shapes = ["circle", "triangle", "square", "diamond"];
-      return shapes[(season - 1) % shapes.length];
-    };
-
-    const renderPoint = (p, i, hoverIndex, setHoverIndex, color) => {
-      const shape = getSeasonShape(p.season);
-      const size = hoverIndex === i ? 7 : 4;
-
-      switch (shape) {
-        case "triangle":
-          return (
-            <polygon
-              key={i}
-              points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
-              fill={color}
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          );
-
-        case "square":
-          return (
-            <rect
-              key={i}
-              x={p.x - size}
-              y={p.y - size}
-              width={size * 2}
-              height={size * 2}
-              fill={color}
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          );
-
-        case "diamond":
-          return (
-            <polygon
-              key={i}
-              points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
-              fill={color}
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          );
-
-        default:
-          return (
-            <circle
-              key={i}
-              cx={p.x}
-              cy={p.y}
-              r={size}
-              fill={color}
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          );
-      }
-    };
-
-    return (
+  return (
+    <div>
       <div className="episode-graph-wrapper" ref={svgRef}>
         <svg width={width} height={height + 30} style={{ paddingLeft: "1rem" }}>
           <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
 
-          {Array.from({ length: 6 }).map((_, i) => {
-            const value = Math.min((i / 5) * maxVotes, maxVotes);
-            const y = height - (value / maxVotes) * height;
+          {/* 🔥 eixo dinâmico */}
+          {Array.from({ length: steps + 1 }).map((_, i) => {
+            const value = minY + i * stepSize;
+            const y = height - ((value - minY) / range) * height;
 
             return (
               <g key={i}>
@@ -1363,19 +1191,17 @@ export default function Entry() {
                   fontSize="10"
                   fill="#777"
                 >
-                  {Math.round(value)}
+                  {value.toFixed(1)}
                 </text>
               </g>
             );
           })}
 
-          {points.map((p, i) => {
-            const color = "#639ef7";
-            return renderPoint(p, i, hoverIndex, setHoverIndex, color);
-          })}
+          {points.map((p, i) =>
+            renderPoint(p, i, getRatingColor(p.rating)),
+          )}
         </svg>
 
-        {/* 🔥 TOOLTIP FIXED */}
         {hoverIndex !== null && rect && (
           <div
             className="episode-tooltip"
@@ -1389,18 +1215,208 @@ export default function Entry() {
               S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
             </div>
 
-            <div style={{ fontWeight: "bold" }}>{points[hoverIndex].title}</div>
+            <div style={{ fontWeight: "bold" }}>
+              {points[hoverIndex].title}
+            </div>
+
+            <RatingBadge value={points[hoverIndex].rating} />
 
             <div>
               <strong>{points[hoverIndex].votes}</strong> votes
             </div>
-
-            <RatingBadge value={points[hoverIndex].rating} />
           </div>
         )}
       </div>
-    );
+    </div>
+  );
+}
+
+function EpisodeVotesGraph({ entry, episodeStats }) {
+  const [hoverIndex, setHoverIndex] = useState(null);
+  const screenWidth = useWindowWidth();
+  const svgRef = useRef(null);
+
+  const isSmall = screenWidth < 900;
+
+  if (!entry?.seasons) return null;
+
+  const episodes = entry.seasons.flatMap((s) =>
+    (s.episodes || [])
+      .map((ep) => {
+        const stats = episodeStats[ep.id] || {};
+        return {
+          ...ep,
+          seasonNumber: s.seasonNumber,
+          votes: stats.totalVotes || 0,
+          rating: Number(stats.averageRating) || 0,
+        };
+      })
+      .filter((ep) => ep.votes > 0),
+  );
+
+  if (!episodes.length) {
+    return <div style={{ color: "#777" }}>No votes yet</div>;
   }
+
+  const spacing = isSmall ? 25 : 40;
+  const width = episodes.length * spacing;
+  const height = 200;
+
+  const votesArr = episodes.map((e) => e.votes);
+
+  const minVotes = 0;
+  const maxVotes = Math.max(...votesArr);
+  const maxY = maxVotes * 1.1;
+  const range = maxY - minVotes || 1;
+
+  const stepX = width / (episodes.length - 1);
+
+  const points = episodes.map((ep, i) => {
+    const x = i * stepX;
+    const y = height - ((ep.votes - minVotes) / range) * height;
+
+    return {
+      x,
+      y,
+      votes: ep.votes,
+      rating: ep.rating,
+      title: ep.title,
+      epNumber: ep.number,
+      season: ep.seasonNumber,
+    };
+  });
+
+  const rect = svgRef.current?.getBoundingClientRect();
+
+  const getSeasonShape = (season) => {
+    const shapes = ["circle", "triangle", "square", "diamond"];
+    return shapes[(season - 1) % shapes.length];
+  };
+
+  const renderPoint = (p, i, color) => {
+    const shape = getSeasonShape(p.season);
+    const size = hoverIndex === i ? 7 : 4;
+
+    switch (shape) {
+      case "triangle":
+        return (
+          <polygon
+            key={i}
+            points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
+            fill={color}
+            onMouseEnter={() => setHoverIndex(i)}
+            onMouseLeave={() => setHoverIndex(null)}
+            style={{ cursor: "pointer" }}
+          />
+        );
+
+      case "square":
+        return (
+          <rect
+            key={i}
+            x={p.x - size}
+            y={p.y - size}
+            width={size * 2}
+            height={size * 2}
+            fill={color}
+            onMouseEnter={() => setHoverIndex(i)}
+            onMouseLeave={() => setHoverIndex(null)}
+            style={{ cursor: "pointer" }}
+          />
+        );
+
+      case "diamond":
+        return (
+          <polygon
+            key={i}
+            points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
+            fill={color}
+            onMouseEnter={() => setHoverIndex(i)}
+            onMouseLeave={() => setHoverIndex(null)}
+            style={{ cursor: "pointer" }}
+          />
+        );
+
+      default:
+        return (
+          <circle
+            key={i}
+            cx={p.x}
+            cy={p.y}
+            r={size}
+            fill={color}
+            onMouseEnter={() => setHoverIndex(i)}
+            onMouseLeave={() => setHoverIndex(null)}
+            style={{ cursor: "pointer" }}
+          />
+        );
+    }
+  };
+
+  const steps = 5;
+  const stepSize = range / steps;
+
+  return (
+    <div className="episode-graph-wrapper" ref={svgRef}>
+      <svg width={width} height={height + 30} style={{ paddingLeft: "1rem" }}>
+        <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
+
+        {Array.from({ length: steps + 1 }).map((_, i) => {
+          const value = minVotes + i * stepSize;
+          const y = height - ((value - minVotes) / range) * height;
+
+          return (
+            <g key={i}>
+              <line
+                x1={0}
+                x2={width}
+                y1={y}
+                y2={y}
+                stroke="rgba(255,255,255,0.08)"
+              />
+              <text
+                x={-5}
+                y={y + 3}
+                textAnchor="end"
+                fontSize="10"
+                fill="#777"
+              >
+                {Math.round(value)}
+              </text>
+            </g>
+          );
+        })}
+
+        {points.map((p, i) => renderPoint(p, i, "#639ef7"))}
+      </svg>
+
+      {hoverIndex !== null && rect && (
+        <div
+          className="episode-tooltip"
+          style={{
+            position: "fixed",
+            left: rect.left + points[hoverIndex].x,
+            top: rect.top + points[hoverIndex].y,
+          }}
+        >
+          <div>
+            S{points[hoverIndex].season}E{points[hoverIndex].epNumber}
+          </div>
+
+          <div style={{ fontWeight: "bold" }}>
+            {points[hoverIndex].title}
+          </div>
+
+          <div>
+            <strong>{points[hoverIndex].votes}</strong> votes
+          </div>
+
+          <RatingBadge value={points[hoverIndex].rating} />
+        </div>
+      )}
+    </div>
+  );
+}
 
   return (
     <div className="entry">
