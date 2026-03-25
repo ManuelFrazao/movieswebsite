@@ -2,24 +2,31 @@ import { Cast, Character, Actor } from "../models/index.js";
 
 export const addCast = async (req, res) => {
   try {
-    const { entryId, characterId, actorName, roleType, order } = req.body;
+    const { entryId, characterId, actorId, roleType, order } = req.body;
+
+    if (!actorId || !characterId) {
+      return res.status(400).json({
+        message: "actorId and characterId are required",
+      });
+    }
 
     const cast = await Cast.create({
       entryId,
       characterId,
-      actorName,
+      actorId,
       roleType,
       order,
     });
 
     res.json(cast);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
 
 export const getEntryCast = async (req, res) => {
- try {
+  try {
     const { entryId } = req.params;
 
     const cast = await Cast.findAll({

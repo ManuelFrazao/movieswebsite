@@ -171,12 +171,19 @@ export default function EditEntry() {
 
   const handleSaveCast = async () => {
     try {
-      // 🔥 clear old cast first
+      // 🔥 remove invalid items
+      const validCast = castData.filter((c) => c.actor && c.character);
+
+      if (validCast.length !== castData.length) {
+        alert("Some cast items were invalid and ignored.");
+      }
+
+      // 🔥 clear old cast
       await api.delete(`/cast/entry/${id}`);
 
-      // 🔥 recreate cast
+      // 🔥 recreate cast safely
       await Promise.all(
-        castData.map((c, index) =>
+        validCast.map((c, index) =>
           api.post("/cast", {
             entryId: id,
             actorId: c.actor.id,

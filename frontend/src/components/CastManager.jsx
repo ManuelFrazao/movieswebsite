@@ -146,7 +146,8 @@ export default function CastManager({
           borderRadius={2}
         >
           <Typography>
-            {index + 1}. {c.actor.name} → {c.character.name} ({c.roleType})
+            {index + 1}. {c.actor?.name || "❌ Unknown Actor"} →{" "}
+            {c.character?.name || "❌ Unknown Character"} ({c.roleType})
           </Typography>
 
           <Button onClick={() => moveUp(index)}>↑</Button>
