@@ -4,7 +4,6 @@ import api from "../../services/api";
 import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Box, TextField, Button, Typography } from "@mui/material";
-import ActorAutocomplete from "../../components/ActorAutocomplete";
 import CastManager from "../../components/CastManager";
 
 export default function EditEntry() {
@@ -13,7 +12,6 @@ export default function EditEntry() {
   const [seasons, setSeasons] = useState([]);
   const [episodes, setEpisodes] = useState({});
   const [episodeImage, setEpisodeImage] = useState(null);
-  // 🔥 NOVO STATE
   const [episodeImages, setEpisodeImages] = useState({});
   const [entryImage, setEntryImage] = useState(null);
   const [editingEpisode, setEditingEpisode] = useState(null);
@@ -171,28 +169,26 @@ export default function EditEntry() {
 
   const handleSaveCast = async () => {
     try {
-      // 🔥 remove invalid items
       const validCast = castData.filter((c) => c.actor && c.character);
 
-      if (validCast.length !== castData.length) {
-        alert("Some cast items were invalid and ignored.");
-      }
-
-      // 🔥 clear old cast
-      await api.delete(`/cast/entry/${id}`);
-
-      // 🔥 recreate cast safely
-      await Promise.all(
-        validCast.map((c, index) =>
-          api.post("/cast", {
-            entryId: id,
-            actorId: c.actor.id,
-            characterId: c.character.id,
-            roleType: c.roleType,
-            order: index + 1,
-          }),
-        ),
+      console.log(
+        validCast.map((c, index) => ({
+          actorId: c.actor?.id,
+          characterId: c.character?.id,
+          roleType: c.roleType,
+          order: index + 1,
+        })),
       );
+
+      await api.post("/cast/bulk", {
+        entryId: id,
+        cast: validCast.map((c, index) => ({
+          actorId: c.actor.id,
+          characterId: c.character.id,
+          roleType: c.roleType,
+          order: index + 1,
+        })),
+      });
 
       alert("Cast saved!");
     } catch (err) {

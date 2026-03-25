@@ -61,20 +61,22 @@ export const replaceCast = async (req, res) => {
     });
 
     // 🔥 insert new
-    const newCast = await Promise.all(
-      cast.map((c) =>
-        Cast.create(
-          {
-            entryId,
-            actorId: c.actorId,
-            characterId: c.characterId,
-            roleType: c.roleType,
-            order: c.order,
-          },
-          { transaction: t }
-        )
-      )
-    );
+    const newCast = [];
+
+    for (const c of cast) {
+      const created = await Cast.create(
+        {
+          entryId,
+          actorId: c.actorId,
+          characterId: c.characterId,
+          roleType: c.roleType,
+          order: c.order,
+        },
+        { transaction: t },
+      );
+
+      newCast.push(created);
+    }
 
     await t.commit();
 
