@@ -85,10 +85,7 @@ export const getEntryReviews = async (req, res) => {
 
     const reviews = await Review.findAll({
       where: {
-        [Op.or]: [
-          { entryId: id },
-          { episodeId: episodeIds }
-        ],
+        [Op.or]: [{ entryId: id }, { episodeId: episodeIds }],
       },
       include: [
         {
@@ -100,6 +97,11 @@ export const getEntryReviews = async (req, res) => {
           model: Like,
           as: "likes",
           attributes: ["id"],
+        },
+        {
+          model: Episode,
+          as: "episode",
+          attributes: ["id", "title", "number"],
         },
       ],
       order,

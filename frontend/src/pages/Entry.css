@@ -608,7 +608,10 @@ svg {
   .entry-contents-card {
     margin: 0.5rem 1rem 0.5rem 0;
   }
-
+  .entry-contents-card span{
+    display: block ruby;
+  }
+  
   /*Episode tab*/
   .episode-row {
     display: block;

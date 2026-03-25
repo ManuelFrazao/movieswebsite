@@ -2132,7 +2132,7 @@ export default function Entry() {
             {/* 📝 LIST */}
             <div className="reviews-list">
               {reviews.map((r) => (
-                <ReviewCard key={r.id} review={r} />
+                <ReviewCard key={r.id} review={r} isSeries={entry?.type === "series"}/>
               ))}
             </div>
           </div>

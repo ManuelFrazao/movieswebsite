@@ -22,12 +22,31 @@ export default function ReviewCard({ review, onLike }) {
     }
   };
 
+  const formatDate = (date) => {
+    if (!date) return "";
+
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="review-card">
       <div className="review-header">
         <img src={review.user.avatar} alt="" />
         <div>
           <strong>{review.user.username}</strong>
+
+          <div className="review-meta">
+            <span className="review-date">{formatDate(review.createdAt)}</span>
+            {isSeries && review.episode && (
+              <div className="review-episode">
+                Ep {review.episode.number} • {review.episode.title}
+              </div>
+            )}
+          </div>
           <div className="review-rating">
             <svg
               xmlns="http://www.w3.org/2000/svg"

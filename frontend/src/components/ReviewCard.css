@@ -48,3 +48,9 @@
   color: #e50914;
   transform: scale(1.2);
 }
+
+.review-meta {
+  font-size: 0.7rem;
+  color: #888;
+  margin-top: 2px;
+}
