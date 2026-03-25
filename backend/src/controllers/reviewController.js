@@ -102,6 +102,11 @@ export const getEntryReviews = async (req, res) => {
           model: Episode,
           as: "episode",
           attributes: ["id", "title", "number"],
+          include: {
+            model: Season,
+            as: "season",
+            attributes: ["id", "seasonNumber"], // 🔥 importante
+          },
         },
       ],
       order,

@@ -2,7 +2,7 @@ import { useState } from "react";
 import api from "../services/api";
 import "./ReviewCard.css";
 
-export default function ReviewCard({ review, onLike }) {
+export default function ReviewCard({ review, onLike, isSeries = false }) {
   const [liked, setLiked] = useState(review.liked || false);
   const [likes, setLikes] = useState(review.likes?.length || 0);
 
@@ -61,7 +61,7 @@ export default function ReviewCard({ review, onLike }) {
             <span>{formatRelativeDate(review.createdAt)}</span>
             {isSeries && review.episode && (
               <div className="review-episode">
-                Ep {review.episode.number} • {review.episode.title}
+                S {review.season.number} • Ep {review.episode.number} • {review.episode.title}
               </div>
             )}
           </div>
