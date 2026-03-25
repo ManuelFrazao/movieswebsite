@@ -24,7 +24,7 @@ export default function CharacterAutocomplete({
 
   const search = async (q) => {
     try {
-      const res = await api.get(`/actors/search?q=${encodeURIComponent(q)}`);
+      const res = await api.get(`/characters/search?q=${q}`);
       setResults(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
@@ -41,7 +41,7 @@ export default function CharacterAutocomplete({
     const res = await api.post("/characters", { name: query });
     handleSelect(res.data);
   };
-
+  
   return (
     <Box position="relative">
       <TextField

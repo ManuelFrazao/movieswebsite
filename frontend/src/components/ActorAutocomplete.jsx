@@ -23,7 +23,7 @@ export default function ActorAutocomplete({ onSelect, inputRef }) {
   const searchActors = async (q) => {
     try {
       setLoading(true);
-      const res = await api.get(`/actors/search?q=${q}`);
+      const res = await api.get(`/actors/search?q=${encodeURIComponent(q)}`);
       setResults(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);

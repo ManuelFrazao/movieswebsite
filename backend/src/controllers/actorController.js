@@ -116,7 +116,7 @@ export const searchActors = async (req, res) => {
 
     if (!q) return res.json([]);
 
-    const terms = q.split(" ");
+    const terms = q.trim().split(/\s+/).filter(Boolean);
 
     const actors = await Actor.findAll({
       where: {
@@ -127,10 +127,12 @@ export const searchActors = async (req, res) => {
         ),
       },
       limit: 20,
+      order: [["name", "ASC"]],
     });
 
     res.json(actors);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

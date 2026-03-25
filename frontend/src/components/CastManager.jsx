@@ -13,12 +13,6 @@ export default function CastManager({
   const [tempCharacter, setTempCharacter] = useState(null);
   const [roleType, setRoleType] = useState("supporting");
 
-  useEffect(() => {
-    if (tempActor && tempCharacter) {
-      addCast();
-    }
-  }, [tempActor, tempCharacter]);
-
   // 🔥 ADD CAST
   const addCast = () => {
     if (!tempActor || !tempCharacter) return;
@@ -130,6 +124,13 @@ export default function CastManager({
             Change Actor
           </Button>
         )}
+        <Button
+          variant="contained"
+          onClick={addCast}
+          disabled={!tempActor || !tempCharacter}
+        >
+          Add Cast
+        </Button>
       </Box>
 
       {/* LIST */}

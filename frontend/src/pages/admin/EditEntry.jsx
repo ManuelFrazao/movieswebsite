@@ -341,7 +341,15 @@ export default function EditEntry() {
             New cover preview
           </span>
         )}
+      </Box>
 
+      <Box
+        mt={2}
+        display="flex"
+        flexDirection={"column"}
+        alignItems="center"
+        gap={2}
+      >
         <CastManager
           entryId={id}
           castData={castData}
@@ -354,9 +362,17 @@ export default function EditEntry() {
         </Button>
       </Box>
 
-      <Button variant="contained" onClick={handleUpdate}>
-        Save
-      </Button>
+      <Box
+        mt={2}
+        display="flex"
+        flexDirection={"column"}
+        alignItems="center"
+        gap={2}
+      >
+        <Button variant="contained" onClick={handleUpdate}>
+          Save
+        </Button>
+      </Box>
 
       {entry.type === "series" && (
         <>
