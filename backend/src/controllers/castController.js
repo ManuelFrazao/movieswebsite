@@ -54,36 +54,34 @@ export const replaceCast = async (req, res) => {
       return res.status(400).json({ message: "Invalid data" });
     }
 
-    // 🔥 delete old
+    for (const c of cast) {
+      if (!c.actorId || !c.characterId) {
+        throw new Error("Invalid cast item");
+      }
+    }
+
     await Cast.destroy({
       where: { entryId },
       transaction: t,
     });
 
-    // 🔥 insert new
-    const newCast = [];
-
-    for (const c of cast) {
-      const created = await Cast.create(
-        {
-          entryId,
-          actorId: c.actorId,
-          characterId: c.characterId,
-          roleType: c.roleType,
-          order: c.order,
-        },
-        { transaction: t },
-      );
-
-      newCast.push(created);
-    }
+    const newCast = await Cast.bulkCreate(
+      cast.map((c) => ({
+        entryId,
+        actorId: c.actorId,
+        characterId: c.characterId,
+        roleType: c.roleType,
+        order: c.order,
+      })),
+      { transaction: t },
+    );
 
     await t.commit();
 
     res.json(newCast);
   } catch (err) {
     await t.rollback();
-    console.error(err);
+    console.error("REPLACE CAST ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 };
