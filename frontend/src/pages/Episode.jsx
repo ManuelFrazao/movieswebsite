@@ -281,7 +281,7 @@ export default function Entry() {
         type: "episode",
         episodeId: episode.id,
         content: reviewText,
-        //rating: reviewRating
+        rating: selectedRating,
       });
 
       setReviewText("");
