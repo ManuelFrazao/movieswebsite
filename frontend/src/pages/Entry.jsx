@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "./Entry.css";
@@ -1038,27 +1038,26 @@ export default function Entry() {
   function EpisodeRatingGraph({ entry, episodeStats }) {
     const [hoverIndex, setHoverIndex] = useState(null);
     const screenWidth = useWindowWidth();
+    const svgRef = useRef(null);
 
     const isSmall = screenWidth < 900;
 
     if (!entry?.seasons) return null;
 
-    // 🔥 flatten episódios
-    const episodes = entry.seasons.flatMap(
-      (s) =>
-        (s.episodes || [])
-          .map((ep) => {
-            const stats = episodeStats[ep.id] || {};
-            const rating = Number(stats.averageRating);
+    const episodes = entry.seasons.flatMap((s) =>
+      (s.episodes || [])
+        .map((ep) => {
+          const stats = episodeStats[ep.id] || {};
+          const rating = Number(stats.averageRating);
 
-            return {
-              ...ep,
-              seasonNumber: s.seasonNumber,
-              rating,
-              votes: stats.totalVotes || 0,
-            };
-          })
-          .filter((ep) => ep.rating > 0), // 🔥 FILTRO AQUI
+          return {
+            ...ep,
+            seasonNumber: s.seasonNumber,
+            rating,
+            votes: stats.totalVotes || 0,
+          };
+        })
+        .filter((ep) => ep.rating > 0),
     );
 
     if (!episodes.length) return null;
@@ -1084,20 +1083,19 @@ export default function Entry() {
       };
     });
 
+    // 🔥 posição global do gráfico
+    const rect = svgRef.current?.getBoundingClientRect();
+
     return (
       <div>
-        <div className="episode-graph-wrapper">
+        <div className="episode-graph-wrapper" ref={svgRef}>
           <svg
             width={width}
             height={height + 30}
-            style={{
-              paddingLeft: "1rem",
-            }}
+            style={{ paddingLeft: "1rem" }}
           >
-            {/* eixo base */}
             <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
 
-            {/* linhas horizontais (ratings) */}
             {[2, 4, 6, 8, 10].map((r) => {
               const y = height - (r / 10) * height;
 
@@ -1123,7 +1121,6 @@ export default function Entry() {
               );
             })}
 
-            {/* 🔥 pontos */}
             {points.map((p, i) => {
               const color = getRatingColor(p.rating);
 
@@ -1142,13 +1139,14 @@ export default function Entry() {
             })}
           </svg>
 
-          {/* 🔥 TOOLTIP */}
-          {hoverIndex !== null && (
+          {/* 🔥 TOOLTIP FIXED */}
+          {hoverIndex !== null && rect && (
             <div
               className="episode-tooltip"
               style={{
-                left: `${points[hoverIndex].x}px`,
-                top: `${points[hoverIndex].y}px`,
+                position: "fixed",
+                left: rect.left + points[hoverIndex].x,
+                top: rect.top + points[hoverIndex].y,
               }}
             >
               <div>
@@ -1174,6 +1172,7 @@ export default function Entry() {
   function EpisodeVotesGraph({ entry, episodeStats }) {
     const [hoverIndex, setHoverIndex] = useState(null);
     const screenWidth = useWindowWidth();
+    const svgRef = useRef(null);
 
     const isSmall = screenWidth < 900;
 
@@ -1202,7 +1201,6 @@ export default function Entry() {
     const height = 200;
 
     const maxVotes = Math.max(...episodes.map((e) => e.votes), 1);
-
     const stepX = width / (episodes.length - 1);
 
     const points = episodes.map((ep, i) => {
@@ -1220,23 +1218,15 @@ export default function Entry() {
       };
     });
 
-    // 🔥 escala suave
-    const steps = 5;
-    const stepValue = maxVotes / steps;
+    const rect = svgRef.current?.getBoundingClientRect();
 
     return (
-      <div className="episode-graph-wrapper">
+      <div className="episode-graph-wrapper" ref={svgRef}>
         <svg width={width} height={height + 30} style={{ paddingLeft: "1rem" }}>
-          {/* base */}
           <line x1={0} x2={width} y1={height} y2={height} stroke="#333" />
 
-          {/* 🔥 linhas horizontais FIXED */}
-          {Array.from({ length: steps + 1 }).map((_, i) => {
-            const rawValue = i * stepValue;
-
-            // 🔥 evita overflow
-            const value = Math.min(rawValue, maxVotes);
-
+          {Array.from({ length: 6 }).map((_, i) => {
+            const value = Math.min((i / 5) * maxVotes, maxVotes);
             const y = height - (value / maxVotes) * height;
 
             return (
@@ -1261,7 +1251,6 @@ export default function Entry() {
             );
           })}
 
-          {/* 🔥 pontos */}
           {points.map((p, i) => (
             <circle
               key={i}
@@ -1271,21 +1260,19 @@ export default function Entry() {
               fill="#639ef7"
               onMouseEnter={() => setHoverIndex(i)}
               onMouseLeave={() => setHoverIndex(null)}
-              style={{
-                cursor: "pointer",
-                transition: "0.2s", // 🔥 animação suave
-              }}
+              style={{ cursor: "pointer" }}
             />
           ))}
         </svg>
 
-        {/* 🔥 tooltip */}
-        {hoverIndex !== null && (
+        {/* 🔥 TOOLTIP FIXED */}
+        {hoverIndex !== null && rect && (
           <div
             className="episode-tooltip"
             style={{
-              left: `${points[hoverIndex].x}px`,
-              top: `${points[hoverIndex].y}px`,
+              position: "fixed",
+              left: rect.left + points[hoverIndex].x,
+              top: rect.top + points[hoverIndex].y,
             }}
           >
             <div>

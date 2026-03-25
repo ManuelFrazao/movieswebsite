@@ -462,7 +462,7 @@ svg {
 
 .episode-tooltip {
   position: absolute;
-  transform: translate(-38%, -120%);
+  transform: translate(-28%, -120%);
   background: #0f0f0f;
   color: white;
   font-size: 12px;
