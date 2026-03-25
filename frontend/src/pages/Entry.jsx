@@ -1086,6 +1086,71 @@ export default function Entry() {
     // 🔥 posição global do gráfico
     const rect = svgRef.current?.getBoundingClientRect();
 
+    const getSeasonShape = (season) => {
+      const shapes = ["circle", "triangle", "square", "diamond"];
+      return shapes[(season - 1) % shapes.length];
+    };
+
+    const renderPoint = (p, i, hoverIndex, setHoverIndex, color) => {
+      const shape = getSeasonShape(p.season);
+      const size = hoverIndex === i ? 7 : 4;
+
+      switch (shape) {
+        case "triangle":
+          return (
+            <polygon
+              key={i}
+              points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+
+        case "square":
+          return (
+            <rect
+              key={i}
+              x={p.x - size}
+              y={p.y - size}
+              width={size * 2}
+              height={size * 2}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+
+        case "diamond":
+          return (
+            <polygon
+              key={i}
+              points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+
+        default:
+          return (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={size}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+      }
+    };
+
     return (
       <div>
         <div className="episode-graph-wrapper" ref={svgRef}>
@@ -1123,19 +1188,7 @@ export default function Entry() {
 
             {points.map((p, i) => {
               const color = getRatingColor(p.rating);
-
-              return (
-                <circle
-                  key={i}
-                  cx={p.x}
-                  cy={p.y}
-                  r={hoverIndex === i ? 7 : 4}
-                  fill={color}
-                  style={{ cursor: "pointer" }}
-                  onMouseEnter={() => setHoverIndex(i)}
-                  onMouseLeave={() => setHoverIndex(null)}
-                />
-              );
+              return renderPoint(p, i, hoverIndex, setHoverIndex, color);
             })}
           </svg>
 
@@ -1220,6 +1273,71 @@ export default function Entry() {
 
     const rect = svgRef.current?.getBoundingClientRect();
 
+    const getSeasonShape = (season) => {
+      const shapes = ["circle", "triangle", "square", "diamond"];
+      return shapes[(season - 1) % shapes.length];
+    };
+
+    const renderPoint = (p, i, hoverIndex, setHoverIndex, color) => {
+      const shape = getSeasonShape(p.season);
+      const size = hoverIndex === i ? 7 : 4;
+
+      switch (shape) {
+        case "triangle":
+          return (
+            <polygon
+              key={i}
+              points={`${p.x},${p.y - size} ${p.x - size},${p.y + size} ${p.x + size},${p.y + size}`}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+
+        case "square":
+          return (
+            <rect
+              key={i}
+              x={p.x - size}
+              y={p.y - size}
+              width={size * 2}
+              height={size * 2}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+
+        case "diamond":
+          return (
+            <polygon
+              key={i}
+              points={`${p.x},${p.y - size} ${p.x - size},${p.y} ${p.x},${p.y + size} ${p.x + size},${p.y}`}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+
+        default:
+          return (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={size}
+              fill={color}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+      }
+    };
+
     return (
       <div className="episode-graph-wrapper" ref={svgRef}>
         <svg width={width} height={height + 30} style={{ paddingLeft: "1rem" }}>
@@ -1251,18 +1369,10 @@ export default function Entry() {
             );
           })}
 
-          {points.map((p, i) => (
-            <circle
-              key={i}
-              cx={p.x}
-              cy={p.y}
-              r={hoverIndex === i ? 7 : 4}
-              fill="#639ef7"
-              onMouseEnter={() => setHoverIndex(i)}
-              onMouseLeave={() => setHoverIndex(null)}
-              style={{ cursor: "pointer" }}
-            />
-          ))}
+          {points.map((p, i) => {
+            const color = "#639ef7";
+            return renderPoint(p, i, hoverIndex, setHoverIndex, color);
+          })}
         </svg>
 
         {/* 🔥 TOOLTIP FIXED */}
