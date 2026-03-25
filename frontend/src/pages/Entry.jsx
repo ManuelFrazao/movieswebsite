@@ -450,6 +450,7 @@ export default function Entry() {
         type: reviewModal.type,
         entryId: reviewModal.entryId,
         episodeId: reviewModal.episodeId,
+        rating: reviewRating,
       });
 
       // 🔥 refresh
@@ -2325,6 +2326,18 @@ export default function Entry() {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Write Review</h3>
+
+            <div className="rating-grid">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                <button
+                  key={num}
+                  className={`rating-btn ${reviewRating === num ? "active" : ""}`}
+                  onClick={() => setReviewRating(num)}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
 
             {/* 🔥 rating atual */}
             <div style={{ marginBottom: "10px", color: "#aaa" }}>

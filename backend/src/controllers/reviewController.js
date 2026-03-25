@@ -14,10 +14,10 @@ import { Op } from "sequelize";
 // =====================
 export const createReview = async (req, res) => {
   try {
-    const { content, type, entryId, episodeId } = req.body;
+    const { content, type, entryId, episodeId, rating: inputRating } = req.body;
     const userId = req.user.id;
 
-    let rating = 0;
+    let finalRating = 0;
 
     // 🎬 ENTRY
     if (type === "entry") {
@@ -29,17 +29,29 @@ export const createReview = async (req, res) => {
 
       // 🎬 MOVIE
       if (entry.type !== "series") {
-        const vote = await Vote.findOne({
-          where: { userId, entryId },
-        });
-
-        if (!vote) {
-          return res.status(400).json({
-            message: "Tens de avaliar o filme antes de fazer review",
+        if (inputRating) {
+          // 🔥 guarda voto automaticamente
+          await Vote.upsert({
+            userId,
+            entryId,
+            value: inputRating,
+            type: "entry",
           });
-        }
 
-        rating = vote.value;
+          finalRating = inputRating;
+        } else {
+          const vote = await Vote.findOne({
+            where: { userId, entryId },
+          });
+
+          if (!vote) {
+            return res.status(400).json({
+              message: "Tens de avaliar o filme antes de fazer review",
+            });
+          }
+
+          finalRating = vote.value;
+        }
       }
 
       // 📺 SERIES
@@ -61,28 +73,39 @@ export const createReview = async (req, res) => {
 
         const avg = votes.reduce((sum, v) => sum + v.value, 0) / votes.length;
 
-        rating = Number(avg.toFixed(1));
+        finalRating = Number(avg.toFixed(1));
       }
     }
 
     // 📺 EPISODE
     if (type === "episode") {
-      const vote = await Vote.findOne({
-        where: { userId, episodeId },
-      });
-
-      if (!vote) {
-        return res.status(400).json({
-          message: "Tens de avaliar o episódio antes de fazer review",
+      if (inputRating) {
+        await Vote.upsert({
+          userId,
+          episodeId,
+          value: inputRating,
+          type: "episode",
         });
-      }
 
-      rating = vote.value;
+        finalRating = inputRating;
+      } else {
+        const vote = await Vote.findOne({
+          where: { userId, episodeId },
+        });
+
+        if (!vote) {
+          return res.status(400).json({
+            message: "Tens de avaliar o episódio antes de fazer review",
+          });
+        }
+
+        finalRating = vote.value;
+      }
     }
 
     const review = await Review.create({
       content,
-      rating,
+      rating: finalRating,
       type,
       userId,
       entryId: entryId || null,
