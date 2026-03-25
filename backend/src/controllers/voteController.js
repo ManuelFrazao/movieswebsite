@@ -23,12 +23,35 @@ export const createVote = async (req, res) => {
     });
 
     // =====================
-    // ❌ REMOVIDO:
-    // UPDATE AUTOMÁTICO DAS REVIEWS
+    // 🔥 UPDATE ONLY LAST REVIEW
     // =====================
 
+    // 📺 EPISODE
+    if (type === "episode" && episodeId) {
+      const lastReview = await Review.findOne({
+        where: { userId, episodeId },
+        order: [["createdAt", "DESC"]],
+      });
+
+      if (lastReview) {
+        await lastReview.update({ rating: value });
+      }
+    }
+
+    // 🎬 ENTRY
+    if (type === "entry" && entryId) {
+      const lastReview = await Review.findOne({
+        where: { userId, entryId },
+        order: [["createdAt", "DESC"]],
+      });
+
+      if (lastReview) {
+        await lastReview.update({ rating: value });
+      }
+    }
+
     // =====================
-    // 🎬 MOVIE (ENTRY DIRECT)
+    // 🎬 UPDATE ENTRY STATS (MOVIE)
     // =====================
     if (type === "entry" && entryId) {
       const votes = await Vote.findAll({
@@ -52,7 +75,7 @@ export const createVote = async (req, res) => {
     }
 
     // =====================
-    // 📺 SERIES (EPISODES)
+    // 📺 UPDATE ENTRY STATS (SERIES via episodes)
     // =====================
     if (type === "episode" && episodeId) {
       const episode = await Episode.findByPk(episodeId);

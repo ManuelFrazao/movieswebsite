@@ -278,9 +278,10 @@ export default function Entry() {
   const handleCreateReview = async () => {
     try {
       await api.post("/reviews", {
-        type: "episode", // 🔥 FALTAVA ISTO
+        type: "episode",
         episodeId: episode.id,
         content: reviewText,
+        //rating: reviewRating
       });
 
       setReviewText("");
