@@ -5,6 +5,7 @@ import "./Entry.css";
 import RatingBadge from "../components/RatingBadge";
 import Navbar from "../components/Navbar";
 import { formatVotes } from "../utils/formatVotes";
+import ReviewCard from "../components/ReviewCard";
 
 export default function Entry() {
   const { slug } = useParams();
@@ -28,6 +29,27 @@ export default function Entry() {
   const [entryDistribution, setEntryDistribution] = useState(null);
   const [hoverEntry, setHoverEntry] = useState(false);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const [reviews, setReviews] = useState([]);
+  const [topReview, setTopReview] = useState(null);
+  const [reviewSort, setReviewSort] = useState("recent");
+
+  const fetchReviews = async () => {
+    try {
+      const res = await api.get(
+        `/reviews/entry/${entry.id}?sort=${reviewSort}`,
+      );
+
+      setReviews(res.data.reviews || res.data);
+      setTopReview(res.data.topReview || null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (!entry?.id) return;
+    fetchReviews();
+  }, [entry, reviewSort]);
 
   const fetchEntryDistribution = async () => {
     if (entryDistribution) return;
@@ -1563,6 +1585,13 @@ export default function Entry() {
         </button>
 
         <button
+          className={activeTab === "reviews" ? "active" : ""}
+          onClick={() => setActiveTab("reviews")}
+        >
+          Reviews
+        </button>
+
+        <button
           className={activeTab === "cast" ? "active" : ""}
           onClick={() => setActiveTab("cast")}
         >
@@ -2017,6 +2046,35 @@ export default function Entry() {
             <div className="entry-trend-dist-graph">
               <h3>Episode Votes Distribution</h3>
               <EpisodeVotesGraph entry={entry} episodeStats={episodeStats} />
+            </div>
+          </div>
+        )}
+
+        {/* 🔥 Reviews */}
+        {activeTab === "reviews" && (
+          <div className="reviews">
+            <h2>Reviews</h2>
+
+            {/* 🔝 TOP REVIEW */}
+            {topReview && (
+              <div className="top-review">
+                <h3>🔥 Top Review</h3>
+                <ReviewCard review={topReview} />
+              </div>
+            )}
+
+            {/* 🔽 SORT */}
+            <div className="review-sort">
+              <button onClick={() => setReviewSort("recent")}>Recent</button>
+              <button onClick={() => setReviewSort("popular")}>Popular</button>
+              <button onClick={() => setReviewSort("rating")}>Rating</button>
+            </div>
+
+            {/* 📝 LIST */}
+            <div className="reviews-list">
+              {reviews.map((r) => (
+                <ReviewCard key={r.id} review={r} />
+              ))}
             </div>
           </div>
         )}

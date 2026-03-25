@@ -5,12 +5,16 @@ import EntryModel from "./entry.js";
 import SeasonModel from "./seasons.js";
 import EpisodeModel from "./episode.js";
 import VoteModel from "./vote.js";
+import ReviewModel from "./review.js";
+import LikeModel from "./like.js";
 
 const User = UserModel(sequelize);
 const Entry = EntryModel(sequelize);
 const Season = SeasonModel(sequelize);
 const Episode = EpisodeModel(sequelize);
 const Vote = VoteModel(sequelize);
+const Review = ReviewModel(sequelize);
+const Like = LikeModel(sequelize);
 
 // =====================
 // RELATIONS
@@ -90,4 +94,88 @@ Vote.belongsTo(Episode, {
   as: "episode",
 });
 
-export { sequelize, User, Entry, Season, Episode, Vote };
+// =====================
+// REVIEWS
+// =====================
+
+// User → Reviews
+User.hasMany(Review, {
+  foreignKey: "userId",
+  as: "reviews",
+});
+
+Review.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+// Entry → Reviews
+Entry.hasMany(Review, {
+  foreignKey: "entryId",
+  as: "reviews",
+});
+
+Review.belongsTo(Entry, {
+  foreignKey: "entryId",
+  as: "entry",
+});
+
+// Episode → Reviews
+Episode.hasMany(Review, {
+  foreignKey: "episodeId",
+  as: "reviews",
+});
+
+Review.belongsTo(Episode, {
+  foreignKey: "episodeId",
+  as: "episode",
+});
+
+// =====================
+// Likes
+// =====================
+// User → Likes
+User.hasMany(Like, {
+  foreignKey: "userId",
+  as: "likes",
+});
+
+Like.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+// Entry
+Entry.hasMany(Like, {
+  foreignKey: "entryId",
+  as: "likes",
+});
+
+Like.belongsTo(Entry, {
+  foreignKey: "entryId",
+  as: "entry",
+});
+
+// Episode
+Episode.hasMany(Like, {
+  foreignKey: "episodeId",
+  as: "likes",
+});
+
+Like.belongsTo(Episode, {
+  foreignKey: "episodeId",
+  as: "episode",
+});
+
+// Review
+Review.hasMany(Like, {
+  foreignKey: "reviewId",
+  as: "likes",
+});
+
+Like.belongsTo(Review, {
+  foreignKey: "reviewId",
+  as: "review",
+});
+
+export { sequelize, User, Entry, Season, Episode, Vote, Review, Like };

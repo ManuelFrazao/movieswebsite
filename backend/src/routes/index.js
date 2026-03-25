@@ -6,6 +6,7 @@ import entryRoutes from "./entryRoutes.js";
 import seasonRoutes from "./seasonRoutes.js";
 import episodeRoutes from "./episodeRoutes.js";
 import voteRoutes from "./voteRoutes.js";
+import reviewRoutes from "./reviewRoutes.js";
 
 const router = express.Router();
 
@@ -15,5 +16,6 @@ router.use("/entries", entryRoutes);
 router.use("/seasons", seasonRoutes);
 router.use("/episodes", episodeRoutes);
 router.use("/votes", voteRoutes);
+router.use("/reviews", reviewRoutes);
 
 export default router;

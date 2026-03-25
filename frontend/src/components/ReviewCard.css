@@ -1,0 +1,50 @@
+.review-card {
+  background: #111;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-header img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.review-rating {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.review-content {
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+.review-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.like-btn {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.like-btn:hover {
+  transform: scale(1.1);
+}
+
+.like-btn.liked {
+  color: #e50914;
+  transform: scale(1.2);
+}
