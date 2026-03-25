@@ -68,18 +68,27 @@ export const getEntryReviews = async (req, res) => {
     const { id } = req.params;
     const { sort } = req.query;
 
-    let order = [["createdAt", "DESC"]]; // default
+    let order = [["createdAt", "DESC"]];
 
-    if (sort === "rating") {
-      order = [["rating", "DESC"]];
-    }
-
-    if (sort === "popular") {
+    if (sort === "rating") order = [["rating", "DESC"]];
+    if (sort === "popular")
       order = [[{ model: Like, as: "likes" }, "id", "DESC"]];
-    }
+
+    // 🔥 episódios da entry
+    const episodes = await Episode.findAll({
+      where: { entryId: id },
+      attributes: ["id"],
+    });
+
+    const episodeIds = episodes.map((e) => e.id);
 
     const reviews = await Review.findAll({
-      where: { entryId: id },
+      where: {
+        [Op.or]: [
+          { entryId: id },
+          { episodeId: episodeIds }
+        ],
+      },
       include: [
         {
           model: User,

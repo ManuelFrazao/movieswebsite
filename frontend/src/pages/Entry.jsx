@@ -37,9 +37,15 @@ export default function Entry() {
 
   const fetchReviews = async () => {
     try {
-      const res = await api.get(
-        `/reviews/entry/${entry.id}?sort=${reviewSort}`,
-      );
+      let url = "";
+
+      if (entry?.type === "series") {
+        url = `/reviews/entry/${entry.id}?sort=${reviewSort}`;
+      } else {
+        url = `/reviews/entry/${entry.id}?sort=${reviewSort}`;
+      }
+
+      const res = await api.get(url);
 
       setReviews(res.data.reviews || res.data);
       setTopReview(res.data.topReview || null);
@@ -165,6 +171,15 @@ export default function Entry() {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    if (!entry?.id) return;
+
+    api
+      .get(`/reviews/entry/${entry.id}/count`)
+      .then((res) => setEntryReviewCount(res.data.count))
+      .catch(console.error);
+  }, [entry]);
 
   if (!entry) return <p className="loading">Loading...</p>;
 
@@ -1751,7 +1766,14 @@ export default function Entry() {
                           d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
                         />
                       </svg>
-                      Reviews
+                      {entryReviewCount > 0 ? (
+                        <span>
+                          {formatVotes(entryReviewCount)}{" "}
+                          {entryReviewCount === 1 ? "review" : "reviews"}
+                        </span>
+                      ) : (
+                        "Reviews"
+                      )}
                     </div>
                     <div className="entry-contents-card">
                       <svg
