@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
-
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
 import { Box, TextField, Button, Typography } from "@mui/material";
+import ActorAutocomplete from "../../components/ActorAutocomplete";
+import CastManager from "../../components/CastManager";
 
 export default function EditEntry() {
   const { id } = useParams();
@@ -18,6 +18,8 @@ export default function EditEntry() {
   const [entryImage, setEntryImage] = useState(null);
   const [editingEpisode, setEditingEpisode] = useState(null);
   const [editData, setEditData] = useState({});
+  const [selectedActor, setSelectedActor] = useState(null);
+  const [castData, setCastData] = useState([]);
 
   const [newSeason, setNewSeason] = useState({
     seasonNumber: "",
@@ -48,11 +50,6 @@ export default function EditEntry() {
     }
   };
 
-  useEffect(() => {
-    fetchEntry();
-    fetchSeasons();
-  }, [id]);
-
   const fetchEpisodes = async (seasonId) => {
     try {
       const res = await api.get(`/episodes/season/${seasonId}`);
@@ -64,6 +61,30 @@ export default function EditEntry() {
       console.error(err);
     }
   };
+
+  const fetchCast = async () => {
+    try {
+      const res = await api.get(`/cast/entry/${id}`);
+
+      const formatted = res.data.map((c) => ({
+        id: c.id,
+        actor: c.actor,
+        character: c.character,
+        roleType: c.roleType,
+        order: c.order,
+      }));
+
+      setCastData(formatted);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchEntry();
+    fetchSeasons();
+    fetchCast();
+  }, [id]);
 
   const getNextSeasonNumber = () => {
     return seasons.length + 1;
@@ -143,6 +164,30 @@ export default function EditEntry() {
 
       alert("Updated!");
       fetchEntry();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveCast = async () => {
+    try {
+      // 🔥 clear old cast first
+      await api.delete(`/cast/entry/${id}`);
+
+      // 🔥 recreate cast
+      await Promise.all(
+        castData.map((c, index) =>
+          api.post("/cast", {
+            entryId: id,
+            actorId: c.actor.id,
+            characterId: c.character.id,
+            roleType: c.roleType,
+            order: index + 1,
+          }),
+        ),
+      );
+
+      alert("Cast saved!");
     } catch (err) {
       console.error(err);
     }
@@ -297,6 +342,21 @@ export default function EditEntry() {
           </span>
         )}
       </Box>
+
+      <Box mt={4}>
+        <Typography variant="h6">Add Cast</Typography>
+
+        <ActorAutocomplete onSelect={setSelectedActor} />
+
+        {selectedActor && (
+          <Typography mt={1}>Selected: {selectedActor.name}</Typography>
+        )}
+      </Box>
+      <Button variant="contained" onClick={handleSaveCast} sx={{ mt: 2 }}>
+        Save Cast
+      </Button>
+
+      <CastManager entryId={id} castData={castData} setCastData={setCastData} />
 
       <Button variant="contained" onClick={handleUpdate}>
         Save
