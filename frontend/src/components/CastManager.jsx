@@ -104,12 +104,6 @@ export default function CastManager({
           }}
         />
 
-        {tempActor && (
-          <Typography sx={{ alignSelf: "center" }}>
-            🎭 {tempActor.name}
-          </Typography>
-        )}
-
         <CharacterAutocomplete
           disabled={!tempActor}
           onSelect={setTempCharacter}

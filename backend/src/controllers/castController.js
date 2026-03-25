@@ -1,4 +1,4 @@
-import { Cast, Character, Actor } from "../models/index.js";
+import { sequelize, Cast, Character, Actor } from "../models/index.js";
 
 export const addCast = async (req, res) => {
   try {
@@ -40,6 +40,48 @@ export const getEntryCast = async (req, res) => {
 
     res.json(cast);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const replaceCast = async (req, res) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const { entryId, cast } = req.body;
+
+    if (!entryId || !Array.isArray(cast)) {
+      return res.status(400).json({ message: "Invalid data" });
+    }
+
+    // 🔥 delete old
+    await Cast.destroy({
+      where: { entryId },
+      transaction: t,
+    });
+
+    // 🔥 insert new
+    const newCast = await Promise.all(
+      cast.map((c) =>
+        Cast.create(
+          {
+            entryId,
+            actorId: c.actorId,
+            characterId: c.characterId,
+            roleType: c.roleType,
+            order: c.order,
+          },
+          { transaction: t }
+        )
+      )
+    );
+
+    await t.commit();
+
+    res.json(newCast);
+  } catch (err) {
+    await t.rollback();
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
