@@ -35,6 +35,16 @@ export default function Entry() {
   const [episodeReviewCounts, setEpisodeReviewCounts] = useState({});
   const [entryReviewCount, setEntryReviewCount] = useState(0);
 
+  const [reviewModal, setReviewModal] = useState({
+    open: false,
+    type: null,
+    entryId: null,
+    episodeId: null,
+  });
+
+  const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(0);
+
   const fetchReviews = async () => {
     try {
       let url = "";
@@ -288,6 +298,11 @@ export default function Entry() {
           episodeId: ratingModal.episodeId,
         });
 
+        setUserRatings((prev) => ({
+          ...prev,
+          [ratingModal.episodeId]: selectedRating,
+        }));
+
         // 🔥 UPDATE LOCAL
         fetchEpisodeStats(ratingModal.episodeId);
 
@@ -311,6 +326,11 @@ export default function Entry() {
           type: "entry",
           entryId: ratingModal.entryId,
         });
+
+        setUserRatings((prev) => ({
+          ...prev,
+          entry: selectedRating,
+        }));
 
         fetchTrend(ratingModal.entryId);
 
@@ -421,6 +441,45 @@ export default function Entry() {
       avg,
       votes: totalVotes,
     };
+  };
+
+  const handleCreateReview = async () => {
+    try {
+      await api.post("/reviews", {
+        content: reviewText,
+        type: reviewModal.type,
+        entryId: reviewModal.entryId,
+        episodeId: reviewModal.episodeId,
+      });
+
+      // 🔥 refresh
+      fetchReviews();
+
+      // reset
+      setReviewModal({ open: false, type: null });
+      setReviewText("");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const openReviewModal = (data) => {
+    let rating = 0;
+
+    if (data.episodeId) {
+      rating = userRatings[data.episodeId] || 0;
+    }
+
+    if (data.entryId) {
+      rating = userRatings.entry || 0;
+    }
+
+    setReviewRating(rating);
+
+    setReviewModal({
+      open: true,
+      ...data,
+    });
   };
 
   function RatingOverlay({ data }) {
@@ -1713,6 +1772,21 @@ export default function Entry() {
                             Rate
                           </button>
                         )}
+                      {entry.type !== "series" &&
+                        entry.releaseDate &&
+                        new Date(entry.releaseDate) <= new Date() && (
+                          <button
+                            className="rate-btn"
+                            onClick={() =>
+                              openReviewModal({
+                                type: "entry",
+                                entryId: entry.id,
+                              })
+                            }
+                          >
+                            Write Review
+                          </button>
+                        )}
                     </div>
                   </>
                   <div className="entry-contents">
@@ -2241,6 +2315,39 @@ export default function Entry() {
                   });
                 }}
               >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {reviewModal.open && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Write Review</h3>
+
+            {/* 🔥 rating atual */}
+            <div style={{ marginBottom: "10px", color: "#aaa" }}>
+              Current rating: <strong>{reviewRating}</strong>
+            </div>
+
+            {/* textarea */}
+            <textarea
+              placeholder="Write your thoughts..."
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              rows={5}
+              style={{ width: "100%" }}
+            />
+
+            <div className="modal-actions">
+              <button
+                onClick={() => setReviewModal({ open: false, type: null })}
+              >
+                Cancel
+              </button>
+
+              <button className="submit" onClick={handleCreateReview}>
                 Submit
               </button>
             </div>

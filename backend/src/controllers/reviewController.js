@@ -1,4 +1,12 @@
-import { Review, Vote, Episode, Like, User, Season } from "../models/index.js";
+import {
+  Review,
+  Vote,
+  Episode,
+  Like,
+  User,
+  Season,
+  Entry,
+} from "../models/index.js";
 import { Op } from "sequelize";
 
 // =====================
@@ -13,25 +21,48 @@ export const createReview = async (req, res) => {
 
     // 🎬 ENTRY
     if (type === "entry") {
-      // 🔥 se for série → calcular média dos episódios do user
-      const votes = await Vote.findAll({
-        where: { userId },
-        include: {
-          model: Episode,
-          as: "episode",
-          where: { entryId },
-        },
-      });
+      const entry = await Entry.findByPk(entryId);
 
-      if (!votes.length) {
-        return res.status(400).json({
-          message: "Tens de avaliar episódios antes de fazer review",
-        });
+      if (!entry) {
+        return res.status(404).json({ message: "Entry não encontrada" });
       }
 
-      const avg = votes.reduce((sum, v) => sum + v.value, 0) / votes.length;
+      // 🎬 MOVIE
+      if (entry.type !== "series") {
+        const vote = await Vote.findOne({
+          where: { userId, entryId },
+        });
 
-      rating = Number(avg.toFixed(1));
+        if (!vote) {
+          return res.status(400).json({
+            message: "Tens de avaliar o filme antes de fazer review",
+          });
+        }
+
+        rating = vote.value;
+      }
+
+      // 📺 SERIES
+      else {
+        const votes = await Vote.findAll({
+          where: { userId },
+          include: {
+            model: Episode,
+            as: "episode",
+            where: { entryId },
+          },
+        });
+
+        if (!votes.length) {
+          return res.status(400).json({
+            message: "Tens de avaliar episódios antes de fazer review",
+          });
+        }
+
+        const avg = votes.reduce((sum, v) => sum + v.value, 0) / votes.length;
+
+        rating = Number(avg.toFixed(1));
+      }
     }
 
     // 📺 EPISODE
