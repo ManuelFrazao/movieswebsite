@@ -17,7 +17,7 @@ export const createReview = async (req, res) => {
     const { content, type, entryId, episodeId, rating: inputRating } = req.body;
     const userId = req.user.id;
 
-    let finalRating = 0;
+    let finalRating = null;
 
     // 🎬 ENTRY
     if (type === "entry") {
@@ -27,43 +27,27 @@ export const createReview = async (req, res) => {
         return res.status(404).json({ message: "Entry não encontrada" });
       }
 
-      // 🎬 MOVIE
-      if (entry.type !== "series") {
-        if (inputRating) {
-          // 🔥 guarda voto automaticamente
-          if (inputRating) {
-            finalRating = inputRating;
-          } else {
-            const vote = await Vote.findOne({
-              where: { userId, entryId },
-            });
-
-            if (!vote) {
-              return res.status(400).json({
-                message: "Tens de avaliar o filme antes de fazer review",
-              });
-            }
-
-            finalRating = vote.value;
-          }
-
-          finalRating = inputRating;
-        } else {
-          const vote = await Vote.findOne({
-            where: { userId, entryId },
-          });
-
-          if (!vote) {
-            return res.status(400).json({
-              message: "Tens de avaliar o filme antes de fazer review",
-            });
-          }
-
-          finalRating = vote.value;
-        }
+      // 🔥 PRIORIDADE: rating vindo do frontend
+      if (inputRating) {
+        finalRating = inputRating;
       }
 
-      // 📺 SERIES
+      // 🎬 MOVIE (fallback para vote)
+      else if (entry.type !== "series") {
+        const vote = await Vote.findOne({
+          where: { userId, entryId },
+        });
+
+        if (!vote) {
+          return res.status(400).json({
+            message: "Tens de avaliar o filme antes de fazer review",
+          });
+        }
+
+        finalRating = vote.value;
+      }
+
+      // 📺 SERIES (fallback média episódios)
       else {
         const votes = await Vote.findAll({
           where: { userId },
@@ -89,22 +73,6 @@ export const createReview = async (req, res) => {
     // 📺 EPISODE
     if (type === "episode") {
       if (inputRating) {
-        if (inputRating) {
-          finalRating = inputRating;
-        } else {
-          const vote = await Vote.findOne({
-            where: { userId, episodeId },
-          });
-
-          if (!vote) {
-            return res.status(400).json({
-              message: "Tens de avaliar o episódio antes de fazer review",
-            });
-          }
-
-          finalRating = vote.value;
-        }
-
         finalRating = inputRating;
       } else {
         const vote = await Vote.findOne({

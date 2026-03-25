@@ -1773,21 +1773,6 @@ export default function Entry() {
                             Rate
                           </button>
                         )}
-                      {entry.type !== "series" &&
-                        entry.releaseDate &&
-                        new Date(entry.releaseDate) <= new Date() && (
-                          <button
-                            className="rate-btn"
-                            onClick={() =>
-                              openReviewModal({
-                                type: "entry",
-                                entryId: entry.id,
-                              })
-                            }
-                          >
-                            Write Review
-                          </button>
-                        )}
                     </div>
                   </>
                   <div className="entry-contents">
@@ -2187,6 +2172,22 @@ export default function Entry() {
           <div className="reviews">
             <h2>Reviews</h2>
 
+            {entry.type !== "series" &&
+              entry.releaseDate &&
+              new Date(entry.releaseDate) <= new Date() && (
+                <button
+                  className="rate-btn"
+                  onClick={() =>
+                    openReviewModal({
+                      type: "entry",
+                      entryId: entry.id,
+                    })
+                  }
+                >
+                  Write Review
+                </button>
+              )}
+
             {/* 🔝 TOP REVIEW */}
             {topReview && (
               <div className="top-review">
@@ -2328,15 +2329,6 @@ export default function Entry() {
             <h3>Write Review</h3>
 
             <div className="rating-grid">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                <button
-                  key={num}
-                  className={`rating-btn ${reviewRating === num ? "active" : ""}`}
-                  onClick={() => setReviewRating(num)}
-                >
-                  {num}
-                </button>
-              ))}
             </div>
 
             {/* 🔥 rating atual */}
