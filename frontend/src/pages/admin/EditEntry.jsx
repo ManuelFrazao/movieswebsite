@@ -341,22 +341,17 @@ export default function EditEntry() {
             New cover preview
           </span>
         )}
+
+        <CastManager
+          entryId={id}
+          castData={castData}
+          setCastData={setCastData}
+        />
+
+        <Button variant="contained" onClick={handleSaveCast} sx={{ mt: 2 }}>
+          Save Cast
+        </Button>
       </Box>
-
-      <Box mt={4}>
-        <Typography variant="h6">Add Cast</Typography>
-
-        <ActorAutocomplete onSelect={setSelectedActor} />
-
-        {selectedActor && (
-          <Typography mt={1}>Selected: {selectedActor.name}</Typography>
-        )}
-      </Box>
-      <Button variant="contained" onClick={handleSaveCast} sx={{ mt: 2 }}>
-        Save Cast
-      </Button>
-
-      <CastManager entryId={id} castData={castData} setCastData={setCastData} />
 
       <Button variant="contained" onClick={handleUpdate}>
         Save

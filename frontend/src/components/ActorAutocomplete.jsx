@@ -24,7 +24,7 @@ export default function ActorAutocomplete({ onSelect }) {
     try {
       setLoading(true);
       const res = await api.get(`/actors/search?q=${q}`);
-      setResults(res.data);
+      setResults(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -57,7 +57,7 @@ export default function ActorAutocomplete({ onSelect }) {
       />
 
       {/* Dropdown */}
-      {results.length > 0 && (
+      {Array.isArray(results) && results.length >= 2 && (
         <Box
           sx={{
             position: "absolute",

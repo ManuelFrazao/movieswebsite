@@ -9,6 +9,7 @@ import voteRoutes from "./voteRoutes.js";
 import reviewRoutes from "./reviewRoutes.js";
 import castRoutes from "./castRoutes.js";
 import actorRoutes from "./actorRoutes.js";
+import characterRoutes from "./characterRoutes.js";
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use("/votes", voteRoutes);
 router.use("/reviews", reviewRoutes);
 router.use("/cast", castRoutes);
 router.use("/actors", actorRoutes);
+router.use("/characters", characterRoutes);
 
 export default router;
