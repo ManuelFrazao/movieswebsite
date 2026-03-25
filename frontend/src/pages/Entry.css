@@ -457,6 +457,7 @@ svg {
   width: max-content;
   position: relative;
   margin: 0 auto;
+  padding: 0 0.5rem;
 }
 
 .episode-tooltip {
@@ -571,7 +572,7 @@ svg {
   .movie-info-aside-left{
     margin-right: 0;
   }
-  .entry-trend{
+  .entry-trend-dist-graph{
     width: inherit;
     overflow: auto;
   }

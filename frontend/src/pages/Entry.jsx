@@ -522,7 +522,7 @@ export default function Entry() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "flex-end",
-                width: isMobile ? "24px" : "66px",
+                width: isMobile ? "22px" : "66px",
                 height: "100%",
               }}
             >
@@ -621,7 +621,7 @@ export default function Entry() {
 
     const [hoverIndex, setHoverIndex] = useState(null);
 
-    const width = isMobile ? 300 : days.length * 22;
+    const width = isMobile ? 290 : days.length * 22;
     const height = 75;
     const stepX = width / (days.length - 1);
 
@@ -1812,11 +1812,11 @@ export default function Entry() {
                 <RatingDistributionEntry data={entryDistribution} />
               </div>
             )}
-            <div className="entry-trend">
+            <div className="entry-trend-dist-graph">
               <h3>Episode Rating Distribution</h3>
               <EpisodeRatingGraph entry={entry} episodeStats={episodeStats} />
             </div>
-            <div className="entry-trend">
+            <div className="entry-trend-dist-graph">
               <h3>Episode Votes Distribution</h3>
               <EpisodeVotesGraph entry={entry} episodeStats={episodeStats} />
             </div>
