@@ -45,8 +45,6 @@ export const getEntryCast = async (req, res) => {
 };
 
 export const replaceCast = async (req, res) => {
-  const t = await sequelize.transaction();
-
   try {
     const { entryId, cast } = req.body;
 
@@ -54,16 +52,7 @@ export const replaceCast = async (req, res) => {
       return res.status(400).json({ message: "Invalid data" });
     }
 
-    for (const c of cast) {
-      if (!c.actorId || !c.characterId) {
-        throw new Error("Invalid cast item");
-      }
-    }
-
-    await Cast.destroy({
-      where: { entryId },
-      transaction: t,
-    });
+    await Cast.destroy({ where: { entryId } });
 
     const newCast = await Cast.bulkCreate(
       cast.map((c) => ({
@@ -73,14 +62,10 @@ export const replaceCast = async (req, res) => {
         roleType: c.roleType,
         order: c.order,
       })),
-      { transaction: t },
     );
-
-    await t.commit();
 
     res.json(newCast);
   } catch (err) {
-    await t.rollback();
     console.error("REPLACE CAST ERROR:", err);
     res.status(500).json({ error: err.message });
   }
