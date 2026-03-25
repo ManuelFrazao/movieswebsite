@@ -73,7 +73,7 @@ export const createVote = async (req, res) => {
         const avg =
           totalVotes === 0
             ? 0
-            : votes.reduce((sum, v) => sum + v.value, 0) / votes.length;
+            : votes.reduce((sum, v) => sum + v.value, 0) / totalVotes;
 
         await Entry.update(
           {

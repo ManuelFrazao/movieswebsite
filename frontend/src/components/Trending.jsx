@@ -152,7 +152,7 @@ function Section({ title, entries, navigate, trendingData }) {
     const values = days.map((day) => data?.[day]?.count || 0);
     const avgs = days.map((day) => data?.[day]?.avg || 0);
 
-    const max = maxValue || 1;
+    const max = Math.max(...values, 1);
 
     const [hoverIndex, setHoverIndex] = useState(null);
 
@@ -282,13 +282,6 @@ function Section({ title, entries, navigate, trendingData }) {
     return diffDays >= 0 && diffDays <= 30; // 🔥 filmes → 30 dias
   };
 
-  const globalMax = Math.max(
-    ...Object.values(trendingData).flatMap((entryData) =>
-      Object.values(entryData).map((d) => d.count),
-    ),
-    1,
-  );
-
   return (
     <div className="section">
       <h2>{title}</h2>
@@ -350,7 +343,7 @@ function Section({ title, entries, navigate, trendingData }) {
                 )}
               </div>
               <div className="graph">
-                <Graph data={trendingData[entry.id]} maxValue={globalMax} />
+                <Graph data={trendingData[entry.id]} />
               </div>
             </div>
           );
