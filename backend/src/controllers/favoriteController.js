@@ -1,50 +1,56 @@
 import { Favorite, Entry } from "../models/index.js";
 
 export const toggleFavorite = async (req, res) => {
-  try {
-    const { entryId } = req.body;
-    const userId = req.user.id;
+  const { entryId } = req.body;
+  const userId = req.user.id;
+  const isAdmin = req.user.isAdmin;
 
-    if (!entryId) {
-      return res.status(400).json({ message: "Missing entryId" });
-    }
+  const existing = await Favorite.findOne({
+    where: { userId, entryId },
+  });
 
-    const entry = await Entry.findByPk(entryId);
-
-    if (!entry) {
-      return res.status(404).json({ message: "Entry not found" });
-    }
-
-    const existing = await Favorite.findOne({
-      where: { userId, entryId },
-    });
-
+  // 🔥 ADMIN MODE
+  if (isAdmin) {
+    // opção 1 (toggle infinito controlado)
     if (existing) {
       await existing.destroy();
-
-      await Entry.increment(
-        { favoritesCount: -1 },
-        { where: { id: entryId } }
-      );
-    } else {
-      await Favorite.create({ userId, entryId });
-
-      await Entry.increment(
-        { favoritesCount: 1 },
-        { where: { id: entryId } }
-      );
     }
 
-    // 🔥 🔥 VALOR REAL DA BD
-    const updatedEntry = await Entry.findByPk(entryId);
+    await Favorite.create({ userId, entryId });
 
-    return res.json({
-      added: !existing,
-      count: updatedEntry.favoritesCount,
+    const count = await Favorite.count({
+      where: { entryId },
     });
 
-  } catch (err) {
-    console.error("FAVORITE ERROR:", err);
-    res.status(500).json({ error: err.message });
+    return res.json({
+      added: true,
+      count,
+      adminMode: true,
+    });
   }
+
+  // 👇 comportamento normal
+  if (existing) {
+    await existing.destroy();
+
+    const count = await Favorite.count({
+      where: { entryId },
+    });
+
+    return res.json({
+      added: false,
+      count,
+    });
+  }
+
+  await Favorite.create({ userId, entryId });
+
+  const count = await Favorite.count({
+    where: { entryId },
+  });
+
+  res.json({
+    added: true,
+    count,
+  });
 };
