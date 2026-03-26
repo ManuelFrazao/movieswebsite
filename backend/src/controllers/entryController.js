@@ -184,10 +184,18 @@ export const getEntryBySlug = async (req, res) => {
     if (userId) {
       const [fav, watch] = await Promise.all([
         Favorite.findOne({
-          where: { userId, entryId: entry.id },
+          where: {
+            userId,
+            targetId: entry.id,
+            targetType: "entry",
+          },
         }),
         Watchlist.findOne({
-          where: { userId, entryId: entry.id },
+          where: {
+            userId,
+            targetId: entry.id,
+            targetType: "entry",
+          },
         }),
       ]);
 
@@ -197,8 +205,18 @@ export const getEntryBySlug = async (req, res) => {
 
     // 🔥 COUNTS (nunca guardados no model)
     const [favoritesCount, watchlistCount] = await Promise.all([
-      Favorite.count({ where: { entryId: entry.id } }),
-      Watchlist.count({ where: { entryId: entry.id } }),
+      Favorite.count({
+        where: {
+          targetId: entry.id,
+          targetType: "entry",
+        },
+      }),
+      Watchlist.count({
+        where: {
+          targetId: entry.id,
+          targetType: "entry",
+        },
+      }),
     ]);
 
     // 🔥 RESPONSE FINAL
