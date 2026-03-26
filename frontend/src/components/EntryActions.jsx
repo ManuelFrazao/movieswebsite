@@ -14,18 +14,23 @@ export default function EntryActions({ entry, onUpdate }) {
 
   // ✅ estado inicial correto (baseado no backend)
   const [isFavorite, setIsFavorite] = useState(
-    isSpamUser ? true : entry.isFavorite || false,
+    isSpamUser ? true : entry?.isFavorite || false,
   );
 
   const [isWatchlist, setIsWatchlist] = useState(
-    isSpamUser ? true : entry.isWatchlist || false,
+    isSpamUser ? true : entry?.isWatchlist || false,
   );
 
-  const handleFavorite = async () => {
+  const requireAuth = () => {
     if (!user) {
-      alert("You need to be logged in to do this.");
-      return;
+      alert("You need to be logged in.");
+      return false;
     }
+    return true;
+  };
+
+  const handleFavorite = async () => {
+    if (!requireAuth()) return;
 
     if (!entry?.id) return;
 
@@ -45,10 +50,7 @@ export default function EntryActions({ entry, onUpdate }) {
   };
 
   const handleWatchlist = async () => {
-    if (!user) {
-      alert("You need to be logged in to do this.");
-      return;
-    }
+    if (!requireAuth()) return;
 
     if (!entry?.id) return;
 
@@ -87,7 +89,7 @@ export default function EntryActions({ entry, onUpdate }) {
         </svg>{" "}
         <span>
           {isWatchlist
-            ? `${formatVotes(entry.watchlistCount || 0)} added to watchlist`
+            ? `${formatVotes(entry?.watchlistCount || 0)} added to watchlist`
             : "Add to watchlist"}
         </span>
       </button>
@@ -112,8 +114,8 @@ export default function EntryActions({ entry, onUpdate }) {
         </svg>{" "}
         <span>
           {isFavorite
-            ? `${formatVotes(entry.favoritesCount || 0)} ${
-                (entry.favoritesCount || 0) === 1 ? "favorite" : "favorites"
+            ? `${formatVotes(entry?.favoritesCount || 0)} ${
+                (entry?.favoritesCount || 0) === 1 ? "favorite" : "favorites"
               }`
             : "Add to favorites"}
         </span>

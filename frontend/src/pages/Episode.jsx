@@ -40,6 +40,21 @@ export default function Entry() {
   const [isWatchlist, setIsWatchlist] = useState(false);
   const [cast, setCast] = useState([]);
 
+  useEffect(() => {
+    if (!episode?.entryId) return;
+
+    const fetchEntry = async () => {
+      try {
+        const res = await api.get(`/entries/${episode.entryId}`);
+        setEntry(res.data);
+      } catch (err) {
+        console.error(err.response?.data || err.message);
+      }
+    };
+
+    fetchEntry();
+  }, [episode]);
+
   const handleFavorite = async () => {
     if (!episode?.entryId) return;
 

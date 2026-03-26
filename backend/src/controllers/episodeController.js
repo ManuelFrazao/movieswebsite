@@ -1,4 +1,10 @@
-import { Episode, Season, Entry } from "../models/index.js";
+import {
+  Episode,
+  Season,
+  Entry,
+  Favorite,
+  Watchlist,
+} from "../models/index.js";
 import cloudinary from "../utils/cloudinary.js";
 import { Op } from "sequelize";
 
@@ -144,6 +150,7 @@ export const updateEpisode = async (req, res) => {
 export const getEpisodeById = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
 
     const episode = await Episode.findByPk(id, {
       include: [
@@ -164,8 +171,64 @@ export const getEpisodeById = async (req, res) => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    res.json(episode);
+    // =====================
+    // 🔥 USER FLAGS
+    // =====================
+    let isFavorite = false;
+    let isWatchlist = false;
+
+    if (userId) {
+      const [fav, watch] = await Promise.all([
+        Favorite.findOne({
+          where: {
+            userId,
+            targetId: id,
+            targetType: "episode",
+          },
+        }),
+        Watchlist.findOne({
+          where: {
+            userId,
+            targetId: id,
+            targetType: "episode",
+          },
+        }),
+      ]);
+
+      isFavorite = !!fav;
+      isWatchlist = !!watch;
+    }
+
+    // =====================
+    // 🔥 COUNTS
+    // =====================
+    const [favoritesCount, watchlistCount] = await Promise.all([
+      Favorite.count({
+        where: {
+          targetId: id,
+          targetType: "episode",
+        },
+      }),
+      Watchlist.count({
+        where: {
+          targetId: id,
+          targetType: "episode",
+        },
+      }),
+    ]);
+
+    // =====================
+    // 🔥 RESPONSE FINAL
+    // =====================
+    res.json({
+      ...episode.toJSON(),
+      isFavorite,
+      isWatchlist,
+      favoritesCount,
+      watchlistCount,
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

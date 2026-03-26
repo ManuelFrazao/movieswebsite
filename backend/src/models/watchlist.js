@@ -12,8 +12,13 @@ const WatchlistModel = (sequelize) => {
       type: DataTypes.UUID,
       allowNull: false,
     },
-    entryId: {
+    targetId: {
       type: DataTypes.UUID,
+      allowNull: false,
+    },
+
+    targetType: {
+      type: DataTypes.ENUM("entry", "episode", "character", "actor"),
       allowNull: false,
     },
   });
