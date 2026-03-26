@@ -11,6 +11,8 @@ import castRoutes from "./castRoutes.js";
 import actorRoutes from "./actorRoutes.js";
 import characterRoutes from "./characterRoutes.js";
 import characterAliasRoutes from "./characterAliasRoutes.js";
+import watchlistRoutes from "./watchlistRoutes.js";
+import favoriteRoutes from "./favoriteRoutes.js";
 
 const router = express.Router();
 
@@ -25,5 +27,7 @@ router.use("/cast", castRoutes);
 router.use("/actors", actorRoutes);
 router.use("/characters", characterRoutes);
 router.use("/character-aliases", characterAliasRoutes);
+router.use("/watchlist", watchlistRoutes);
+router.use("/favorites", favoriteRoutes);
 
 export default router;

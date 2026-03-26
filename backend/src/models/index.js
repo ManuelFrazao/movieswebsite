@@ -11,6 +11,8 @@ import CharacterModel from "./character.js";
 import CastModel from "./cast.js";
 import ActorModel from "./actor.js";
 import CharacterAliasModel from "./characterAlias.js";
+import WatchlistModel from "./watchlist.js";
+import FavoriteModel from "./favorite.js";
 
 const User = UserModel(sequelize);
 const Entry = EntryModel(sequelize);
@@ -23,6 +25,8 @@ const Character = CharacterModel(sequelize);
 const Cast = CastModel(sequelize);
 const Actor = ActorModel(sequelize);
 const CharacterAlias = CharacterAliasModel(sequelize);
+const Watchlist = WatchlistModel(sequelize);
+const Favorite = FavoriteModel(sequelize);
 
 // =====================
 // RELATIONS
@@ -270,6 +274,45 @@ CharacterAlias.belongsTo(Character, {
   as: "character",
 });
 
+// =====================
+// Watchlist
+// =====================
+User.belongsToMany(Entry, {
+  through: Watchlist,
+  foreignKey: "userId",
+  as: "watchlistEntries",
+});
+
+Entry.belongsToMany(User, {
+  through: Watchlist,
+  foreignKey: "entryId",
+});
+
+User.belongsToMany(Episode, {
+  through: Watchlist,
+  foreignKey: "userId",
+  as: "watchlistEpisodes",
+});
+
+Episode.belongsToMany(User, {
+  through: Watchlist,
+  foreignKey: "episodeId",
+});
+
+// =====================
+// Favorites
+// =====================
+User.belongsToMany(Entry, {
+  through: Favorite,
+  foreignKey: "userId",
+  as: "favoriteEntries",
+});
+
+Entry.belongsToMany(User, {
+  through: Favorite,
+  foreignKey: "entryId",
+});
+
 export {
   sequelize,
   User,
@@ -283,4 +326,6 @@ export {
   Character,
   Actor,
   CharacterAlias,
+  Watchlist,
+  Favorite,
 };

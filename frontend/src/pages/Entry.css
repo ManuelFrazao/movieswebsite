@@ -91,9 +91,45 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s ease;
 }
-.secondary-btn svg{
+.secondary-btn svg {
   margin-right: 0.5rem;
+}
+/* camada animada */
+.secondary-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0%;
+  height: 100%;
+  background: currentColor;
+  z-index: 0;
+  transition: width 0.4s ease;
+}
+/* texto acima */
+.secondary-btn * {
+  position: relative;
+  z-index: 1;
+}
+
+.active-favorite {
+  color: white;
+}
+.active-favorite::before {
+  width: 100%;
+  background: #e63946;
+}
+
+.active-watchlist {
+  color: black;
+}
+.active-watchlist::before {
+  width: 100%;
+  background: #f4d35e;
 }
 
 .season-header {
@@ -524,19 +560,22 @@ svg {
 
 .entry-contents-card {
   display: grid;
-  width: auto;
-  height: auto;
-  padding: 3rem;
+  width: 150px;
+  height: 150px;
   background: #333;
   border-radius: 8px;
   margin: 0.5rem 1rem 2rem 0;
   justify-items: center;
+  align-items: center;
 }
-
 .entry-contents-card:hover {
   cursor: pointer;
   background: #1f1f1f;
   transform: scale(1.05);
+}
+
+.entry-contents-card svg {
+  margin-bottom: 0.3rem;
 }
 
 .entry-cast {
@@ -571,7 +610,7 @@ svg {
   background: rgba(255, 255, 255, 0.02);
 }
 
-.episode-reviews{
+.episode-reviews {
   margin-top: 0.5rem;
   color: rgb(99, 158, 247);
   display: flex;
@@ -579,11 +618,11 @@ svg {
   font-size: 0.7rem;
 }
 
-.episode-reviews:hover{
+.episode-reviews:hover {
   text-decoration: underline;
 }
 
-.entry-cast-list{
+.entry-cast-list {
   overflow: auto;
 }
 
@@ -618,17 +657,18 @@ svg {
     padding: 1rem 0rem;
   }
   .entry-contents-card {
+    width: 150px;
     margin: 0.5rem 1rem 0.5rem 0;
   }
-  .entry-contents-card span{
+  .entry-contents-card span {
     display: block ruby;
   }
-  .actions{
+  .actions {
     padding: 1rem 3rem;
     max-width: 280px;
     margin: 0 auto;
   }
-  
+
   /*Episode tab*/
   .episode-row {
     display: block;

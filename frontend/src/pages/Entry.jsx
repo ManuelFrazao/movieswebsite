@@ -47,6 +47,18 @@ export default function Entry() {
 
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isWatchlist, setIsWatchlist] = useState(false);
+
+  const handleFavorite = async () => {
+    const res = await api.post("/favorites/toggle", { entryId });
+    setIsFavorite(res.data.added);
+  };
+
+  const handleWatchlist = async () => {
+    const res = await api.post("/watchlist/toggle", { entryId });
+    setIsWatchlist(res.data.added);
+  };
 
   const fetchCast = async () => {
     try {
@@ -498,6 +510,10 @@ export default function Entry() {
       ...data,
     });
   };
+
+  const totalCharacters = new Set(
+    cast.map((c) => c.character?.id).filter(Boolean),
+  ).size;
 
   function RatingOverlay({ data }) {
     const max = Math.max(...Object.values(data), 1);
@@ -1676,10 +1692,17 @@ export default function Entry() {
         )}
 
         <button
-          className={activeTab === "details" ? "active" : ""}
-          onClick={() => setActiveTab("details")}
+          className={activeTab === "videos" ? "active" : ""}
+          onClick={() => setActiveTab("videos")}
         >
-          Details
+          Videos
+        </button>
+
+        <button
+          className={activeTab === "images" ? "active" : ""}
+          onClick={() => setActiveTab("images")}
+        >
+          Images
         </button>
 
         <button
@@ -1702,6 +1725,13 @@ export default function Entry() {
         >
           Cast
         </button>
+
+        <button
+          className={activeTab === "forums" ? "active" : ""}
+          onClick={() => setActiveTab("forums")}
+        >
+          Forums
+        </button>
       </div>
 
       {/* CONTENT */}
@@ -1713,7 +1743,7 @@ export default function Entry() {
               <div className="movie-info-content">
                 <div className="movie-info-aside-left">
                   <img
-                    width={180}
+                    width={220}
                     src={entry.coverImage}
                     alt=""
                     style={{
@@ -1721,7 +1751,10 @@ export default function Entry() {
                     }}
                   />
                   <div className="actions">
-                    <button className="secondary-btn">
+                    <button
+                      className={`secondary-btn ${isWatchlist ? "active-watchlist" : ""}`}
+                      onClick={handleWatchlist}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
@@ -1735,7 +1768,10 @@ export default function Entry() {
                       </svg>{" "}
                       Add to watchlist
                     </button>
-                    <button className="secondary-btn">
+                    <button
+                      className={`secondary-btn ${isFavorite ? "active-favorite" : ""}`}
+                      onClick={handleFavorite}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
@@ -1816,74 +1852,106 @@ export default function Entry() {
                   </>
                   <div className="entry-contents">
                     <div className="entry-contents-card">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-camera-video"
-                        viewBox="0 0 16 16"
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
                       >
-                        <path
-                          fill-rule="evenodd"
-                          d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"
-                        />
-                      </svg>
-                      Videos
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          class="bi bi-camera-video"
+                          viewBox="0 0 16 16"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"
+                          />
+                        </svg>
+                        <span>Videos</span>
+                      </div>
                     </div>
                     <div className="entry-contents-card">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-images"
-                        viewBox="0 0 16 16"
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
                       >
-                        <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
-                        <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1z" />
-                      </svg>
-                      Images
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          class="bi bi-images"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                          <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1z" />
+                        </svg>
+                        <span>Images</span>
+                      </div>
                     </div>
                     <div
                       className="entry-contents-card"
                       onClick={() => setActiveTab("reviews")}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-pencil-square"
-                        viewBox="0 0 16 16"
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
                       >
-                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                        <path
-                          fill-rule="evenodd"
-                          d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                        />
-                      </svg>
-                      {entryReviewCount > 0 ? (
-                        <span>
-                          {formatVotes(entryReviewCount)}{" "}
-                          {entryReviewCount === 1 ? "review" : "reviews"}
-                        </span>
-                      ) : (
-                        "Reviews"
-                      )}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          class="bi bi-pencil-square"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                          <path
+                            fill-rule="evenodd"
+                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                          />
+                        </svg>
+                        {entryReviewCount > 0 ? (
+                          <span>
+                            {formatVotes(entryReviewCount)}{" "}
+                            {entryReviewCount === 1 ? "review" : "reviews"}
+                          </span>
+                        ) : (
+                          "Reviews"
+                        )}
+                      </div>
                     </div>
                     <div className="entry-contents-card">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-people"
-                        viewBox="0 0 16 16"
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
                       >
-                        <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
-                      </svg>
-                      Forums
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          class="bi bi-people"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
+                        </svg>
+                        <span>Forums</span>
+                      </div>
                     </div>
                   </div>
                   <div className="entry-cast">
@@ -1910,7 +1978,19 @@ export default function Entry() {
                     </div>
                     <div className="entry-cast-list">
                       <div className="entry-cast-top">
-                        <h2>Characters</h2>
+                        <h2
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          Characters{" "}
+                          <p
+                            style={{ fontSize: "0.8rem", marginLeft: "0.3rem" }}
+                          >
+                            ({totalCharacters})
+                          </p>
+                        </h2>
                         <span onClick={() => setActiveTab("cast")}>
                           see more
                         </span>
@@ -2167,38 +2247,17 @@ export default function Entry() {
           </>
         )}
 
-        {/* 🔥 DETAILS */}
-        {activeTab === "details" && (
-          <div className="details">
-            <h2>Details</h2>
+        {/* 🔥 Videos */}
+        {activeTab === "videos" && (
+          <div className="videos">
+            <p style={{ color: "#777" }}>Coming soon 👀</p>
+          </div>
+        )}
 
-            <p>
-              <strong>Type:</strong> {entry.type}
-            </p>
-
-            {entry.releaseDate && (
-              <p>
-                <strong>Release Date:</strong> {formatDate(entry.releaseDate)}
-              </p>
-            )}
-
-            {entry.duration && (
-              <p>
-                <strong>Duration:</strong> {formatDuration(entry.duration)}
-              </p>
-            )}
-
-            {entry.genres?.length > 0 && (
-              <p>
-                <strong>Genres:</strong> {entry.genres.join(", ")}
-              </p>
-            )}
-
-            {entry.language?.length > 0 && (
-              <p>
-                <strong>Language:</strong> {entry.language.join(", ")}
-              </p>
-            )}
+        {/* 🔥 Images */}
+        {activeTab === "images" && (
+          <div className="images">
+            <p style={{ color: "#777" }}>Coming soon 👀</p>
           </div>
         )}
 
@@ -2279,6 +2338,13 @@ export default function Entry() {
         {/* 🔥 Cast */}
         {activeTab === "cast" && (
           <div className="cast">
+            <p style={{ color: "#777" }}>Coming soon 👀</p>
+          </div>
+        )}
+
+        {/* 🔥 Forums */}
+        {activeTab === "forums" && (
+          <div className="forums">
             <p style={{ color: "#777" }}>Coming soon 👀</p>
           </div>
         )}

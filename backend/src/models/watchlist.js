@@ -1,0 +1,16 @@
+// models/watchlist.js
+import { DataTypes } from "sequelize";
+
+const WatchlistModel = (sequelize) => {
+  const Watchlist = sequelize.define("Watchlist", {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+  });
+
+  return Watchlist;
+};
+
+export default WatchlistModel;
