@@ -7,9 +7,11 @@ export const toggleFavorite = async (req, res) => {
 
   // 🔥 ADMIN MODE → SEMPRE ADICIONA
   if (isAdmin) {
-    await Favorite.create({ userId, targetId });
+    await Favorite.create({ userId, targetId, targetType });
 
-    const count = await Favorite.count({ where: { targetId } });
+    const count = await Favorite.count({
+      where: { targetId, targetType },
+    });
 
     return res.json({
       added: true,
