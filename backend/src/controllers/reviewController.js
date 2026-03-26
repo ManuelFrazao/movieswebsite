@@ -8,6 +8,7 @@ import {
   Entry,
 } from "../models/index.js";
 import { Op } from "sequelize";
+import { isSpamUser } from "../utils/permissions.js";
 
 // =====================
 // CREATE REVIEW
@@ -16,6 +17,8 @@ export const createReview = async (req, res) => {
   try {
     const { content, type, entryId, episodeId, rating: inputRating } = req.body;
     const userId = req.user.id;
+
+    const spamUser = isSpamUser(req);
 
     let finalRating = null;
 
@@ -27,13 +30,9 @@ export const createReview = async (req, res) => {
         return res.status(404).json({ message: "Entry não encontrada" });
       }
 
-      // 🔥 PRIORIDADE: rating vindo do frontend
       if (inputRating) {
         finalRating = inputRating;
-      }
-
-      // 🎬 MOVIE (fallback para vote)
-      else if (entry.type !== "series") {
+      } else if (entry.type !== "series") {
         const vote = await Vote.findOne({
           where: { userId, entryId },
         });
@@ -45,10 +44,7 @@ export const createReview = async (req, res) => {
         }
 
         finalRating = vote.value;
-      }
-
-      // 📺 SERIES (fallback média episódios)
-      else {
+      } else {
         const votes = await Vote.findAll({
           where: { userId },
           include: {
@@ -89,6 +85,28 @@ export const createReview = async (req, res) => {
       }
     }
 
+    // =====================
+    // 🔥 BLOQUEIO DE DUPLICADOS
+    // =====================
+    if (!spamUser) {
+      const existing = await Review.findOne({
+        where: {
+          userId,
+          entryId: entryId || null,
+          episodeId: episodeId || null,
+        },
+      });
+
+      if (existing) {
+        return res.status(400).json({
+          message: "Já fizeste review",
+        });
+      }
+    }
+
+    // =====================
+    // 🔥 CREATE REVIEW
+    // =====================
     const review = await Review.create({
       content,
       rating: finalRating,

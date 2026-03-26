@@ -1,9 +1,12 @@
 import { Vote, Entry, Episode, Review } from "../models/index.js";
 import { Op } from "sequelize";
+import { isSpamUser } from "../utils/permissions.js";
 
 // =====================
 // CREATE VOTE
 // =====================
+import { isSpamUser } from "../utils/permissions.js";
+
 export const createVote = async (req, res) => {
   try {
     const { value, type, entryId, episodeId } = req.body;
@@ -13,14 +16,46 @@ export const createVote = async (req, res) => {
       return res.status(400).json({ message: "Dados inválidos" });
     }
 
-    // 🔥 criar voto
-    const vote = await Vote.create({
-      value,
-      type,
-      userId,
-      entryId: entryId || null,
-      episodeId: episodeId || null,
-    });
+    const spamUser = isSpamUser(req);
+
+    let vote;
+
+    // =====================
+    // 🔥 CREATE / UPDATE VOTE
+    // =====================
+
+    if (!spamUser) {
+      // 👤 USER NORMAL → só 1 voto (update se existir)
+      const existing = await Vote.findOne({
+        where: {
+          userId,
+          entryId: entryId || null,
+          episodeId: episodeId || null,
+        },
+      });
+
+      if (existing) {
+        await existing.update({ value });
+        vote = existing;
+      } else {
+        vote = await Vote.create({
+          value,
+          type,
+          userId,
+          entryId: entryId || null,
+          episodeId: episodeId || null,
+        });
+      }
+    } else {
+      // 👑 ADMIN → spam livre
+      vote = await Vote.create({
+        value,
+        type,
+        userId,
+        entryId: entryId || null,
+        episodeId: episodeId || null,
+      });
+    }
 
     // =====================
     // 🎬 UPDATE ENTRY STATS (MOVIE)
