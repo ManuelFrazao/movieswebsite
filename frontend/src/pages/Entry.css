@@ -85,18 +85,18 @@
   background: transparent;
   border: 1px solid white;
   color: white;
-  padding: 10px 16px;
+  padding: 10px 4px;
   cursor: pointer;
   border-radius: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
   overflow: hidden;
   transition: color 0.3s ease;
 }
 .secondary-btn svg {
-  margin-right: 0.5rem;
+  margin: 0 0.7rem;
 }
 /* camada animada */
 .secondary-btn::before {

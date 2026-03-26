@@ -89,11 +89,32 @@ export default function EntryActions({
           <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
           <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
         </svg>{" "}
-        <span>
-          {isWatchlist
-            ? `${formatVotes(watchlistCount)} added to watchlist`
-            : "Add to watchlist"}
-        </span>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+          }}
+        >
+          {/* quando o user adicionar a watchlist este span deveria mudar o nome para In watchlist*/}
+          <span>{isWatchlist ? "In watchlist" : "Add to watchlist"}</span>
+
+          {watchlistCount > 0 && (
+          <span
+            style={{
+              fontSize: "0.65rem",
+              marginTop: "0.2rem",
+            }}
+          >
+            {watchlistCount > 0 &&
+              `${formatVotes(watchlistCount)} ${
+                watchlistCount === 1
+                  ? "user added to watchlist"
+                  : "users added to watchlist"
+              }`}
+          </span>
+          )}
+        </div>
       </button>
 
       {/* FAVORITES */}
@@ -114,13 +135,31 @@ export default function EntryActions({
             d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
           />
         </svg>{" "}
-        <span>
-          {isFavorite
-            ? `${formatVotes(favoritesCount)} ${
-                favoritesCount === 1 ? "favorite" : "favorites"
-              }`
-            : "Add to favorites"}
-        </span>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+          }}
+        >
+          <span>{isFavorite ? "In favorites" : "Add to favorites"}</span>
+
+          {favoritesCount > 0 && (
+            <span
+              style={{
+                fontSize: "0.65rem",
+                marginTop: "0.2rem",
+              }}
+            >
+              {favoritesCount > 0 &&
+                `${formatVotes(favoritesCount)} ${
+                  favoritesCount === 1
+                    ? "user added to favorites"
+                    : "users added to favorites"
+                }`}
+            </span>
+          )}
+        </div>
       </button>
     </div>
   );
