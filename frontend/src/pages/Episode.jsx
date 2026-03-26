@@ -36,6 +36,16 @@ export default function Entry() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isWatchlist, setIsWatchlist] = useState(false);
 
+  const handleFavorite = async () => {
+    const res = await api.post("/favorites/toggle", { entryId });
+    setIsFavorite(res.data.added);
+  };
+
+  const handleWatchlist = async () => {
+    const res = await api.post("/watchlist/toggle", { entryId });
+    setIsWatchlist(res.data.added);
+  };
+
   const location = useLocation();
 
   useEffect(() => {
@@ -837,7 +847,10 @@ export default function Entry() {
                     }}
                   />
                   <div className="actions">
-                    <button className="secondary-btn">
+                    <button
+                      className={`secondary-btn ${isWatchlist ? "active-watchlist" : ""}`}
+                      onClick={handleWatchlist}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
@@ -851,7 +864,10 @@ export default function Entry() {
                       </svg>{" "}
                       Add to watchlist
                     </button>
-                    <button className="secondary-btn">
+                    <button
+                      className={`secondary-btn ${isFavorite ? "active-favorite" : ""}`}
+                      onClick={handleFavorite}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
