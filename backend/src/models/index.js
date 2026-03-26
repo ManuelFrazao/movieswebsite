@@ -277,52 +277,29 @@ CharacterAlias.belongsTo(Character, {
 // =====================
 // Watchlist
 // =====================
-User.belongsToMany(Entry, {
-  through: {
-    model: Watchlist,
-    unique: false,
-  },
+// User → Watchlist
+User.hasMany(Watchlist, {
   foreignKey: "userId",
-  as: "watchlistEntries",
+  as: "watchlist",
 });
 
-Entry.belongsToMany(User, {
-  through: {
-    model: Watchlist,
-    unique: false,
-  },
-  foreignKey: "entryId",
-});
-
-User.belongsToMany(Episode, {
-  through: Watchlist,
+Watchlist.belongsTo(User, {
   foreignKey: "userId",
-  as: "watchlistEpisodes",
-});
-
-Episode.belongsToMany(User, {
-  through: Watchlist,
-  foreignKey: "episodeId",
+  as: "user",
 });
 
 // =====================
 // Favorites
 // =====================
-User.belongsToMany(Entry, {
-  through: {
-    model: Favorite,
-    unique: false,
-  },
+// User → Favorites
+User.hasMany(Favorite, {
   foreignKey: "userId",
-  as: "favoriteEntries",
+  as: "favorites",
 });
 
-Entry.belongsToMany(User, {
-  through: {
-    model: Favorite,
-    unique: false,
-  },
-  foreignKey: "entryId",
+Favorite.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
 });
 
 export {
