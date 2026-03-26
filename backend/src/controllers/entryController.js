@@ -6,6 +6,8 @@ import {
   Character,
   Cast,
   Actor,
+  Favorite,
+  Watchlist,
 } from "../models/index.js";
 
 const generateSlug = (title) => {
@@ -153,14 +155,8 @@ export const getEntryBySlug = async (req, res) => {
           model: Cast,
           as: "cast",
           include: [
-            {
-              model: Actor,
-              as: "actor",
-            },
-            {
-              model: Character,
-              as: "character",
-            },
+            { model: Actor, as: "actor" },
+            { model: Character, as: "character" },
           ],
         },
       ],
@@ -179,7 +175,31 @@ export const getEntryBySlug = async (req, res) => {
       return res.status(404).json({ message: "Entry não encontrada" });
     }
 
-    res.json(entry);
+    // 🔥 AQUI ESTÁ O FIX
+    const userId = req.user?.id;
+
+    let isFavorite = false;
+    let isWatchlist = false;
+
+    if (userId) {
+      const fav = await Favorite.findOne({
+        where: { userId, entryId: entry.id },
+      });
+
+      const watch = await Watchlist.findOne({
+        where: { userId, entryId: entry.id },
+      });
+
+      isFavorite = !!fav;
+      isWatchlist = !!watch;
+    }
+
+    // 🔥 RESPONSE FINAL
+    res.json({
+      ...entry.toJSON(),
+      isFavorite,
+      isWatchlist,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
