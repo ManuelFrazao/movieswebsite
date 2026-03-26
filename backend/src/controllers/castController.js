@@ -66,8 +66,17 @@ export const replaceCast = async (req, res) => {
 
     res.json(newCast);
   } catch (err) {
-    console.error("REPLACE CAST ERROR:", err);
-    res.status(500).json({ error: err.message });
+    console.error("FULL ERROR:", err);
+    console.error("ERR.NAME:", err.name);
+    console.error("ERR.MESSAGE:", err.message);
+    console.error("ERR.FIELDS:", err.fields);
+    console.error("ERR.ERRORS:", err.errors);
+
+    res.status(500).json({
+      error: err.message,
+      details: err.errors,
+      name: err.name,
+    });
   }
 };
 
@@ -81,8 +90,6 @@ export const deleteCastByEntry = async (req, res) => {
 
     res.json({ message: "Cast cleared" });
   } catch (err) {
-    console.error("FULL ERROR:", err);
-    console.error("DETAILS:", err.errors);
     res.status(500).json({ error: err.message });
   }
 };
