@@ -1,7 +1,9 @@
-import { Vote, Entry, Episode } from "../models/index.js";
-import { isSpamUser } from "../utils/permissions.js";
+import { Vote, Entry, Episode, Review } from "../models/index.js";
 import { Op } from "sequelize";
 
+// =====================
+// CREATE VOTE
+// =====================
 export const createVote = async (req, res) => {
   try {
     const { value, type, entryId, episodeId } = req.body;
@@ -11,57 +13,25 @@ export const createVote = async (req, res) => {
       return res.status(400).json({ message: "Dados inválidos" });
     }
 
-    const spamUser = isSpamUser(req);
-
-    let vote;
-
-    // =====================
-    // 👤 USER NORMAL (1 voto → update)
-    // =====================
-    if (!spamUser) {
-      const existing = await Vote.findOne({
-        where: {
-          userId,
-          entryId: entryId || null,
-          episodeId: episodeId || null,
-        },
-      });
-
-      if (existing) {
-        await existing.update({ value });
-        vote = existing;
-      } else {
-        vote = await Vote.create({
-          value,
-          type,
-          userId,
-          entryId: entryId || null,
-          episodeId: episodeId || null,
-        });
-      }
-    }
+    // 🔥 criar voto
+    const vote = await Vote.create({
+      value,
+      type,
+      userId,
+      entryId: entryId || null,
+      episodeId: episodeId || null,
+    });
 
     // =====================
-    // 👑 ADMIN (spam livre)
+    // 🎬 UPDATE ENTRY STATS (MOVIE)
     // =====================
-    else {
-      vote = await Vote.create({
-        value,
-        type,
-        userId,
-        entryId: entryId || null,
-        episodeId: episodeId || null,
-      });
-    }
-
-    // =====================
-    // UPDATE STATS (igual ao teu)
-    // =====================
-
     if (type === "entry" && entryId) {
-      const votes = await Vote.findAll({ where: { entryId } });
+      const votes = await Vote.findAll({
+        where: { entryId },
+      });
 
       const totalVotes = votes.length;
+
       const avg =
         totalVotes === 0
           ? 0
@@ -76,19 +46,25 @@ export const createVote = async (req, res) => {
       );
     }
 
+    // =====================
+    // 📺 UPDATE ENTRY STATS (SERIES via episodes)
+    // =====================
     if (type === "episode" && episodeId) {
       const episode = await Episode.findByPk(episodeId);
 
       if (episode?.entryId) {
+        const entryIdFromEpisode = episode.entryId;
+
         const votes = await Vote.findAll({
           include: {
             model: Episode,
             as: "episode",
-            where: { entryId: episode.entryId },
+            where: { entryId: entryIdFromEpisode },
           },
         });
 
         const totalVotes = votes.length;
+
         const avg =
           totalVotes === 0
             ? 0
@@ -99,7 +75,7 @@ export const createVote = async (req, res) => {
             totalVotes,
             topRank: Math.round(avg * 10),
           },
-          { where: { id: episode.entryId } },
+          { where: { id: entryIdFromEpisode } },
         );
       }
     }
