@@ -3,7 +3,7 @@ import { Favorite, Entry } from "../models/index.js";
 export const toggleFavorite = async (req, res) => {
   const { entryId } = req.body;
   const userId = req.user.id;
-  const isAdmin = req.user.isAdmin;
+  const isAdmin = req.user.role === "admin";
 
   // 🔥 ADMIN MODE → SEMPRE ADICIONA
   if (isAdmin) {
