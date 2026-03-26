@@ -16,7 +16,7 @@ const router = express.Router();
 router.post("/", protect, isAdmin, upload.single("image"), createEntry);
 router.get("/", getEntries);
 router.get("/:id", getEntryById);
-router.get("/slug/:slug", getEntryBySlug);
+router.get("/slug/:slug", protect, getEntryBySlug);
 router.put("/:id", protect, isAdmin, upload.single("image"), updateEntry);
 router.delete("/:id", protect, isAdmin, deleteEntry);
 
