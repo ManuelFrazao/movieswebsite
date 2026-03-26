@@ -8,6 +8,10 @@ const WatchlistModel = (sequelize) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+    watchlistCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   });
 
   return Watchlist;

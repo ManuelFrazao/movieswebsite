@@ -51,11 +51,18 @@ export default function Entry() {
 
   const handleFavorite = async () => {
     if (!entry?.id) return;
+
     const res = await api.post("/favorites/toggle", {
       entryId: entry.id,
     });
 
     setIsFavorite(res.data.added);
+
+    // 🔥 atualizar contador
+    setEntry((prev) => ({
+      ...prev,
+      favoritesCount: res.data.count,
+    }));
   };
 
   const handleWatchlist = async () => {
@@ -66,6 +73,12 @@ export default function Entry() {
     });
 
     setIsWatchlist(res.data.added);
+
+    // 🔥 atualizar contador
+    setEntry((prev) => ({
+      ...prev,
+      watchlistCount: res.data.count,
+    }));
   };
 
   const fetchCast = async () => {
