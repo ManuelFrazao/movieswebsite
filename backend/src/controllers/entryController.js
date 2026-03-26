@@ -175,32 +175,42 @@ export const getEntryBySlug = async (req, res) => {
       return res.status(404).json({ message: "Entry não encontrada" });
     }
 
-    // 🔥 AQUI ESTÁ O FIX
     const userId = req.user?.id;
 
+    // 🔥 FLAGS (estado do utilizador)
     let isFavorite = false;
     let isWatchlist = false;
 
     if (userId) {
-      const fav = await Favorite.findOne({
-        where: { userId, entryId: entry.id },
-      });
-
-      const watch = await Watchlist.findOne({
-        where: { userId, entryId: entry.id },
-      });
+      const [fav, watch] = await Promise.all([
+        Favorite.findOne({
+          where: { userId, entryId: entry.id },
+        }),
+        Watchlist.findOne({
+          where: { userId, entryId: entry.id },
+        }),
+      ]);
 
       isFavorite = !!fav;
       isWatchlist = !!watch;
     }
+
+    // 🔥 COUNTS (nunca guardados no model)
+    const [favoritesCount, watchlistCount] = await Promise.all([
+      Favorite.count({ where: { entryId: entry.id } }),
+      Watchlist.count({ where: { entryId: entry.id } }),
+    ]);
 
     // 🔥 RESPONSE FINAL
     res.json({
       ...entry.toJSON(),
       isFavorite,
       isWatchlist,
+      favoritesCount,
+      watchlistCount,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

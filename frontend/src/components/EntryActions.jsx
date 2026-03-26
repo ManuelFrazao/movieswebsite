@@ -12,7 +12,7 @@ export default function EntryActions({ entry, onUpdate }) {
   const isSpamUser =
     user?.id === "8e5d72e6-b3b1-4c36-9201-58003407deb8";
 
-  // 🔥 estado inicial corrigido (resolve refresh)
+  // ✅ estado inicial correto (baseado no backend)
   const [isFavorite, setIsFavorite] = useState(
     isSpamUser ? true : entry.isFavorite || false
   );
@@ -28,7 +28,6 @@ export default function EntryActions({ entry, onUpdate }) {
       entryId: entry.id,
     });
 
-    // 🔥 admin nunca desativa
     if (isSpamUser) {
       setIsFavorite(true);
     } else {
@@ -47,7 +46,6 @@ export default function EntryActions({ entry, onUpdate }) {
       entryId: entry.id,
     });
 
-    // 🔥 admin nunca desativa
     if (isSpamUser) {
       setIsWatchlist(true);
     } else {
@@ -61,6 +59,7 @@ export default function EntryActions({ entry, onUpdate }) {
 
   return (
     <div className="actions">
+      {/* WATCHLIST */}
       <button
         className={`secondary-btn ${
           isWatchlist ? "active-watchlist" : ""
@@ -79,12 +78,13 @@ export default function EntryActions({ entry, onUpdate }) {
           <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
         </svg>{" "}
         <span>
-          {entry.watchlistCount > 0
+          {isWatchlist
             ? `${entry.watchlistCount} in watchlist`
             : "Add to watchlist"}
         </span>
       </button>
 
+      {/* FAVORITES */}
       <button
         className={`secondary-btn ${
           isFavorite ? "active-favorite" : ""
@@ -105,7 +105,7 @@ export default function EntryActions({ entry, onUpdate }) {
           />
         </svg>{" "}
         <span>
-          {entry.favoritesCount > 0
+          {isFavorite
             ? `${entry.favoritesCount} favorites`
             : "Add to favorites"}
         </span>
