@@ -22,6 +22,11 @@ export default function EntryActions({ entry, onUpdate }) {
   );
 
   const handleFavorite = async () => {
+    if (!user) {
+      alert("You need to be logged in to do this.");
+      return;
+    }
+
     if (!entry?.id) return;
 
     const res = await api.post("/favorites/toggle", {
@@ -40,6 +45,11 @@ export default function EntryActions({ entry, onUpdate }) {
   };
 
   const handleWatchlist = async () => {
+    if (!user) {
+      alert("You need to be logged in to do this.");
+      return;
+    }
+
     if (!entry?.id) return;
 
     const res = await api.post("/watchlist/toggle", {
