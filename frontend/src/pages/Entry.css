@@ -74,9 +74,11 @@
 .actions {
   margin-top: 20px;
   display: flex;
+  flex-direction: column;
   gap: 10px;
   padding: 0 10px;
   justify-content: center;
+  margin-bottom: 0.5rem;
 }
 
 .secondary-btn {
@@ -86,6 +88,12 @@
   padding: 10px 16px;
   cursor: pointer;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.secondary-btn svg{
+  margin-right: 0.5rem;
 }
 
 .season-header {
@@ -575,6 +583,10 @@ svg {
   text-decoration: underline;
 }
 
+.entry-cast-list{
+  overflow: auto;
+}
+
 @media (width <= 1100px) {
   .episode-row {
     display: block;
@@ -610,6 +622,11 @@ svg {
   }
   .entry-contents-card span{
     display: block ruby;
+  }
+  .actions{
+    padding: 1rem 3rem;
+    max-width: 280px;
+    margin: 0 auto;
   }
   
   /*Episode tab*/

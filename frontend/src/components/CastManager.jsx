@@ -1,7 +1,15 @@
 import { useState, useRef } from "react";
-import { Box, Button, Typography, MenuItem, Select } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
 import ActorAutocomplete from "./ActorAutocomplete";
 import CharacterAutocomplete from "./CharacterAutocomplete";
+import api from "../services/api";
 
 export default function CastManager({
   entryId,
@@ -12,13 +20,26 @@ export default function CastManager({
   const [tempActor, setTempActor] = useState(null);
   const [tempCharacter, setTempCharacter] = useState(null);
   const [roleType, setRoleType] = useState("supporting");
+  const [aliasName, setAliasName] = useState("");
 
   const characterRef = useRef();
   const actorRef = useRef();
 
   // 🔥 ADD CAST (manual button only)
-  const addCast = () => {
+  const addCast = async () => {
     if (!tempActor || !tempCharacter) return;
+
+    // 🔥 create alias if exists
+    if (aliasName.trim()) {
+      try {
+        await api.post("/character-aliases", {
+          characterId: tempCharacter.id,
+          name: aliasName,
+        });
+      } catch (err) {
+        console.error("Alias error:", err);
+      }
+    }
 
     setCastData((prev) => {
       const exists = prev.some(
@@ -101,6 +122,12 @@ export default function CastManager({
           disabled={!tempActor}
           onSelect={setTempCharacter}
           inputRef={characterRef}
+        />
+
+        <TextField
+          label="Alias (optional)"
+          value={aliasName}
+          onChange={(e) => setAliasName(e.target.value)}
         />
 
         <Select value={roleType} onChange={(e) => setRoleType(e.target.value)}>
