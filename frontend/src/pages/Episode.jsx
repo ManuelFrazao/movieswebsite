@@ -55,26 +55,6 @@ export default function Entry() {
     fetchEntry();
   }, [episode]);
 
-  const handleFavorite = async () => {
-    if (!episode?.entryId) return;
-
-    const res = await api.post("/favorites/toggle", {
-      entryId: episode.entryId,
-    });
-
-    setIsFavorite(res.data.added);
-  };
-
-  const handleWatchlist = async () => {
-    if (!episode?.entryId) return;
-
-    const res = await api.post("/watchlist/toggle", {
-      entryId: episode.entryId,
-    });
-
-    setIsWatchlist(res.data.added);
-  };
-
   const location = useLocation();
 
   useEffect(() => {
@@ -880,9 +860,14 @@ export default function Entry() {
                     }}
                   />
                   <EntryActions
-                    entry={entry}
+                    entityId={episode.id}
+                    type="episode"
+                    isFavorite={episode.isFavorite}
+                    isWatchlist={episode.isWatchlist}
+                    favoritesCount={episode.favoritesCount}
+                    watchlistCount={episode.watchlistCount}
                     onUpdate={(data) =>
-                      setEntry((prev) => ({
+                      setEpisode((prev) => ({
                         ...prev,
                         ...data,
                       }))

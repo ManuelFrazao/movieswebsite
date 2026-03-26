@@ -1,24 +1,30 @@
 import { useState } from "react";
 import api from "../services/api";
-import { formatVotes } from "../utils/formatVotes"; // ajusta o caminho
+import { formatVotes } from "../utils/formatVotes";
 
 const getUser = () => {
   const raw = localStorage.getItem("user");
   return raw ? JSON.parse(raw) : null;
 };
 
-export default function EntryActions({ entry, onUpdate }) {
+export default function EntryActions({
+  entityId,
+  type = "entry", // 🔥 default = entry
+  isFavorite: initialFavorite,
+  isWatchlist: initialWatchlist,
+  favoritesCount = 0,
+  watchlistCount = 0,
+  onUpdate,
+}) {
   const user = getUser();
-
   const isSpamUser = user?.id === "8e5d72e6-b3b1-4c36-9201-58003407deb8";
 
-  // ✅ estado inicial correto (baseado no backend)
   const [isFavorite, setIsFavorite] = useState(
-    isSpamUser ? true : entry?.isFavorite || false,
+    isSpamUser ? true : initialFavorite || false,
   );
 
   const [isWatchlist, setIsWatchlist] = useState(
-    isSpamUser ? true : entry?.isWatchlist || false,
+    isSpamUser ? true : initialWatchlist || false,
   );
 
   const requireAuth = () => {
@@ -31,16 +37,14 @@ export default function EntryActions({ entry, onUpdate }) {
 
   const handleFavorite = async () => {
     if (!requireAuth()) return;
-
-    if (!entry?.id) return;
+    if (!entityId) return;
 
     const res = await api.post("/favorites/toggle", {
-      entryId: entry.id,
+      targetId: entityId,
+      targetType: type, // 🔥 aqui está a magia
     });
 
-    if (isSpamUser) {
-      setIsFavorite(true);
-    } else {
+    if (!isSpamUser) {
       setIsFavorite(res.data.added);
     }
 
@@ -51,16 +55,14 @@ export default function EntryActions({ entry, onUpdate }) {
 
   const handleWatchlist = async () => {
     if (!requireAuth()) return;
-
-    if (!entry?.id) return;
+    if (!entityId) return;
 
     const res = await api.post("/watchlist/toggle", {
-      entryId: entry.id,
+      targetId: entityId,
+      targetType: type,
     });
 
-    if (isSpamUser) {
-      setIsWatchlist(true);
-    } else {
+    if (!isSpamUser) {
       setIsWatchlist(res.data.added);
     }
 
@@ -89,7 +91,7 @@ export default function EntryActions({ entry, onUpdate }) {
         </svg>{" "}
         <span>
           {isWatchlist
-            ? `${formatVotes(entry?.watchlistCount || 0)} added to watchlist`
+            ? `${formatVotes(watchlistCount)} added to watchlist`
             : "Add to watchlist"}
         </span>
       </button>
@@ -114,8 +116,8 @@ export default function EntryActions({ entry, onUpdate }) {
         </svg>{" "}
         <span>
           {isFavorite
-            ? `${formatVotes(entry?.favoritesCount || 0)} ${
-                (entry?.favoritesCount || 0) === 1 ? "favorite" : "favorites"
+            ? `${formatVotes(favoritesCount)} ${
+                favoritesCount === 1 ? "favorite" : "favorites"
               }`
             : "Add to favorites"}
         </span>

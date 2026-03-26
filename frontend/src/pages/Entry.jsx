@@ -50,38 +50,6 @@ export default function Entry() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isWatchlist, setIsWatchlist] = useState(false);
 
-  const handleFavorite = async () => {
-    if (!entry?.id) return;
-
-    const res = await api.post("/favorites/toggle", {
-      entryId: entry.id,
-    });
-
-    setIsFavorite(res.data.added);
-
-    // 🔥 atualizar contador
-    setEntry((prev) => ({
-      ...prev,
-      favoritesCount: res.data.count,
-    }));
-  };
-
-  const handleWatchlist = async () => {
-    if (!entry?.id) return;
-
-    const res = await api.post("/watchlist/toggle", {
-      entryId: entry.id,
-    });
-
-    setIsWatchlist(res.data.added);
-
-    // 🔥 atualizar contador
-    setEntry((prev) => ({
-      ...prev,
-      watchlistCount: res.data.count,
-    }));
-  };
-
   const fetchCast = async () => {
     try {
       const res = await api.get(`/cast/entry/${entry.id}`);
@@ -1773,7 +1741,12 @@ export default function Entry() {
                     }}
                   />
                   <EntryActions
-                    entry={entry}
+                    entityId={entry.id}
+                    type="entry"
+                    isFavorite={entry.isFavorite}
+                    isWatchlist={entry.isWatchlist}
+                    favoritesCount={entry.favoritesCount}
+                    watchlistCount={entry.watchlistCount}
                     onUpdate={(data) =>
                       setEntry((prev) => ({
                         ...prev,
