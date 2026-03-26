@@ -1,5 +1,4 @@
-// controllers/favoriteController.js
-import { Favorite } from "../models/index.js";
+import { Favorite, Entry } from "../models/index.js";
 
 export const toggleFavorite = async (req, res) => {
   const { entryId } = req.body;
@@ -11,10 +10,15 @@ export const toggleFavorite = async (req, res) => {
 
   if (existing) {
     await existing.destroy();
+
+    await Entry.increment({ favoritesCount: -1 }, { where: { id: entryId } });
+
     return res.json({ added: false });
   }
 
   await Favorite.create({ userId, entryId });
+
+  await Entry.increment({ favoritesCount: 1 }, { where: { id: entryId } });
 
   res.json({ added: true });
 };

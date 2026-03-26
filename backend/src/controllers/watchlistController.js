@@ -1,24 +1,30 @@
-// controllers/watchlistController.js
-import { Watchlist } from "../models/index.js";
+import { Watchlist, Entry } from "../models/index.js";
 
 export const toggleWatchlist = async (req, res) => {
-  const { entryId, episodeId } = req.body;
+  const { entryId } = req.body;
   const userId = req.user.id;
 
-  try {
-    const existing = await Watchlist.findOne({
-      where: { userId, entryId, episodeId },
-    });
+  const existing = await Watchlist.findOne({
+    where: { userId, entryId },
+  });
 
-    if (existing) {
-      await existing.destroy();
-      return res.json({ added: false });
-    }
+  if (existing) {
+    await existing.destroy();
 
-    await Watchlist.create({ userId, entryId, episodeId });
+    await Entry.increment(
+      { watchlistCount: -1 },
+      { where: { id: entryId } }
+    );
 
-    res.json({ added: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.json({ added: false });
   }
+
+  await Watchlist.create({ userId, entryId });
+
+  await Entry.increment(
+    { watchlistCount: 1 },
+    { where: { id: entryId } }
+  );
+
+  res.json({ added: true });
 };

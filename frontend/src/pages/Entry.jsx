@@ -1766,7 +1766,11 @@ export default function Entry() {
                         <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
                         <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
                       </svg>{" "}
-                      Add to watchlist
+                      <span>
+                        {entry.watchlistCount > 0
+                          ? `${entry.watchlistCount} in watchlist`
+                          : "Add to watchlist"}
+                      </span>
                     </button>
                     <button
                       className={`secondary-btn ${isFavorite ? "active-favorite" : ""}`}
@@ -1785,7 +1789,11 @@ export default function Entry() {
                           d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
                         />
                       </svg>{" "}
-                      Add to favorites
+                      <span>
+                        {entry.favoritesCount > 0
+                          ? `${entry.favoritesCount} favorites`
+                          : "Add to favorites"}
+                      </span>
                     </button>
                   </div>
                   {entry.totalVotes != 0 && (
