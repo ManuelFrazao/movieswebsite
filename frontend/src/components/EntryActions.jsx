@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../services/api";
+import { formatVotes } from "../utils/formatVotes"; // ajusta o caminho
 
 const getUser = () => {
   const raw = localStorage.getItem("user");
@@ -9,16 +10,15 @@ const getUser = () => {
 export default function EntryActions({ entry, onUpdate }) {
   const user = getUser();
 
-  const isSpamUser =
-    user?.id === "8e5d72e6-b3b1-4c36-9201-58003407deb8";
+  const isSpamUser = user?.id === "8e5d72e6-b3b1-4c36-9201-58003407deb8";
 
   // ✅ estado inicial correto (baseado no backend)
   const [isFavorite, setIsFavorite] = useState(
-    isSpamUser ? true : entry.isFavorite || false
+    isSpamUser ? true : entry.isFavorite || false,
   );
 
   const [isWatchlist, setIsWatchlist] = useState(
-    isSpamUser ? true : entry.isWatchlist || false
+    isSpamUser ? true : entry.isWatchlist || false,
   );
 
   const handleFavorite = async () => {
@@ -61,9 +61,7 @@ export default function EntryActions({ entry, onUpdate }) {
     <div className="actions">
       {/* WATCHLIST */}
       <button
-        className={`secondary-btn ${
-          isWatchlist ? "active-watchlist" : ""
-        }`}
+        className={`secondary-btn ${isWatchlist ? "active-watchlist" : ""}`}
         onClick={handleWatchlist}
       >
         <svg
@@ -79,16 +77,14 @@ export default function EntryActions({ entry, onUpdate }) {
         </svg>{" "}
         <span>
           {isWatchlist
-            ? `${entry.watchlistCount} in watchlist`
+            ? `${formatVotes(entry.watchlistCount || 0)} added to watchlist`
             : "Add to watchlist"}
         </span>
       </button>
 
       {/* FAVORITES */}
       <button
-        className={`secondary-btn ${
-          isFavorite ? "active-favorite" : ""
-        }`}
+        className={`secondary-btn ${isFavorite ? "active-favorite" : ""}`}
         onClick={handleFavorite}
       >
         <svg
@@ -106,7 +102,9 @@ export default function EntryActions({ entry, onUpdate }) {
         </svg>{" "}
         <span>
           {isFavorite
-            ? `${entry.favoritesCount} favorites`
+            ? `${formatVotes(entry.favoritesCount || 0)} ${
+                (entry.favoritesCount || 0) === 1 ? "favorite" : "favorites"
+              }`
             : "Add to favorites"}
         </span>
       </button>
