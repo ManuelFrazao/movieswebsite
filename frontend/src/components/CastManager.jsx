@@ -23,8 +23,7 @@ export default function CastManager({
     setCastData((prev) => {
       const exists = prev.some(
         (c) =>
-          c.actor?.id === tempActor.id &&
-          c.character?.id === tempCharacter.id
+          c.actor?.id === tempActor.id && c.character?.id === tempCharacter.id,
       );
 
       if (exists) return prev;
@@ -65,10 +64,7 @@ export default function CastManager({
     if (index === 0) return;
 
     const newCast = [...castData];
-    [newCast[index - 1], newCast[index]] = [
-      newCast[index],
-      newCast[index - 1],
-    ];
+    [newCast[index - 1], newCast[index]] = [newCast[index], newCast[index - 1]];
 
     const updated = normalizeOrder(newCast);
     setCastData(updated);
@@ -79,10 +75,7 @@ export default function CastManager({
     if (index === castData.length - 1) return;
 
     const newCast = [...castData];
-    [newCast[index + 1], newCast[index]] = [
-      newCast[index],
-      newCast[index + 1],
-    ];
+    [newCast[index + 1], newCast[index]] = [newCast[index], newCast[index + 1]];
 
     const updated = normalizeOrder(newCast);
     setCastData(updated);
@@ -110,10 +103,7 @@ export default function CastManager({
           inputRef={characterRef}
         />
 
-        <Select
-          value={roleType}
-          onChange={(e) => setRoleType(e.target.value)}
-        >
+        <Select value={roleType} onChange={(e) => setRoleType(e.target.value)}>
           <MenuItem value="main">Main</MenuItem>
           <MenuItem value="supporting">Supporting</MenuItem>
           <MenuItem value="guest">Guest</MenuItem>
@@ -151,8 +141,13 @@ export default function CastManager({
           borderRadius={2}
         >
           <Typography>
-            {index + 1}. {c.actor?.name || "❌"} →{" "}
-            {c.character?.name || "❌"} ({c.roleType})
+            {index + 1}. {c.actor?.name || "❌"} → {c.character?.name || "❌"}
+            {c.character?.aliases?.length > 0 && (
+              <span style={{ color: "#888", marginLeft: 6 }}>
+                (aka {c.character.aliases.map((a) => a.name).join(", ")})
+              </span>
+            )}{" "}
+            ({c.roleType})
           </Typography>
 
           <Button onClick={() => moveUp(index)}>↑</Button>

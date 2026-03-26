@@ -10,6 +10,7 @@ import reviewRoutes from "./reviewRoutes.js";
 import castRoutes from "./castRoutes.js";
 import actorRoutes from "./actorRoutes.js";
 import characterRoutes from "./characterRoutes.js";
+import characterAliasRoutes from "./characterAliasRoutes.js";
 
 const router = express.Router();
 
@@ -23,5 +24,6 @@ router.use("/reviews", reviewRoutes);
 router.use("/cast", castRoutes);
 router.use("/actors", actorRoutes);
 router.use("/characters", characterRoutes);
+router.use("/character-aliases", characterAliasRoutes);
 
 export default router;

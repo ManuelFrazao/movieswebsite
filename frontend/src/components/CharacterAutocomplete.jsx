@@ -48,11 +48,21 @@ export default function CharacterAutocomplete({
     }
   };
 
-  const handleSelect = (char) => {
-    setQuery(char.name);
-    setResults([]);
-    setOpen(false);
-    onSelect(char);
+  const handleSelect = async (char) => {
+    try {
+      // 🔥 fetch full character with aliases
+      const res = await api.get(`/characters/${char.id}`);
+
+      const fullCharacter = res.data;
+
+      setQuery(fullCharacter.name);
+      setResults([]);
+      setOpen(false);
+
+      onSelect(fullCharacter); // 👈 now includes aliases
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCreate = async () => {
