@@ -1,32 +1,31 @@
 import { Like } from "../models/index.js";
 import { isSpamUser } from "../utils/permissions.js";
 
-// toggle like
 export const toggleLike = async (req, res) => {
   try {
     const { type, entryId, episodeId, reviewId } = req.body;
     const userId = req.user.id;
     const spamUser = isSpamUser(req);
 
-    const existing = await Like.findOne({
-      where: {
-        userId,
-        type,
-        entryId: entryId || null,
-        episodeId: episodeId || null,
-        reviewId: reviewId || null,
-      },
-    });
+    const where = {
+      userId,
+      type,
+      entryId: entryId || null,
+      episodeId: episodeId || null,
+      reviewId: reviewId || null,
+    };
 
-    // 🔥 SPAM USER → sempre cria
+    const existing = await Like.findOne({ where });
+
+    // =====================
+    // 👑 ADMIN (spam controlado + toggle)
+    // =====================
     if (spamUser) {
-      await Like.create({
-        userId,
-        type,
-        entryId,
-        episodeId,
-        reviewId,
-      });
+      if (existing) {
+        await existing.destroy();
+      } else {
+        await Like.create(where);
+      }
 
       const count = await Like.count({
         where: {
@@ -37,10 +36,12 @@ export const toggleLike = async (req, res) => {
         },
       });
 
-      return res.json({ liked: true, count });
+      return res.json({ liked: !existing, count });
     }
 
-    // 👇 USER NORMAL
+    // =====================
+    // 👤 USER NORMAL (toggle)
+    // =====================
     if (existing) {
       await existing.destroy();
 
@@ -56,13 +57,7 @@ export const toggleLike = async (req, res) => {
       return res.json({ liked: false, count });
     }
 
-    await Like.create({
-      userId,
-      type,
-      entryId,
-      episodeId,
-      reviewId,
-    });
+    await Like.create(where);
 
     const count = await Like.count({
       where: {
