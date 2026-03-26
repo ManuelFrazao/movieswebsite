@@ -8,9 +8,13 @@ const FavoriteModel = (sequelize) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    favoritesCount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    entryId: {
+      type: DataTypes.UUID,
+      allowNull: false,
     },
   });
 
