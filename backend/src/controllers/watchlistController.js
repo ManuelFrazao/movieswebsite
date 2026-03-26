@@ -1,30 +1,50 @@
 import { Watchlist, Entry } from "../models/index.js";
 
 export const toggleWatchlist = async (req, res) => {
-  const { entryId } = req.body;
-  const userId = req.user.id;
+  try {
+    const { entryId } = req.body;
+    const userId = req.user.id;
 
-  const existing = await Watchlist.findOne({
-    where: { userId, entryId },
-  });
+    if (!entryId) {
+      return res.status(400).json({ message: "Missing entryId" });
+    }
 
-  if (existing) {
-    await existing.destroy();
+    const entry = await Entry.findByPk(entryId);
 
-    await Entry.increment(
-      { watchlistCount: -1 },
-      { where: { id: entryId } }
-    );
+    if (!entry) {
+      return res.status(404).json({ message: "Entry not found" });
+    }
 
-    return res.json({ added: false });
+    const existing = await Watchlist.findOne({
+      where: { userId, entryId },
+    });
+
+    if (existing) {
+      await existing.destroy();
+
+      await Entry.increment(
+        { watchlistCount: -1 },
+        { where: { id: entryId } }
+      );
+    } else {
+      await Watchlist.create({ userId, entryId });
+
+      await Entry.increment(
+        { watchlistCount: 1 },
+        { where: { id: entryId } }
+      );
+    }
+
+    // 🔥 🔥 VALOR REAL DA BD
+    const updatedEntry = await Entry.findByPk(entryId);
+
+    return res.json({
+      added: !existing,
+      count: updatedEntry.watchlistCount,
+    });
+
+  } catch (err) {
+    console.error("WATCHLIST ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
-
-  await Watchlist.create({ userId, entryId });
-
-  await Entry.increment(
-    { watchlistCount: 1 },
-    { where: { id: entryId } }
-  );
-
-  res.json({ added: true });
 };

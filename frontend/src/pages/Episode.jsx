@@ -6,6 +6,8 @@ import RatingBadge from "../components/RatingBadge";
 import Navbar from "../components/Navbar";
 import { formatVotes } from "../utils/formatVotes";
 import ReviewCard from "../components/ReviewCard";
+import ActorsRow from "../components/ActorsRow";
+import CharactersRow from "../components/CharactersRow";
 
 export default function Entry() {
   const { id } = useParams();
@@ -35,14 +37,25 @@ export default function Entry() {
   const [reviewRating, setReviewRating] = useState(5);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isWatchlist, setIsWatchlist] = useState(false);
+  const [cast, setCast] = useState([]);
 
   const handleFavorite = async () => {
-    const res = await api.post("/favorites/toggle", { entryId });
+    if (!episode?.entryId) return;
+
+    const res = await api.post("/favorites/toggle", {
+      entryId: episode.entryId,
+    });
+
     setIsFavorite(res.data.added);
   };
 
   const handleWatchlist = async () => {
-    const res = await api.post("/watchlist/toggle", { entryId });
+    if (!episode?.entryId) return;
+
+    const res = await api.post("/watchlist/toggle", {
+      entryId: episode.entryId,
+    });
+
     setIsWatchlist(res.data.added);
   };
 
@@ -745,6 +758,10 @@ export default function Entry() {
     );
   }
 
+  const totalCharacters = new Set(
+    cast.map((c) => c.character?.id).filter(Boolean),
+  ).size;
+
   return (
     <div className="entry">
       <Navbar />
@@ -760,11 +777,11 @@ export default function Entry() {
               width="16"
               height="16"
               fill="currentColor"
-              class="bi bi-arrow-left"
+              className="bi bi-arrow-left"
               viewBox="0 0 16 16"
             >
               <path
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"
               />
             </svg>{" "}
@@ -856,7 +873,7 @@ export default function Entry() {
                         width="16"
                         height="16"
                         fill="currentColor"
-                        class="bi bi-eye-fill"
+                        className="bi bi-eye-fill"
                         viewBox="0 0 16 16"
                       >
                         <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
@@ -873,11 +890,11 @@ export default function Entry() {
                         width="16"
                         height="16"
                         fill="currentColor"
-                        class="bi bi-heart-fill"
+                        className="bi bi-heart-fill"
                         viewBox="0 0 16 16"
                       >
                         <path
-                          fill-rule="evenodd"
+                          fillRule="evenodd"
                           d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
                         />
                       </svg>{" "}
@@ -949,11 +966,11 @@ export default function Entry() {
                           width="16"
                           height="16"
                           fill="currentColor"
-                          class="bi bi-camera-video"
+                          className="bi bi-camera-video"
                           viewBox="0 0 16 16"
                         >
                           <path
-                            fill-rule="evenodd"
+                            fillRule="evenodd"
                             d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"
                           />
                         </svg>
@@ -973,7 +990,7 @@ export default function Entry() {
                           width="16"
                           height="16"
                           fill="currentColor"
-                          class="bi bi-images"
+                          className="bi bi-images"
                           viewBox="0 0 16 16"
                         >
                           <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
@@ -1031,7 +1048,7 @@ export default function Entry() {
                           width="16"
                           height="16"
                           fill="currentColor"
-                          class="bi bi-people"
+                          className="bi bi-people"
                           viewBox="0 0 16 16"
                         >
                           <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
@@ -1041,17 +1058,47 @@ export default function Entry() {
                     </div>
                   </div>
                   <div className="entry-cast">
-                    <div className="entry-cast-top">
-                      <h2>Cast</h2>
-                      <span onClick={() => setActiveTab("cast")}>see more</span>
-                    </div>
                     <div className="entry-cast-list">
                       <div className="entry-cast-top">
-                        <h2>Characters</h2>
-                        <span onClick={() => setActiveTab("characters")}>
+                        <h2
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          Cast{" "}
+                          <p
+                            style={{ fontSize: "0.8rem", marginLeft: "0.3rem" }}
+                          >
+                            ({cast.length})
+                          </p>
+                        </h2>
+                        <span onClick={() => setActiveTab("cast")}>
                           see more
                         </span>
                       </div>
+                      <ActorsRow cast={cast} />
+                    </div>
+                    <div className="entry-cast-list">
+                      <div className="entry-cast-top">
+                        <h2
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          Characters{" "}
+                          <p
+                            style={{ fontSize: "0.8rem", marginLeft: "0.3rem" }}
+                          >
+                            ({totalCharacters})
+                          </p>
+                        </h2>
+                        <span onClick={() => setActiveTab("cast")}>
+                          see more
+                        </span>
+                      </div>
+                      <CharactersRow cast={cast} />
                     </div>
                   </div>
                 </div>
