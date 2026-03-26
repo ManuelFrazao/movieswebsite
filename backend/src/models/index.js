@@ -10,6 +10,7 @@ import LikeModel from "./like.js";
 import CharacterModel from "./character.js";
 import CastModel from "./cast.js";
 import ActorModel from "./actor.js";
+import CharacterAliasModel from "./characterAlias.js";
 
 const User = UserModel(sequelize);
 const Entry = EntryModel(sequelize);
@@ -21,6 +22,7 @@ const Like = LikeModel(sequelize);
 const Character = CharacterModel(sequelize);
 const Cast = CastModel(sequelize);
 const Actor = ActorModel(sequelize);
+const CharacterAlias = CharacterAliasModel(sequelize);
 
 // =====================
 // RELATIONS
@@ -254,6 +256,20 @@ Cast.belongsTo(Episode, {
   as: "episode",
 });
 
+// =====================
+// Character Alias
+// =====================
+Character.hasMany(CharacterAlias, {
+  foreignKey: "characterId",
+  as: "aliases",
+  onDelete: "CASCADE",
+});
+
+CharacterAlias.belongsTo(Character, {
+  foreignKey: "characterId",
+  as: "character",
+});
+
 export {
   sequelize,
   User,
@@ -266,4 +282,5 @@ export {
   Cast,
   Character,
   Actor,
+  CharacterAlias,
 };

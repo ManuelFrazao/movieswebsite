@@ -1,4 +1,4 @@
-import { Character } from "../models/index.js";
+import { Character, CharacterAlias } from "../models/index.js";
 import { Op } from "sequelize";
 
 // CREATE
@@ -51,6 +51,32 @@ export const searchCharacters = async (req, res) => {
     });
 
     res.json(characters);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+export const getCharacterById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const character = await Character.findByPk(id, {
+      include: [
+        {
+          model: CharacterAlias,
+          as: "aliases",
+        },
+      ],
+      order: [[{ model: CharacterAlias, as: "aliases" }, "startSeason", "ASC"]],
+    });
+
+    if (!character) {
+      return res.status(404).json({ message: "Character not found" });
+    }
+
+    res.json(character);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
