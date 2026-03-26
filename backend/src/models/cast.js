@@ -8,6 +8,21 @@ const CastModel = (sequelize) => {
       primaryKey: true,
     },
 
+    actorId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+
+    characterId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+
+    entryId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+
     roleType: {
       type: DataTypes.ENUM("main", "supporting", "guest"),
       defaultValue: "supporting",
