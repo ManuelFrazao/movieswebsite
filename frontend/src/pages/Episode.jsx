@@ -8,6 +8,7 @@ import { formatVotes } from "../utils/formatVotes";
 import ReviewCard from "../components/ReviewCard";
 import ActorsRow from "../components/ActorsRow";
 import CharactersRow from "../components/CharactersRow";
+import EntryActions from "../components/EntryActions";
 
 export default function Entry() {
   const { id } = useParams();
@@ -80,7 +81,7 @@ export default function Entry() {
         const res = await api.get(`/episodes/${id}`);
         setEpisode(res.data);
       } catch (err) {
-        console.error(err);
+        console.error(err.response?.data || err.message);
       }
     };
 
@@ -110,7 +111,7 @@ export default function Entry() {
       setReviews(res.data.reviews || res.data);
       setTopReview(res.data.topReview || null);
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
     }
   };
 
@@ -130,7 +131,7 @@ export default function Entry() {
         [episodeId]: res.data,
       }));
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
     }
   };
 
@@ -143,7 +144,7 @@ export default function Entry() {
         [episodeId]: res.data,
       }));
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
     }
   };
 
@@ -152,7 +153,7 @@ export default function Entry() {
       const res = await api.get(`/votes/entry/${entryId}/episodes-trending`);
       setEpisodeTrends(res.data);
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
     }
   };
 
@@ -177,7 +178,7 @@ export default function Entry() {
       const res = await api.get(`/votes/entry/${entryId}/trending`);
       setEntryTrend(res.data);
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
     }
   };
 
@@ -233,7 +234,7 @@ export default function Entry() {
           .then((res) => setTrend(res.data));
       }
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
     }
   };
 
@@ -330,7 +331,7 @@ export default function Entry() {
 
       fetchReviews();
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
     }
   };
 
@@ -349,7 +350,7 @@ export default function Entry() {
       setReviewRating(Math.round(rating));
       setReviewModal(true);
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
       setReviewModal(true);
     }
   };
@@ -863,44 +864,15 @@ export default function Entry() {
                       borderRadius: "8px",
                     }}
                   />
-                  <div className="actions">
-                    <button
-                      className={`secondary-btn ${isWatchlist ? "active-watchlist" : ""}`}
-                      onClick={handleWatchlist}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        className="bi bi-eye-fill"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
-                      </svg>{" "}
-                      Add to watchlist
-                    </button>
-                    <button
-                      className={`secondary-btn ${isFavorite ? "active-favorite" : ""}`}
-                      onClick={handleFavorite}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        className="bi bi-heart-fill"
-                        viewBox="0 0 16 16"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
-                        />
-                      </svg>{" "}
-                      Add to favorites
-                    </button>
-                  </div>
+                  <EntryActions
+                    entry={entry}
+                    onUpdate={(data) =>
+                      setEntry((prev) => ({
+                        ...prev,
+                        ...data,
+                      }))
+                    }
+                  />
                   {stats?.totalVotes != 0 && (
                     <>
                       <div className="movie-info-graphs">

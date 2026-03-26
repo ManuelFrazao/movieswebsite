@@ -1,5 +1,6 @@
 import { Vote, Entry, Episode } from "../models/index.js";
 import { isSpamUser } from "../utils/permissions.js";
+import { Op } from "sequelize";
 
 export const createVote = async (req, res) => {
   try {
