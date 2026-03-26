@@ -34,12 +34,18 @@ export default function Navbar() {
         justifyContent: "space-between",
       }}
     >
-      <h2>🎬 MoviesWebsite</h2>
+      <h2>MoviesWebsite</h2>
 
       <div>
         <Link to="/" style={{ marginRight: "10px" }}>
           Home
         </Link>
+
+        {user?.role === "admin" && (
+          <Link to="/admin" style={{ marginRight: "10px" }}>
+            Admin
+          </Link>
+        )}
 
         {user ? (
           <>

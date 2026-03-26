@@ -178,7 +178,11 @@ export default function Dashboard() {
       <Drawer variant="permanent">
         <Box sx={{ width: 220, p: 2 }}>
           <Typography variant="h6">🎬 Admin</Typography>
-
+          <Box mb={2}>
+            <Button variant="outlined" onClick={() => navigate("/")}>
+              ← Back to site
+            </Button>
+          </Box>
           <List>
             <ListItem disablePadding>
               <ListItemButton onClick={() => setActiveTab("overview")}>
