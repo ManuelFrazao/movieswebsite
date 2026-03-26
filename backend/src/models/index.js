@@ -278,13 +278,19 @@ CharacterAlias.belongsTo(Character, {
 // Watchlist
 // =====================
 User.belongsToMany(Entry, {
-  through: Watchlist,
+  through: {
+    model: Watchlist,
+    unique: false,
+  },
   foreignKey: "userId",
   as: "watchlistEntries",
 });
 
 Entry.belongsToMany(User, {
-  through: Watchlist,
+  through: {
+    model: Watchlist,
+    unique: false,
+  },
   foreignKey: "entryId",
 });
 
@@ -303,13 +309,19 @@ Episode.belongsToMany(User, {
 // Favorites
 // =====================
 User.belongsToMany(Entry, {
-  through: Favorite,
+  through: {
+    model: Favorite,
+    unique: false,
+  },
   foreignKey: "userId",
   as: "favoriteEntries",
 });
 
 Entry.belongsToMany(User, {
-  through: Favorite,
+  through: {
+    model: Favorite,
+    unique: false,
+  },
   foreignKey: "entryId",
 });
 

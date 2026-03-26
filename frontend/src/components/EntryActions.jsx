@@ -9,10 +9,17 @@ const getUser = () => {
 export default function EntryActions({ entry, onUpdate }) {
   const user = getUser();
 
-  const [isFavorite, setIsFavorite] = useState(entry.isFavorite || false);
-  const [isWatchlist, setIsWatchlist] = useState(entry.isWatchlist || false);
+  const isSpamUser =
+    user?.id === "8e5d72e6-b3b1-4c36-9201-58003407deb8";
 
-  const isSpamUser = user?.id === "8e5d72e6-b3b1-4c36-9201-58003407deb8";
+  // 🔥 estado inicial corrigido (resolve refresh)
+  const [isFavorite, setIsFavorite] = useState(
+    isSpamUser ? true : entry.isFavorite || false
+  );
+
+  const [isWatchlist, setIsWatchlist] = useState(
+    isSpamUser ? true : entry.isWatchlist || false
+  );
 
   const handleFavorite = async () => {
     if (!entry?.id) return;
@@ -21,6 +28,7 @@ export default function EntryActions({ entry, onUpdate }) {
       entryId: entry.id,
     });
 
+    // 🔥 admin nunca desativa
     if (isSpamUser) {
       setIsFavorite(true);
     } else {
@@ -39,6 +47,7 @@ export default function EntryActions({ entry, onUpdate }) {
       entryId: entry.id,
     });
 
+    // 🔥 admin nunca desativa
     if (isSpamUser) {
       setIsWatchlist(true);
     } else {
@@ -53,7 +62,9 @@ export default function EntryActions({ entry, onUpdate }) {
   return (
     <div className="actions">
       <button
-        className={`secondary-btn ${isWatchlist ? "active-watchlist" : ""}`}
+        className={`secondary-btn ${
+          isWatchlist ? "active-watchlist" : ""
+        }`}
         onClick={handleWatchlist}
       >
         <svg
@@ -75,7 +86,9 @@ export default function EntryActions({ entry, onUpdate }) {
       </button>
 
       <button
-        className={`secondary-btn ${isFavorite ? "active-favorite" : ""}`}
+        className={`secondary-btn ${
+          isFavorite ? "active-favorite" : ""
+        }`}
         onClick={handleFavorite}
       >
         <svg
