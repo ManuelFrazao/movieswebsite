@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api";
 import "./Entry.css";
 import RatingBadge from "../components/RatingBadge";
@@ -33,6 +33,21 @@ export default function Entry() {
   const [reviewModal, setReviewModal] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.scrollTo === "reviews") {
+      setActiveTab("reviews");
+
+      // espera renderizar
+      setTimeout(() => {
+        document
+          .querySelector(".reviews")
+          ?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const fetchEpisode = async () => {
@@ -295,24 +310,24 @@ export default function Entry() {
   };
 
   const openReviewModal = async () => {
-  try {
-    let rating = 5;
+    try {
+      let rating = 5;
 
-    if (entry.type === "series") {
-      const res = await api.get(`/votes/entry/${entry.id}/my-average`);
-      rating = res.data.avg || 5;
-    } else {
-      const res = await api.get(`/votes/entry/${entry.id}/my-vote`);
-      rating = res.data.value || 5;
+      if (entry.type === "series") {
+        const res = await api.get(`/votes/entry/${entry.id}/my-average`);
+        rating = res.data.avg || 5;
+      } else {
+        const res = await api.get(`/votes/entry/${entry.id}/my-vote`);
+        rating = res.data.value || 5;
+      }
+
+      setReviewRating(Math.round(rating));
+      setReviewModal(true);
+    } catch (err) {
+      console.error(err);
+      setReviewModal(true);
     }
-
-    setReviewRating(Math.round(rating));
-    setReviewModal(true);
-  } catch (err) {
-    console.error(err);
-    setReviewModal(true);
-  }
-};
+  };
 
   function RatingDistributionEntry({ data }) {
     if (!data) return null;
@@ -1007,10 +1022,7 @@ export default function Entry() {
           <div className="reviews">
             <h2>Reviews</h2>
 
-            <button
-              className="primary-btn"
-              onClick={openReviewModal}
-            >
+            <button className="primary-btn" onClick={openReviewModal}>
               Write Review
             </button>
 

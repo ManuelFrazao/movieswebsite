@@ -1889,10 +1889,19 @@ export default function Entry() {
                   <div className="entry-cast">
                     <div className="entry-cast-list">
                       <div className="entry-cast-top">
-                        <h2 style={{
-                          display: "flex",
-                          alignItems:"center",                          
-                        }}>Cast{" "}<p style={{fontSize:"0.8rem",marginLeft: "0.3rem"}}>({cast.length})</p></h2>
+                        <h2
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          Cast{" "}
+                          <p
+                            style={{ fontSize: "0.8rem", marginLeft: "0.3rem" }}
+                          >
+                            ({cast.length})
+                          </p>
+                        </h2>
                         <span onClick={() => setActiveTab("cast")}>
                           see more
                         </span>
@@ -1997,12 +2006,7 @@ export default function Entry() {
                     {openSeason === season.id && (
                       <div className="episodes">
                         {season.episodes?.map((ep) => (
-                          <div
-                            key={ep.id}
-                            className="episode-row"
-                            onClick={() => navigate(`/episode/${ep.id}`)}
-                            style={{ cursor: "pointer" }}
-                          >
+                          <div key={ep.id} className="episode-row">
                             <div className="episode-number">{ep.number}.</div>
                             {/*{ep.isFinal && (
                                     <span className="final-badge">FINAL</span>
@@ -2012,8 +2016,10 @@ export default function Entry() {
                             <div className="episode-info">
                               <div>
                                 <div
+                                  onClick={() => navigate(`/episode/${ep.id}`)}
                                   style={{
                                     display: "flex",
+                                    cursor: "pointer",
                                   }}
                                 >
                                   <h3>{ep.title}</h3>
@@ -2113,7 +2119,14 @@ export default function Entry() {
 
                                 <div className="episode-reviews">
                                   {episodeReviewCounts[ep.id] > 0 && (
-                                    <span>
+                                    <span
+                                      onClick={() =>
+                                        navigate(`/episode/${ep.id}`, {
+                                          state: { scrollTo: "reviews" },
+                                        })
+                                      }
+                                      style={{ cursor: "pointer" }}
+                                    >
                                       {formatVotes(
                                         episodeReviewCounts[ep.id] || 0,
                                       )}{" "}
