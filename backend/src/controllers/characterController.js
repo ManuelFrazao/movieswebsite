@@ -1,4 +1,4 @@
-import { Character, CharacterAlias } from "../models/index.js";
+import { Character, CharacterAlias, Favorite } from "../models/index.js";
 import { Op } from "sequelize";
 
 const generateSlug = (name) => {
