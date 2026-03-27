@@ -50,6 +50,38 @@ export default function Entry() {
   const [reviewRating, setReviewRating] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isWatchlist, setIsWatchlist] = useState(false);
+  const [imageCount, setImageCount] = useState(0);
+
+  useEffect(() => {
+    if (!entry?.id) return;
+
+    const fetchImageCount = async () => {
+      try {
+        // entry images
+        const entryRes = await api.get(`/images/entry/${entry.id}`);
+        let total = entryRes.data.length;
+
+        // episode images from all seasons
+        const allEpisodes =
+          entry.seasons?.flatMap((s) => s.episodes || []) || [];
+        const episodeRequests = allEpisodes.map((ep) =>
+          api
+            .get(`/images/episode/${ep.id}`)
+            .then((r) => r.data.length)
+            .catch(() => 0),
+        );
+
+        const episodeCounts = await Promise.all(episodeRequests);
+        total += episodeCounts.reduce((sum, count) => sum + count, 0);
+
+        setImageCount(total);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchImageCount();
+  }, [entry?.id]);
 
   const fetchCast = async () => {
     try {
@@ -1822,6 +1854,7 @@ export default function Entry() {
                   <div className="entry-contents">
                     <div className="entry-contents-card">
                       <div
+                        onClick={() => setActiveTab("videos")}
                         style={{
                           display: "flex",
                           flexDirection: "column",
@@ -1844,7 +1877,10 @@ export default function Entry() {
                         <span>Videos</span>
                       </div>
                     </div>
-                    <div className="entry-contents-card">
+                    <div
+                      className="entry-contents-card"
+                      onClick={() => setActiveTab("images")}
+                    >
                       <div
                         style={{
                           display: "flex",
@@ -1863,7 +1899,14 @@ export default function Entry() {
                           <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
                           <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1z" />
                         </svg>
-                        <span>Images</span>
+                        {imageCount > 0 ? (
+                          <span>
+                            {formatVotes(imageCount)}{" "}
+                            {imageCount === 1 ? "image" : "images"}
+                          </span>
+                        ) : (
+                          <span>Images</span>
+                        )}
                       </div>
                     </div>
                     <div
@@ -2219,7 +2262,11 @@ export default function Entry() {
 
         {/* 🔥 Images */}
         {activeTab === "images" && (
-          <ImagesTab targetType="entry" targetId={entry.id}/>
+          <ImagesTab
+            targetType="entry"
+            targetId={entry.id}
+            episodes={entry.seasons?.flatMap((s) => s.episodes || []) || []}
+          />
         )}
 
         {/* 🔥 Statistics */}

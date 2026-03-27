@@ -41,6 +41,16 @@ export default function Entry() {
   const [isWatchlist, setIsWatchlist] = useState(false);
   const [cast, setCast] = useState([]);
 
+  const [imageCount, setImageCount] = useState(0);
+
+  useEffect(() => {
+    if (!entry?.id) return;
+    api
+      .get(`/images/episode/${episode.id}`)
+      .then((res) => setImageCount(res.data.length))
+      .catch(console.error);
+  }, [entry?.id]);
+
   const fetchCast = async () => {
     try {
       const res = await api.get(`/cast/episode/${episode.id}`);
@@ -824,6 +834,13 @@ export default function Entry() {
         </button>
 
         <button
+          className={activeTab === "videos" ? "active" : ""}
+          onClick={() => setActiveTab("videos")}
+        >
+          Videos
+        </button>
+
+        <button
           className={activeTab === "images" ? "active" : ""}
           onClick={() => setActiveTab("images")}
         >
@@ -859,6 +876,12 @@ export default function Entry() {
           onClick={() => setActiveTab("characters")}
         >
           Characters
+        </button>
+        <button
+          className={activeTab === "forums" ? "active" : ""}
+          onClick={() => setActiveTab("forums")}
+        >
+          Forums
         </button>
       </div>
 
@@ -954,6 +977,7 @@ export default function Entry() {
                   <div className="entry-contents">
                     <div className="entry-contents-card">
                       <div
+                        onClick={() => setActiveTab("videos")}
                         style={{
                           display: "flex",
                           flexDirection: "column",
@@ -978,6 +1002,7 @@ export default function Entry() {
                     </div>
                     <div className="entry-contents-card">
                       <div
+                        onClick={() => setActiveTab("images")}
                         style={{
                           display: "flex",
                           flexDirection: "column",
@@ -995,7 +1020,14 @@ export default function Entry() {
                           <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
                           <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1z" />
                         </svg>
-                        <span>Images</span>
+                        {imageCount > 0 ? (
+                          <span>
+                            {formatVotes(imageCount)}{" "}
+                            {imageCount === 1 ? "image" : "images"}
+                          </span>
+                        ) : (
+                          <span>Images</span>
+                        )}
                       </div>
                     </div>
                     <div
@@ -1034,7 +1066,10 @@ export default function Entry() {
                         )}
                       </div>
                     </div>
-                    <div className="entry-contents-card">
+                    <div
+                      className="entry-contents-card"
+                      onClick={() => setActiveTab("forums")}
+                    >
                       <div
                         style={{
                           display: "flex",
@@ -1106,11 +1141,14 @@ export default function Entry() {
           </>
         )}
 
+        {activeTab === "videos" && (
+          <div className="videos">
+            <p style={{ color: "#777" }}>Coming soon 👀</p>
+          </div>
+        )}
+
         {activeTab === "images" && (
-          <ImagesTab
-            targetType="episode"
-            targetId={episode.id}
-          />
+          <ImagesTab targetType="episode" targetId={episode.id} />
         )}
 
         {/* 🔥 Statistics */}

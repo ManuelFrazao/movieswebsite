@@ -6,19 +6,34 @@ const getUser = () => {
   return raw ? JSON.parse(raw) : null;
 };
 
-export default function ImagesTab({ targetType, targetId }) {
+export default function ImagesTab({ targetType, targetId, episodes = [] }) {
   const user = getUser();
   const isAdmin = user?.role === "admin";
 
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
   const fileRef = useRef();
 
   const fetchImages = async () => {
     try {
-      const res = await api.get(`/images/${targetType}/${targetId}`);
-      setImages(res.data);
+      // fetch main target images (entry or episode)
+      const mainRes = await api.get(`/images/${targetType}/${targetId}`);
+      let all = mainRes.data;
+
+      // if entry, also fetch all episode images
+      if (episodes.length > 0) {
+        const episodeRequests = episodes.map((ep) =>
+          api.get(`/images/episode/${ep.id}`)
+            .then((r) => r.data.map((img) => ({ ...img, _episodeTitle: ep.title })))
+            .catch(() => [])
+        );
+        const episodeImages = await Promise.all(episodeRequests);
+        all = [...all, ...episodeImages.flat()];
+      }
+
+      setImages(all);
     } catch (err) {
       console.error(err);
     }
@@ -62,6 +77,23 @@ export default function ImagesTab({ targetType, targetId }) {
     }
   };
 
+  const openLightbox = (img, index) => {
+    setLightbox(img);
+    setLightboxIndex(index);
+  };
+
+  const goNext = () => {
+    const next = (lightboxIndex + 1) % images.length;
+    setLightbox(images[next]);
+    setLightboxIndex(next);
+  };
+
+  const goPrev = () => {
+    const prev = (lightboxIndex - 1 + images.length) % images.length;
+    setLightbox(images[prev]);
+    setLightboxIndex(prev);
+  };
+
   return (
     <div className="images-tab">
       {isAdmin && (
@@ -84,20 +116,20 @@ export default function ImagesTab({ targetType, targetId }) {
         <p style={{ color: "#777" }}>No images yet.</p>
       ) : (
         <div className="images-grid">
-          {images.map((img) => (
+          {images.map((img, index) => (
             <div
               key={img.id}
               className="image-card"
-              onClick={() => setLightbox(img)}
+              onClick={() => openLightbox(img, index)}
             >
               <img src={img.url} alt={img.caption || ""} />
-              {isAdmin && (
+              {img._episodeTitle && (
+                <span className="image-episode-label">{img._episodeTitle}</span>
+              )}
+              {isAdmin && !img._episodeTitle && (
                 <button
                   className="image-delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(img.id);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); handleDelete(img.id); }}
                 >
                   ✕
                 </button>
@@ -110,13 +142,19 @@ export default function ImagesTab({ targetType, targetId }) {
       {/* Lightbox */}
       {lightbox && (
         <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
-          <div
-            className="lightbox-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img src={lightbox.url} alt={lightbox.caption || ""} />
+          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <img src={lightbox.url} alt={lightbox.caption || ""}/>
+            {lightbox._episodeTitle && (
+              <p style={{ color: "#aaa", fontSize: "0.85rem" }}>
+                From: {lightbox._episodeTitle}
+              </p>
+            )}
             {lightbox.caption && <p>{lightbox.caption}</p>}
-            <button onClick={() => setLightbox(null)}>✕ Close</button>
+            <div style={{ display: "flex", gap: "1rem", justifyContent: "center", marginTop: "0.5rem" }}>
+              <button onClick={goPrev}>← Prev</button>
+              <button onClick={() => setLightbox(null)}>✕ Close</button>
+              <button onClick={goNext}>Next →</button>
+            </div>
           </div>
         </div>
       )}
