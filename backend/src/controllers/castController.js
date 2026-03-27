@@ -15,7 +15,7 @@ export const addCast = async (req, res) => {
     }
 
     const cast = await Cast.create({
-      entryId: episodeId ? null : entryId,
+      entryId: entryId,
       episodeId: episodeId || null,
       actorId,
       characterId,
@@ -109,7 +109,7 @@ export const replaceCast = async (req, res) => {
     // 🔥 CREATE NEW
     const newCast = await Cast.bulkCreate(
       uniqueCast.map((c) => ({
-        entryId: episodeId ? null : entryId,
+        entryId: entryId,
         episodeId: episodeId || null,
         actorId: c.actorId,
         characterId: c.characterId,
