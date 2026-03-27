@@ -9,6 +9,7 @@ import ReviewCard from "../components/ReviewCard";
 import ActorsRow from "../components/ActorsRow";
 import CharactersRow from "../components/CharactersRow";
 import EntryActions from "../components/EntryActions";
+import ImagesTab from "../components/ImagesTab";
 
 export default function Entry() {
   const { slug } = useParams();
@@ -591,8 +592,7 @@ export default function Entry() {
     const containerHeight = 80; // 🔥 altura real das barras
 
     return (
-      <div
-      className="graph-rating-distribuition">
+      <div className="graph-rating-distribuition">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
           const value = data[num] || 0;
 
@@ -2188,8 +2188,7 @@ export default function Entry() {
                               </div>
 
                               {episodeTrends[ep.id] && (
-                                <div
-                                className="entry-episode-graphs">
+                                <div className="entry-episode-graphs">
                                   <TrendGraphEpisode
                                     data={episodeTrends[ep.id] || {}}
                                   />
@@ -2220,9 +2219,7 @@ export default function Entry() {
 
         {/* 🔥 Images */}
         {activeTab === "images" && (
-          <div className="images">
-            <p style={{ color: "#777" }}>Coming soon 👀</p>
-          </div>
+          <ImagesTab targetType="entry" targetId={entry.id}/>
         )}
 
         {/* 🔥 Statistics */}

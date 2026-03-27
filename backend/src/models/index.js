@@ -305,21 +305,10 @@ Favorite.belongsTo(User, {
 });
 
 // =====================
-// RELATIONS
+// Image
 // =====================
-// Entry → Images
-Entry.hasMany(Image, {
-  foreignKey: "targetId",
-  as: "images",
-  scope: { targetType: "entry" },
-});
-Episode.hasMany(Image, {
-  foreignKey: "targetId",
-  as: "images",
-  scope: { targetType: "episode" },
-});
-Image.belongsTo(Entry, { foreignKey: "targetId", as: "entry" });
-Image.belongsTo(Episode, { foreignKey: "targetId", as: "episode" });
+Entry.hasMany(Image, { foreignKey: "targetId", as: "entryImages" });
+Episode.hasMany(Image, { foreignKey: "targetId", as: "episodeImages" });
 
 export {
   sequelize,

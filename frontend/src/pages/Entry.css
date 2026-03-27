@@ -640,6 +640,56 @@ svg {
   justify-content: center;
 }
 
+.images-tab { padding: 1rem 0; }
+.images-upload { margin-bottom: 1rem; }
+.upload-btn {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  background: #639ef7;
+  color: #fff;
+  border-radius: 6px;
+  display: inline-block;
+}
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+.image-card {
+  position: relative;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  background: #111;
+}
+.image-card img { width: 100%; height: 100%; object-fit: cover; }
+.image-delete-btn {
+  position: absolute;
+  top: 6px; right: 6px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px; height: 24px;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+.lightbox-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+}
+.lightbox-content {
+  max-width: 90vw; max-height: 90vh;
+  text-align: center;
+}
+.lightbox-content img {
+  max-width: 100%; max-height: 80vh;
+  border-radius: 8px;
+}
+
 @media (width <= 1100px) {
   .episode-row {
     display: block;

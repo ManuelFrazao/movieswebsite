@@ -1,7 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
 
-export default function ImagesTab({ targetType, targetId, isAdmin }) {
+const getUser = () => {
+  const raw = localStorage.getItem("user");
+  return raw ? JSON.parse(raw) : null;
+};
+
+export default function ImagesTab({ targetType, targetId }) {
+  const user = getUser();
+  const isAdmin = user?.role === "admin";
+
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState(null);
@@ -77,12 +85,19 @@ export default function ImagesTab({ targetType, targetId, isAdmin }) {
       ) : (
         <div className="images-grid">
           {images.map((img) => (
-            <div key={img.id} className="image-card" onClick={() => setLightbox(img)}>
+            <div
+              key={img.id}
+              className="image-card"
+              onClick={() => setLightbox(img)}
+            >
               <img src={img.url} alt={img.caption || ""} />
               {isAdmin && (
                 <button
                   className="image-delete-btn"
-                  onClick={(e) => { e.stopPropagation(); handleDelete(img.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(img.id);
+                  }}
                 >
                   ✕
                 </button>
@@ -95,7 +110,10 @@ export default function ImagesTab({ targetType, targetId, isAdmin }) {
       {/* Lightbox */}
       {lightbox && (
         <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
-          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="lightbox-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <img src={lightbox.url} alt={lightbox.caption || ""} />
             {lightbox.caption && <p>{lightbox.caption}</p>}
             <button onClick={() => setLightbox(null)}>✕ Close</button>

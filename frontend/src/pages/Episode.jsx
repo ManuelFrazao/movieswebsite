@@ -9,6 +9,7 @@ import ReviewCard from "../components/ReviewCard";
 import ActorsRow from "../components/ActorsRow";
 import CharactersRow from "../components/CharactersRow";
 import EntryActions from "../components/EntryActions";
+import ImagesTab from "../components/ImagesTab";
 
 export default function Entry() {
   const { id } = useParams();
@@ -823,10 +824,10 @@ export default function Entry() {
         </button>
 
         <button
-          className={activeTab === "details" ? "active" : ""}
-          onClick={() => setActiveTab("details")}
+          className={activeTab === "images" ? "active" : ""}
+          onClick={() => setActiveTab("images")}
         >
-          Details
+          Images
         </button>
 
         {stats?.totalVotes > 0 && (
@@ -1105,23 +1106,11 @@ export default function Entry() {
           </>
         )}
 
-        {/* 🔥 DETAILS */}
-        {activeTab === "details" && (
-          <div className="details">
-            <h2>Details</h2>
-
-            {episode.airDate && (
-              <p>
-                <strong>Release Date:</strong> {formatDate(episode.airDate)}
-              </p>
-            )}
-
-            {episode.duration && (
-              <p>
-                <strong>Duration:</strong> {formatDuration(episode.duration)}
-              </p>
-            )}
-          </div>
+        {activeTab === "images" && (
+          <ImagesTab
+            targetType="episode"
+            targetId={episode.id}
+          />
         )}
 
         {/* 🔥 Statistics */}
