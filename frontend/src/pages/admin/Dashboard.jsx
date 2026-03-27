@@ -168,6 +168,24 @@ export default function Dashboard() {
     setEpisodes(episodes.filter((e) => e.id !== id));
   };
 
+  useEffect(() => {
+    if (activeTab === "episodes" && selectedEntry) {
+      fetchSeasons(selectedEntry);
+    }
+  }, [activeTab, selectedEntry]);
+
+  useEffect(() => {
+    if (activeTab === "characters" && selectedEntry) {
+      fetchCharacters(selectedEntry);
+    }
+  }, [activeTab, selectedEntry]);
+
+  useEffect(() => {
+    if (activeTab === "episodes" && selectedSeason) {
+      fetchEpisodes(selectedSeason);
+    }
+  }, [selectedSeason]);
+
   // 🔥 TABLE COLUMNS
 
   const userColumns = [
@@ -180,7 +198,10 @@ export default function Dashboard() {
       field: "image",
       headerName: "Image",
       renderCell: (params) => (
-        <img src={params.row.profileImage} style={{ width: 40, borderRadius: 6, objectFit: "cover"}} />
+        <img
+          src={params.row.profileImage}
+          style={{ width: 40, borderRadius: 6, objectFit: "cover" }}
+        />
       ),
       width: 80,
     },
@@ -515,6 +536,22 @@ export default function Dashboard() {
             <DataGrid
               rows={characters}
               columns={[
+                {
+                  field: "image",
+                  headerName: "Image",
+                  width: 80,
+                  renderCell: (params) => (
+                    <img
+                      src={params.value || "/placeholder.jpg"}
+                      style={{
+                        width: 40,
+                        height: 60,
+                        objectFit: "cover",
+                        borderRadius: 6,
+                      }}
+                    />
+                  ),
+                },
                 { field: "name", headerName: "Name", flex: 1 },
 
                 {
@@ -591,6 +628,23 @@ export default function Dashboard() {
             <DataGrid
               rows={episodes}
               columns={[
+                {
+                  field: "thumbnail",
+                  headerName: "Image",
+                  width: 100,
+                  renderCell: (params) => (
+                    <img
+                      src={params.value || "/placeholder.jpg"}
+                      style={{
+                        width: 60,
+                        height: 34,
+                        objectFit: "cover",
+                        borderRadius: 6,
+                      }}
+                    />
+                  ),
+                },
+
                 { field: "number", headerName: "Ep", width: 80 },
                 { field: "title", headerName: "Title", flex: 1 },
 

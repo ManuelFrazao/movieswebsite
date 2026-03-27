@@ -46,17 +46,20 @@ export const getEntryCast = async (req, res) => {
 
 export const replaceCast = async (req, res) => {
   try {
-    const { entryId, cast } = req.body;
+    const { entryId, episodeId, cast } = req.body;
 
-    if (!entryId || !Array.isArray(cast)) {
+    if ((!entryId && !episodeId) || !Array.isArray(cast)) {
       return res.status(400).json({ message: "Invalid data" });
     }
 
-    await Cast.destroy({ where: { entryId } });
+    await Cast.destroy({
+      where: entryId ? { entryId } : { episodeId },
+    });
 
     const newCast = await Cast.bulkCreate(
       cast.map((c) => ({
-        entryId,
+        entryId: entryId || null,
+        episodeId: episodeId || null,
         actorId: c.actorId,
         characterId: c.characterId,
         roleType: c.roleType,

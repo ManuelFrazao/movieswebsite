@@ -1,14 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "../../services/api";
+import CastManager from "../../components/CastManager";
 
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-} from "@mui/material";
+import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 
 export default function EditEpisode() {
   const { id } = useParams();
@@ -16,6 +11,25 @@ export default function EditEpisode() {
 
   const [episode, setEpisode] = useState(null);
   const [image, setImage] = useState(null);
+  const [castData, setCastData] = useState([]);
+
+  const fetchCast = async () => {
+    try {
+      const res = await api.get(`/cast/episode/${id}`);
+
+      const formatted = res.data.map((c) => ({
+        id: c.id,
+        actor: c.actor,
+        character: c.character,
+        roleType: c.roleType,
+        order: c.order,
+      }));
+
+      setCastData(formatted);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchEpisode = async () => {
     try {
@@ -28,6 +42,7 @@ export default function EditEpisode() {
 
   useEffect(() => {
     fetchEpisode();
+    fetchCast();
   }, [id]);
 
   const handleSave = async () => {
@@ -48,6 +63,26 @@ export default function EditEpisode() {
 
       alert("Episode updated!");
       fetchEpisode();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveCast = async () => {
+    try {
+      const validCast = castData.filter((c) => c.actor && c.character);
+
+      await api.post("/cast/bulk", {
+        episodeId: id, // 👈 IMPORTANTE
+        cast: validCast.map((c, index) => ({
+          actorId: c.actor.id,
+          characterId: c.character.id,
+          roleType: c.roleType,
+          order: index + 1,
+        })),
+      });
+
+      alert("Cast saved!");
     } catch (err) {
       console.error(err);
     }
@@ -80,9 +115,7 @@ export default function EditEpisode() {
           fullWidth
           margin="normal"
           value={episode.title}
-          onChange={(e) =>
-            setEpisode({ ...episode, title: e.target.value })
-          }
+          onChange={(e) => setEpisode({ ...episode, title: e.target.value })}
         />
 
         {/* DESCRIPTION */}
@@ -135,11 +168,7 @@ export default function EditEpisode() {
 
           <Box mt={2}>
             <img
-              src={
-                image
-                  ? URL.createObjectURL(image)
-                  : episode.thumbnail
-              }
+              src={image ? URL.createObjectURL(image) : episode.thumbnail}
               alt=""
               style={{
                 width: 160,
@@ -154,6 +183,23 @@ export default function EditEpisode() {
               New image preview
             </Typography>
           )}
+        </Box>
+
+        {/* CAST */}
+        <Box mt={4}>
+          <Typography variant="h6" mb={2}>
+            Cast
+          </Typography>
+
+          <CastManager
+            castData={castData}
+            setCastData={setCastData}
+            onChange={setCastData}
+          />
+
+          <Button variant="contained" onClick={handleSaveCast} sx={{ mt: 2 }}>
+            Save Cast
+          </Button>
         </Box>
 
         {/* ACTIONS */}
