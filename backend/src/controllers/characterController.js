@@ -142,3 +142,33 @@ export const getCharacterBySlug = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const updateCharacter = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const character = await Character.findByPk(id);
+
+    if (!character) {
+      return res.status(404).json({ message: "Character not found" });
+    }
+
+    const { name, description } = req.body;
+
+    // 🔥 atualizar campos
+    if (name) character.name = name;
+    if (description) character.description = description;
+
+    // 🔥 imagem (se existir)
+    if (req.file) {
+      character.image = req.file.path;
+    }
+
+    await character.save();
+
+    res.json(character);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
