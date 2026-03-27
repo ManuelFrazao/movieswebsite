@@ -1,4 +1,5 @@
 import { Favorite, Entry } from "../models/index.js";
+import { Op } from "sequelize";
 
 export const toggleFavorite = async (req, res) => {
   const { targetId, targetType } = req.body;
@@ -42,4 +43,38 @@ export const toggleFavorite = async (req, res) => {
   });
 
   res.json({ added: true, count });
+};
+
+export const getActorFavoritesTrending = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const favorites = await Favorite.findAll({
+      where: {
+        targetId: id,
+        targetType: "actor",
+        createdAt: {
+          [Op.gte]: sevenDaysAgo,
+        },
+      },
+    });
+
+    const grouped = {};
+
+    favorites.forEach((fav) => {
+      const day = fav.createdAt.toISOString().split("T")[0];
+
+      if (!grouped[day]) {
+        grouped[day] = { count: 0 };
+      }
+
+      grouped[day].count += 1;
+    });
+
+    res.json(grouped);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };

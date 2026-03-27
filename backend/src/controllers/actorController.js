@@ -1,5 +1,5 @@
 import cloudinary from "../utils/cloudinary.js";
-import { Actor } from "../models/index.js";
+import { Actor, Favorite } from "../models/index.js";
 import { Op, Sequelize, fn, col, where } from "sequelize";
 
 const generateSlug = (name) => {
@@ -65,6 +65,21 @@ export const getActorBySlug = async (req, res) => {
         },
       ],
     });
+
+    if (!actor) {
+      return res.status(404).json({ message: "Actor not found" });
+    }
+
+    // 🔥 contar favoritos
+    const favoritesCount = await Favorite.count({
+      where: {
+        targetId: actor.id,
+        targetType: "actor",
+      },
+    });
+
+    // 🔥 adicionar ao objeto
+    actor.dataValues.favoritesCount = favoritesCount;
 
     res.json(actor);
   } catch (err) {

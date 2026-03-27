@@ -6,6 +6,7 @@ import AdminRoute from "./components/AdminRoute";
 import EditEntry from "./pages/admin/EditEntry";
 import Entry from "./pages/Entry";
 import Episode from "./pages/Episode";
+import Actor from "./pages/Actor";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
 
         <Route path="/entry/:slug" element={<Entry />} />
         <Route path="/episode/:id" element={<Episode />} />
+        <Route path="/actor/:id" element={<Actor />} />
       </Routes>
     </BrowserRouter>
   );

@@ -74,50 +74,52 @@ export default function EntryActions({
   return (
     <div className="actions">
       {/* WATCHLIST */}
-      <button
-        className={`secondary-btn ${isWatchlist ? "active-watchlist" : ""}`}
-        onClick={handleWatchlist}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="currentColor"
-          className="bi bi-eye-fill"
-          viewBox="0 0 16 16"
+      {type === "entry" || type === "episode" ? (
+        <button
+          className={`secondary-btn ${isWatchlist ? "active-watchlist" : ""}`}
+          onClick={handleWatchlist}
         >
-          <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-          <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
-        </svg>{" "}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            marginRight: "0.7rem"
-          }}
-        >
-          {/* quando o user adicionar a watchlist este span deveria mudar o nome para In watchlist*/}
-          <span>{isWatchlist ? "In watchlist" : "Add to watchlist"}</span>
-
-          {watchlistCount > 0 && (
-          <span
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            className="bi bi-eye-fill"
+            viewBox="0 0 16 16"
+          >
+            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+          </svg>{" "}
+          <div
             style={{
-              fontSize: "0.7rem",
-              marginTop: "0.2rem",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              marginRight: "0.7rem",
             }}
           >
-            {watchlistCount > 0 &&
-              `${formatVotes(watchlistCount)} ${
-                watchlistCount === 1
-                  ? "user added to watchlist"
-                  : "users added to watchlist"
-              }`}
-          </span>
-          )}
-        </div>
-      </button>
+            {/* quando o user adicionar a watchlist este span deveria mudar o nome para In watchlist*/}
+            <span>{isWatchlist ? "In watchlist" : "Add to watchlist"}</span>
 
+            {watchlistCount > 0 && (
+              <span
+                style={{
+                  fontSize: "0.7rem",
+                  marginTop: "0.2rem",
+                }}
+              >
+                {watchlistCount > 0 &&
+                  `${formatVotes(watchlistCount)} ${
+                    watchlistCount === 1
+                      ? "user added to watchlist"
+                      : "users added to watchlist"
+                  }`}
+              </span>
+            )}
+          </div>
+        </button>
+      ) : null}
+      
       {/* FAVORITES */}
       <button
         className={`secondary-btn ${isFavorite ? "active-favorite" : ""}`}
@@ -141,7 +143,7 @@ export default function EntryActions({
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
-            marginRight: "0.7rem"
+            marginRight: "0.7rem",
           }}
         >
           <span>{isFavorite ? "In favorites" : "Add to favorites"}</span>

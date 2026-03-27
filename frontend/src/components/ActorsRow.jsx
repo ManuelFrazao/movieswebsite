@@ -1,6 +1,8 @@
 import { Box, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function ActorsRow({ cast = [] }) {
+  const navigate = useNavigate();
   if (!cast.length) return null;
 
   return (
@@ -34,7 +36,7 @@ export default function ActorsRow({ cast = [] }) {
               }}
             />
 
-            <Typography fontSize="0.85rem">
+            <Typography fontSize="0.85rem" onClick={() => navigate(`/actor/${c.id}`)}>
               {c.actor?.name}
             </Typography>
 
