@@ -2,7 +2,8 @@ import { sequelize, Cast, Character, Actor } from "../models/index.js";
 
 export const addCast = async (req, res) => {
   try {
-    const { entryId, characterId, actorId, roleType, order, episodeId, } = req.body;
+    const { entryId, characterId, actorId, roleType, order, episodeId } =
+      req.body;
 
     if (!actorId || !characterId) {
       return res.status(400).json({
@@ -54,7 +55,7 @@ export const replaceCast = async (req, res) => {
     }
 
     await Cast.destroy({
-      where: entryId ? { entryId } : { episodeId },
+      where: entryId ? { entryId, episodeId: null } : { episodeId },
     });
 
     const newCast = await Cast.bulkCreate(
@@ -106,6 +107,25 @@ export const deleteCastByEntry = async (req, res) => {
     });
 
     res.json({ message: "Cast cleared" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getEpisodeCast = async (req, res) => {
+  try {
+    const { episodeId } = req.params;
+
+    const cast = await Cast.findAll({
+      where: { episodeId },
+      include: [
+        { model: Actor, as: "actor" },
+        { model: Character, as: "character" },
+      ],
+      order: [["order", "ASC"]],
+    });
+
+    res.json(cast);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
