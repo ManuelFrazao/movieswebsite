@@ -32,6 +32,48 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
   const [showForm, setShowForm] = useState(false);
   const [token, setToken] = useState(null);
+  const [actors, setActors] = useState([]);
+  const [characters, setCharacters] = useState([]);
+  const [selectedEntry, setSelectedEntry] = useState("");
+  const [episodes, setEpisodes] = useState([]);
+  const [seasons, setSeasons] = useState([]);
+  const [selectedSeason, setSelectedSeason] = useState("");
+
+  const fetchSeasons = async (entryId) => {
+  const res = await api.get(`/seasons/entry/${entryId}`);
+  setSeasons(res.data);
+};
+
+const fetchEpisodes = async (seasonId) => {
+  const res = await api.get(`/episodes/season/${seasonId}`);
+  setEpisodes(res.data);
+};
+
+  const fetchCharacters = async (entryId) => {
+    const res = await api.get(`/characters/entry/${entryId}`);
+    setCharacters(res.data);
+  };
+
+  const fetchActors = async () => {
+    const res = await api.get("/actors");
+    setActors(res.data);
+  };
+
+  useEffect(() => {
+    fetchActors();
+  }, []);
+
+  const actorColumns = [
+    {
+      field: "image",
+      headerName: "Image",
+      renderCell: (params) => (
+        <img src={params.value} style={{ width: 40, borderRadius: 6 }} />
+      ),
+      width: 80,
+    },
+    { field: "name", headerName: "Name", flex: 1 },
+  ];
 
   useEffect(() => {
     const t = localStorage.getItem("token");
@@ -203,6 +245,24 @@ export default function Dashboard() {
             </ListItem>
 
             <ListItem disablePadding>
+              <ListItemButton onClick={() => setActiveTab("actors")}>
+                <ListItemText primary="Actors" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => setActiveTab("characters")}>
+                <ListItemText primary="Characters" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => setActiveTab("episodes")}>
+                <ListItemText primary="Episodes" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem disablePadding>
               <ListItemButton onClick={handleLogout}>
                 <ListItemText primary="Logout" />
               </ListItemButton>
@@ -369,6 +429,58 @@ export default function Dashboard() {
               getRowId={(row) => row.id}
               autoHeight
             />
+          </Box>
+        )}
+
+        {activeTab === "actors" && (
+          <Box>
+            <Typography variant="h5" mb={2}>
+              Actors
+            </Typography>
+
+            <DataGrid
+              rows={actors}
+              columns={actorColumns}
+              getRowId={(row) => row.id}
+              autoHeight
+            />
+          </Box>
+        )}
+
+        {activeTab === "characters" && (
+          <Box>
+            <Typography variant="h5" mb={2}>
+              Characters
+            </Typography>
+            <TextField
+              select
+              label="Select Entry"
+              value={selectedEntry}
+              onChange={(e) => {
+                setSelectedEntry(e.target.value);
+                fetchCharacters(e.target.value);
+              }}
+            >
+              {entries.map((e) => (
+                <MenuItem key={e.id} value={e.id}>
+                  {e.title}
+                </MenuItem>
+              ))}
+            </TextField>
+            <DataGrid
+              rows={characters}
+              columns={[{ field: "name", headerName: "Name", flex: 1 }]}
+              getRowId={(row) => row.id}
+              autoHeight
+            />
+          </Box>
+        )}
+
+        {activeTab === "episd" && (
+          <Box>
+                        <Typography variant="h5" mb={2}>
+              Characters
+            </Typography>
           </Box>
         )}
       </Box>

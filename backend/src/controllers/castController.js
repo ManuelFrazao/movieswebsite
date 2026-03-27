@@ -80,6 +80,19 @@ export const replaceCast = async (req, res) => {
   }
 };
 
+export const getCharactersByEntry = async (req, res) => {
+  const { entryId } = req.params;
+
+  const cast = await Cast.findAll({
+    where: { entryId },
+    include: [{ model: Character, as: "character" }],
+  });
+
+  const characters = cast.map((c) => c.character);
+
+  res.json(characters);
+};
+
 export const deleteCastByEntry = async (req, res) => {
   try {
     const { entryId } = req.params;
