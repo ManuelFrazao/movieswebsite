@@ -12,7 +12,7 @@ export const addCast = async (req, res) => {
     }
 
     const cast = await Cast.create({
-      entryId,
+      entryId: episodeId ? null : entryId,
       characterId,
       episodeId: episodeId || null,
       actorId,
