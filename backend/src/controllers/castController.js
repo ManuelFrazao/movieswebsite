@@ -84,8 +84,8 @@ export const replaceCast = async (req, res) => {
   try {
     const { entryId, episodeId, cast } = req.body;
 
-    if ((!entryId && !episodeId) || !Array.isArray(cast)) {
-      return res.status(400).json({ message: "Invalid data" });
+    if (!entryId || !Array.isArray(cast)) {
+      return res.status(400).json({ message: "entryId is required" });
     }
 
     // 🔥 REMOVE EXISTING
@@ -100,10 +100,8 @@ export const replaceCast = async (req, res) => {
       (c, index, self) =>
         index ===
         self.findIndex(
-          (x) =>
-            x.actorId === c.actorId &&
-            x.characterId === c.characterId
-        )
+          (x) => x.actorId === c.actorId && x.characterId === c.characterId,
+        ),
     );
 
     // 🔥 CREATE NEW
@@ -115,7 +113,8 @@ export const replaceCast = async (req, res) => {
         characterId: c.characterId,
         roleType: c.roleType,
         order: c.order,
-      }))
+      })),
+      { validate: true },
     );
 
     res.json(newCast);
