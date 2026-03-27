@@ -1,5 +1,8 @@
 import { sequelize, Cast, Character, Actor } from "../models/index.js";
 
+// =====================
+// ADD SINGLE CAST
+// =====================
 export const addCast = async (req, res) => {
   try {
     const { entryId, characterId, actorId, roleType, order, episodeId } =
@@ -13,9 +16,9 @@ export const addCast = async (req, res) => {
 
     const cast = await Cast.create({
       entryId: episodeId ? null : entryId,
-      characterId,
       episodeId: episodeId || null,
       actorId,
+      characterId,
       roleType,
       order,
     });
@@ -27,12 +30,18 @@ export const addCast = async (req, res) => {
   }
 };
 
+// =====================
+// GET ENTRY CAST (BASE ONLY)
+// =====================
 export const getEntryCast = async (req, res) => {
   try {
     const { entryId } = req.params;
 
     const cast = await Cast.findAll({
-      where: { entryId },
+      where: {
+        entryId,
+        episodeId: null, // 🔥 IMPORTANTE
+      },
       include: [
         { model: Actor, as: "actor" },
         { model: Character, as: "character" },
@@ -46,74 +55,9 @@ export const getEntryCast = async (req, res) => {
   }
 };
 
-export const replaceCast = async (req, res) => {
-  try {
-    const { entryId, episodeId, cast } = req.body;
-
-    if ((!entryId && !episodeId) || !Array.isArray(cast)) {
-      return res.status(400).json({ message: "Invalid data" });
-    }
-
-    await Cast.destroy({
-      where: episodeId
-        ? { episodeId }
-        : { entryId, episodeId: null },
-    });
-
-    const newCast = await Cast.bulkCreate(
-      cast.map((c) => ({
-        entryId: episodeId ? null : entryId,
-        episodeId: episodeId || null,
-        actorId: c.actorId,
-        characterId: c.characterId,
-        roleType: c.roleType,
-        order: c.order,
-      })),
-    );
-
-    res.json(newCast);
-  } catch (err) {
-    console.error("FULL ERROR:", err);
-    console.error("ERR.NAME:", err.name);
-    console.error("ERR.MESSAGE:", err.message);
-    console.error("ERR.FIELDS:", err.fields);
-    console.error("ERR.ERRORS:", err.errors);
-
-    res.status(500).json({
-      error: err.message,
-      details: err.errors,
-      name: err.name,
-    });
-  }
-};
-
-export const getCharactersByEntry = async (req, res) => {
-  const { entryId } = req.params;
-
-  const cast = await Cast.findAll({
-    where: { entryId },
-    include: [{ model: Character, as: "character" }],
-  });
-
-  const characters = cast.map((c) => c.character);
-
-  res.json(characters);
-};
-
-export const deleteCastByEntry = async (req, res) => {
-  try {
-    const { entryId } = req.params;
-
-    await Cast.destroy({
-      where: { entryId },
-    });
-
-    res.json({ message: "Cast cleared" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
+// =====================
+// GET EPISODE CAST
+// =====================
 export const getEpisodeCast = async (req, res) => {
   try {
     const { episodeId } = req.params;
@@ -128,6 +72,101 @@ export const getEpisodeCast = async (req, res) => {
     });
 
     res.json(cast);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// =====================
+// REPLACE CAST (ENTRY OR EPISODE)
+// =====================
+export const replaceCast = async (req, res) => {
+  try {
+    const { entryId, episodeId, cast } = req.body;
+
+    if ((!entryId && !episodeId) || !Array.isArray(cast)) {
+      return res.status(400).json({ message: "Invalid data" });
+    }
+
+    // 🔥 REMOVE EXISTING
+    await Cast.destroy({
+      where: episodeId
+        ? { episodeId } // 👉 só este episódio
+        : { entryId, episodeId: null }, // 👉 só cast base
+    });
+
+    // 🔥 REMOVE DUPLICATES (extra segurança)
+    const uniqueCast = cast.filter(
+      (c, index, self) =>
+        index ===
+        self.findIndex(
+          (x) =>
+            x.actorId === c.actorId &&
+            x.characterId === c.characterId
+        )
+    );
+
+    // 🔥 CREATE NEW
+    const newCast = await Cast.bulkCreate(
+      uniqueCast.map((c) => ({
+        entryId: episodeId ? null : entryId,
+        episodeId: episodeId || null,
+        actorId: c.actorId,
+        characterId: c.characterId,
+        roleType: c.roleType,
+        order: c.order,
+      }))
+    );
+
+    res.json(newCast);
+  } catch (err) {
+    console.error("FULL ERROR:", err);
+    res.status(500).json({
+      error: err.message,
+      details: err.errors,
+      name: err.name,
+    });
+  }
+};
+
+// =====================
+// GET CHARACTERS BY ENTRY
+// =====================
+export const getCharactersByEntry = async (req, res) => {
+  try {
+    const { entryId } = req.params;
+
+    const cast = await Cast.findAll({
+      where: {
+        entryId,
+        episodeId: null, // 🔥 só base
+      },
+      include: [{ model: Character, as: "character" }],
+    });
+
+    const characters = cast.map((c) => c.character);
+
+    res.json(characters);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// =====================
+// DELETE ENTRY CAST
+// =====================
+export const deleteCastByEntry = async (req, res) => {
+  try {
+    const { entryId } = req.params;
+
+    await Cast.destroy({
+      where: {
+        entryId,
+        episodeId: null, // 🔥 só base
+      },
+    });
+
+    res.json({ message: "Cast cleared" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
