@@ -55,12 +55,14 @@ export const replaceCast = async (req, res) => {
     }
 
     await Cast.destroy({
-      where: entryId ? { entryId, episodeId: null } : { episodeId },
+      where: episodeId
+        ? { episodeId }
+        : { entryId, episodeId: null },
     });
 
     const newCast = await Cast.bulkCreate(
       cast.map((c) => ({
-        entryId: entryId,
+        entryId: episodeId ? null : entryId,
         episodeId: episodeId || null,
         actorId: c.actorId,
         characterId: c.characterId,
