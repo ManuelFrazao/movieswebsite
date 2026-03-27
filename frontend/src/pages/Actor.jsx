@@ -257,10 +257,12 @@ export default function Actor() {
                 <div className="movie-info-aside-left">
                   <img
                     width={220}
+                    height={250}
                     src={entry.profileImage}
                     alt=""
                     style={{
                       borderRadius: "8px",
+                      objectFit: "cover"
                     }}
                   />
                   <EntryActions

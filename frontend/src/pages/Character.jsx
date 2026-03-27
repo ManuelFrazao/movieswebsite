@@ -198,7 +198,7 @@ export default function Character() {
       {/* HERO */}
       <div
         className="hero"
-        style={{ backgroundImage: `url(${entry.profileImage})` }}
+        style={{ backgroundImage: `url(${entry.image})` }}
       >
         <div className="hero-overlay">
           <button className="back-btn" onClick={() => navigate(-1)}>
@@ -257,10 +257,12 @@ export default function Character() {
                 <div className="movie-info-aside-left">
                   <img
                     width={220}
-                    src={entry.profileImage}
+                    height={250}
+                    src={entry.image}
                     alt=""
                     style={{
                       borderRadius: "8px",
+                      objectFit: "cover"
                     }}
                   />
                   <EntryActions

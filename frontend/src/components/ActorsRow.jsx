@@ -26,7 +26,7 @@ export default function ActorsRow({ cast = [] }) {
           >
             <Box
               component="img"
-              src={c.actor?.image || "/placeholder.jpg"}
+              src={c.actor?.profileImage || "/placeholder.jpg"}
               sx={{
                 width: "100%",
                 height: 150,

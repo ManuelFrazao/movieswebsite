@@ -66,7 +66,7 @@ export default function EditActor() {
       </Button>
 
       <img
-        src={image ? URL.createObjectURL(image) : actor.image}
+        src={image ? URL.createObjectURL(image) : actor.profileImage}
         style={{ width: 120, borderRadius: 8 }}
       />
 

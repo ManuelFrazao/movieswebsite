@@ -180,7 +180,7 @@ export default function Dashboard() {
       field: "image",
       headerName: "Image",
       renderCell: (params) => (
-        <img src={params.value} style={{ width: 40, borderRadius: 6 }} />
+        <img src={params.row.profileImage} style={{ width: 40, borderRadius: 6, objectFit: "cover"}} />
       ),
       width: 80,
     },
@@ -498,6 +498,8 @@ export default function Dashboard() {
             <TextField
               select
               label="Select Entry"
+              fullWidth
+              margin="normal"
               value={selectedEntry}
               onChange={(e) => {
                 setSelectedEntry(e.target.value);
@@ -553,6 +555,8 @@ export default function Dashboard() {
             <TextField
               select
               label="Entry"
+              fullWidth
+              margin="normal"
               value={selectedEntry}
               onChange={(e) => {
                 const val = e.target.value;
@@ -569,6 +573,8 @@ export default function Dashboard() {
             <TextField
               select
               label="Season"
+              fullWidth
+              margin="normal"
               value={selectedSeason}
               onChange={(e) => {
                 const val = e.target.value;
