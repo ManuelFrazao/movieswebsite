@@ -13,6 +13,7 @@ import characterRoutes from "./characterRoutes.js";
 import characterAliasRoutes from "./characterAliasRoutes.js";
 import watchlistRoutes from "./watchlistRoutes.js";
 import favoriteRoutes from "./favoriteRoutes.js";
+import imageRoutes from "./imageRoutes.js";
 
 const router = express.Router();
 
@@ -29,5 +30,6 @@ router.use("/characters", characterRoutes);
 router.use("/character-aliases", characterAliasRoutes);
 router.use("/watchlist", watchlistRoutes);
 router.use("/favorites", favoriteRoutes);
+router.use("/images", imageRoutes);
 
 export default router;
