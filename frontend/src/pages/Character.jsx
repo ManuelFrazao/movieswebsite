@@ -6,7 +6,7 @@ import Navbar from "../components/Navbar";
 import { formatVotes } from "../utils/formatVotes";
 import EntryActions from "../components/EntryActions";
 
-export default function Actor() {
+export default function Character() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [entry, setEntry] = useState(null);
@@ -16,7 +16,7 @@ export default function Actor() {
   useEffect(() => {
     const fetchEntry = async () => {
       try {
-        const res = await api.get(`/actors/${slug}`);
+        const res = await api.get(`/characters/${slug}`);
         setEntry(res.data);
       } catch (err) {
         console.error(err.response?.data || err.message);
@@ -28,7 +28,7 @@ export default function Actor() {
 
   const fetchTrend = async (actorId) => {
     try {
-      const res = await api.get(`/favorites/actor/${actorId}/trending`);
+      const res = await api.get(`/favorites/character/${actorId}/trending`);
       setEntryTrend(res.data);
     } catch (err) {
       console.error(err.response?.data || err.message);

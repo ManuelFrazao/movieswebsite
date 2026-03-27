@@ -1,6 +1,20 @@
 import { Character, CharacterAlias } from "../models/index.js";
 import { Op } from "sequelize";
 
+const generateSlug = (name) => {
+  return (
+    name
+      .toLowerCase()
+      .replace(/ /g, "-")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") +
+    "-" +
+    Date.now()
+  );
+};
+
 // CREATE
 export const createCharacter = async (req, res) => {
   try {
@@ -23,8 +37,14 @@ export const createCharacter = async (req, res) => {
       return res.json(existing); // ✅ return existing instead of creating duplicate
     }
 
+    // 🔥 gerar slug
+    const slug = generateSlug(name);
+
     // ✅ CREATE NEW
-    const character = await Character.create({ name });
+    const character = await Character.create({
+      name,
+      slug,
+    });
 
     res.json(character);
   } catch (err) {
@@ -57,7 +77,6 @@ export const searchCharacters = async (req, res) => {
   }
 };
 
-
 export const getCharacterById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -79,6 +98,31 @@ export const getCharacterById = async (req, res) => {
     res.json(character);
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getCharacterBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const character = await Character.findOne({
+      where: { slug },
+      include: [
+        {
+          model: CharacterAlias,
+          as: "aliases",
+        },
+      ],
+      order: [[{ model: CharacterAlias, as: "aliases" }, "startSeason", "ASC"]],
+    });
+
+    if (!character) {
+      return res.status(404).json({ message: "Character not found" });
+    }
+
+    res.json(character);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };

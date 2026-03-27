@@ -7,6 +7,7 @@ import EditEntry from "./pages/admin/EditEntry";
 import Entry from "./pages/Entry";
 import Episode from "./pages/Episode";
 import Actor from "./pages/Actor";
+import Character from "./pages/Character";
 
 function App() {
   return (
@@ -27,7 +28,8 @@ function App() {
 
         <Route path="/entry/:slug" element={<Entry />} />
         <Route path="/episode/:id" element={<Episode />} />
-        <Route path="/actor/:id" element={<Actor />} />
+        <Route path="/actor/:slug" element={<Actor />} />
+        <Route path="/character/:slug" element={<Character />} />
       </Routes>
     </BrowserRouter>
   );

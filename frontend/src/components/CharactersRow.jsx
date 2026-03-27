@@ -44,7 +44,7 @@ export default function CharactersRow({ cast = [] }) {
               }}
             />
 
-            <Typography fontSize="0.85rem">
+            <Typography fontSize="0.85rem" onClick={() => navigate(`/characters/${c.character?.slug}`)}>
               {c.character?.name}
             </Typography>
 

@@ -11,6 +11,11 @@ const CharacterModel = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    slug: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+    },
     image: DataTypes.STRING,
     description: DataTypes.TEXT,
   });

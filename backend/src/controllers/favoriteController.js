@@ -78,3 +78,35 @@ export const getActorFavoritesTrending = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getCharacterFavoritesTrending = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const favorites = await Favorite.findAll({
+      where: {
+        targetId: id,
+        targetType: "character",
+        createdAt: {
+          [Op.gte]: sevenDaysAgo,
+        },
+      },
+    });
+
+    const grouped = {};
+
+    favorites.forEach((fav) => {
+      const day = fav.createdAt.toISOString().split("T")[0];
+
+      if (!grouped[day]) grouped[day] = { count: 0 };
+
+      grouped[day].count += 1;
+    });
+
+    res.json(grouped);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
