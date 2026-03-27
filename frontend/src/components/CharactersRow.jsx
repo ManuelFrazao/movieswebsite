@@ -15,6 +15,8 @@ export default function CharactersRow({ cast = [] }) {
     }
   });
 
+  
+
   return (
     <Box mt={2}>
       <Box
@@ -38,7 +40,7 @@ export default function CharactersRow({ cast = [] }) {
               component="img"
               src={c.character?.image || "/placeholder.jpg"}
               sx={{
-                width: "100%",
+                width: 120,
                 height: 150,
                 objectFit: "cover",
                 borderRadius: 2,

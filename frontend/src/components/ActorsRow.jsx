@@ -28,7 +28,7 @@ export default function ActorsRow({ cast = [] }) {
               component="img"
               src={c.actor?.profileImage || "/placeholder.jpg"}
               sx={{
-                width: "100%",
+                width: 120,
                 height: 150,
                 objectFit: "cover",
                 borderRadius: 2,

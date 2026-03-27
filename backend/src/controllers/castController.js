@@ -38,10 +38,7 @@ export const getEntryCast = async (req, res) => {
     const { entryId } = req.params;
 
     const cast = await Cast.findAll({
-      where: {
-        entryId,
-        episodeId: null, // 🔥 IMPORTANTE
-      },
+      where: { entryId },
       include: [
         { model: Actor, as: "actor" },
         { model: Character, as: "character" },
@@ -49,7 +46,21 @@ export const getEntryCast = async (req, res) => {
       order: [["order", "ASC"]],
     });
 
-    res.json(cast);
+    const uniqueCastMap = new Map();
+
+    cast.forEach((c) => {
+      const key = `${c.actorId}-${c.characterId}`;
+
+      if (!uniqueCastMap.has(key) || c.episodeId === null) {
+        uniqueCastMap.set(key, c);
+      }
+    });
+
+    const uniqueCast = Array.from(uniqueCastMap.values());
+
+
+    res.json(uniqueCast);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

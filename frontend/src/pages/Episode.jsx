@@ -40,6 +40,20 @@ export default function Entry() {
   const [isWatchlist, setIsWatchlist] = useState(false);
   const [cast, setCast] = useState([]);
 
+  const fetchCast = async () => {
+    try {
+      const res = await api.get(`/cast/episode/${episode.id}`);
+      setCast(res.data);
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (!episode?.id) return;
+    fetchCast();
+  }, [episode?.id]);
+
   useEffect(() => {
     if (!episode?.entryId) return;
 
