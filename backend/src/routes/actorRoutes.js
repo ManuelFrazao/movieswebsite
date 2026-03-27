@@ -14,7 +14,7 @@ const router = express.Router();
 router.post("/", protect, isAdmin, upload.single("image"), createActor);
 router.get("/", getActors);
 router.get("/search", searchActors);
-router.get("/:slug", getActorBySlug);
+router.get("/slug/:slug", getActorBySlug);
 router.put("/:id", protect, isAdmin, upload.single("image"), updateActor);
 
 export default router;
