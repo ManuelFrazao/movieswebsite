@@ -76,9 +76,9 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 0 10px;
   justify-content: center;
   margin-bottom: 0.5rem;
+  min-width: 240px;
 }
 
 .secondary-btn {
@@ -357,13 +357,12 @@
 }
 
 .movie-info-graphs {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  justify-items: center;
   width: max-content;
   height: max-content;
   padding-bottom: 1rem;
+  margin: 0 auto;
 }
 
 .entry-trend {
@@ -465,7 +464,7 @@
 .movie-info-rating {
   display: flex;
   align-items: center;
-  margin: 0.5rem 0;
+  margin: 0.5rem 0 0.7rem 0;
   gap: 10px;
 }
 
@@ -564,7 +563,7 @@ svg {
   height: 150px;
   background: #333;
   border-radius: 8px;
-  margin: 0.5rem 1rem 2rem 0;
+  margin: 0 1rem 2rem 0;
   justify-items: center;
   align-items: center;
 }
@@ -626,13 +625,28 @@ svg {
   overflow: auto;
 }
 
+.entry-episode-graphs{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.graph-rating-distribuition{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 120px;
+  padding: 0 20px;
+  justify-content: center;
+}
+
 @media (width <= 1100px) {
   .episode-row {
     display: block;
   }
 }
 
-@media (width <= 900px) {
+@media (width <= 960px) {
   /*Overview tab*/
   .movie-info-content {
     display: block;
@@ -651,21 +665,21 @@ svg {
     overflow: auto;
   }
   .entry-contents {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    margin: 0 auto;
+    display: flex;
     padding: 1rem 0rem;
+    gap: 1.125rem;
   }
   .entry-contents-card {
     width: 150px;
-    margin: 0.5rem 1rem 0.5rem 0;
+    margin: 0;
   }
   .entry-contents-card span {
     display: block ruby;
   }
   .actions {
-    padding: 1rem 3rem;
+    padding: 1rem 0rem;
     max-width: 280px;
+    min-width: 220px;
     margin: 0 auto;
   }
 
@@ -680,14 +694,32 @@ svg {
   .episode-row img {
     margin-bottom: 1rem;
   }
+  .entry-episode-graphs{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    flex-direction: row;
+    margin: 0 auto;
+    padding-top: 1rem;
+    justify-items: center;
+    align-items: center;
+  }
+  .trend-wrapper {
+    margin: 0;
+    padding: 0;
+  }
+  .graph-rating-distribuition{
+    padding: 0;
+  }
 }
 
-@media (width <= 550px) {
+@media (width <= 740px) {
   .entry-contents {
     display: grid;
     grid-template-columns: 1fr 1fr;
     margin: 0 auto;
-    padding: 1rem 0rem;
+    padding: 0 0 1rem 0;
+    justify-items: center;
+    gap: 1.125rem;
   }
   .episode-info {
     margin: 0 15px;
@@ -695,5 +727,14 @@ svg {
   .episode-info p {
     width: fit-content;
     margin-bottom: 1rem;
+  }
+  .entry-episode-graphs{
+    display: grid;
+    grid-template-columns: 2fr;
+    margin: 0 auto;
+    padding-top: 1rem;
+    justify-items: center;
+    align-items: center;
+    gap: 0.5rem;
   }
 }

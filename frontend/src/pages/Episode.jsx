@@ -815,12 +815,16 @@ export default function Entry() {
           Details
         </button>
 
-        <button
-          className={activeTab === "statistics" ? "active" : ""}
-          onClick={() => setActiveTab("statistics")}
-        >
-          Statistics
-        </button>
+        {stats?.totalVotes > 0 && (
+          <>
+            <button
+              className={activeTab === "statistics" ? "active" : ""}
+              onClick={() => setActiveTab("statistics")}
+            >
+              Statistics
+            </button>
+          </>
+        )}
 
         <button
           className={activeTab === "reviews" ? "active" : ""}
@@ -889,40 +893,48 @@ export default function Entry() {
                   )}
                 </div>
                 <div className="movie-info-details">
-                  <h2>Synopsis</h2>
-                  <p
-                    style={{
-                      fontSize: "0.85rem",
-                    }}
-                  >
-                    {episode.description}
-                  </p>
+                  {episode.description !== "" && (
+                    <>
+                      <h2>Synopsis</h2>
+                      <p
+                        style={{
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {episode.description}
+                      </p>
+                    </>
+                  )}
                   <>
-                    <div className="movie-info-rating">
-                      <div style={{ display: "inline-block" }}>
-                        <RatingBadge
-                          value={stats?.averageRating}
-                          votes={formatVotes(stats?.totalVotes)}
-                          size="large"
-                        />
-                      </div>
-                      {episode.airDate &&
-                        new Date(episode.airDate) <= new Date() && (
-                          <button
-                            className="rate-btn"
-                            onClick={() =>
-                              setRatingModal({
-                                open: true,
-                                episodeId: episode.id,
-                                entryId: null,
-                              })
-                            }
-                            style={{ color: "#639ef7" }}
-                          >
-                            Rate
-                          </button>
-                        )}
-                    </div>
+                    {stats?.totalVotes > 0 && (
+                      <>
+                        <div className="movie-info-rating">
+                          <div style={{ display: "inline-block" }}>
+                            <RatingBadge
+                              value={stats?.averageRating}
+                              votes={formatVotes(stats?.totalVotes)}
+                              size="large"
+                            />
+                          </div>
+                          {episode.airDate &&
+                            new Date(episode.airDate) <= new Date() && (
+                              <button
+                                className="rate-btn"
+                                onClick={() =>
+                                  setRatingModal({
+                                    open: true,
+                                    episodeId: episode.id,
+                                    entryId: null,
+                                  })
+                                }
+                                style={{ color: "#639ef7" }}
+                              >
+                                Rate
+                              </button>
+                            )}
+                        </div>
+                      </>
+                    )}
                   </>
                   <div className="entry-contents">
                     <div className="entry-contents-card">
@@ -1042,7 +1054,7 @@ export default function Entry() {
                           <p
                             style={{ fontSize: "0.8rem", marginLeft: "0.3rem" }}
                           >
-                            ({cast.length})
+                            {cast.length > 0 && <>({cast.length})</>}
                           </p>
                         </h2>
                         <span onClick={() => setActiveTab("cast")}>
@@ -1063,7 +1075,7 @@ export default function Entry() {
                           <p
                             style={{ fontSize: "0.8rem", marginLeft: "0.3rem" }}
                           >
-                            ({totalCharacters})
+                            {totalCharacters > 0 && <>({totalCharacters})</>}
                           </p>
                         </h2>
                         <span onClick={() => setActiveTab("cast")}>

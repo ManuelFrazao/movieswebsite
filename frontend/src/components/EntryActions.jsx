@@ -94,6 +94,7 @@ export default function EntryActions({
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
+            marginRight: "0.7rem"
           }}
         >
           {/* quando o user adicionar a watchlist este span deveria mudar o nome para In watchlist*/}
@@ -102,7 +103,7 @@ export default function EntryActions({
           {watchlistCount > 0 && (
           <span
             style={{
-              fontSize: "0.65rem",
+              fontSize: "0.7rem",
               marginTop: "0.2rem",
             }}
           >
@@ -140,6 +141,7 @@ export default function EntryActions({
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
+            marginRight: "0.7rem"
           }}
         >
           <span>{isFavorite ? "In favorites" : "Add to favorites"}</span>
@@ -147,7 +149,7 @@ export default function EntryActions({
           {favoritesCount > 0 && (
             <span
               style={{
-                fontSize: "0.65rem",
+                fontSize: "0.7rem",
                 marginTop: "0.2rem",
               }}
             >

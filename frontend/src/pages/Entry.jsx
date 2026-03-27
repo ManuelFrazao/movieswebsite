@@ -592,15 +592,7 @@ export default function Entry() {
 
     return (
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          height: "120px",
-          padding: "0 20px",
-          justifyContent: "center",
-        }}
-      >
+      className="graph-rating-distribuition">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
           const value = data[num] || 0;
 
@@ -1694,13 +1686,16 @@ export default function Entry() {
         >
           Images
         </button>
-
-        <button
-          className={activeTab === "statistics" ? "active" : ""}
-          onClick={() => setActiveTab("statistics")}
-        >
-          Statistics
-        </button>
+        {entry.totalVotes > 0 && (
+          <>
+            <button
+              className={activeTab === "statistics" ? "active" : ""}
+              onClick={() => setActiveTab("statistics")}
+            >
+              Statistics
+            </button>
+          </>
+        )}
 
         <button
           className={activeTab === "reviews" ? "active" : ""}
@@ -1772,49 +1767,57 @@ export default function Entry() {
                   )}
                 </div>
                 <div className="movie-info-details">
-                  <h2>Synopsis</h2>
-                  <p
-                    style={{
-                      fontSize: "0.85rem",
-                    }}
-                  >
-                    {entry.description}
-                  </p>
-                  <>
-                    <div className="movie-info-rating">
-                      <div
-                        onMouseEnter={(e) => {
-                          setHoverEntry(true);
-                          setHoverPosition({ x: e.clientX, y: e.clientY });
-                          fetchEntryDistribution();
+                  {entry.description !== "" && (
+                    <>
+                      <h2>Synopsis</h2>
+                      <p
+                        style={{
+                          fontSize: "0.85rem",
                         }}
-                        onMouseLeave={() => setHoverEntry(false)}
-                        style={{ display: "inline-block" }}
                       >
-                        <RatingBadge
-                          value={entry.topRank / 10}
-                          votes={formatVotes(entry.totalVotes)}
-                          size="large"
-                        />
-                      </div>
-                      {entry.type === "movie" &&
-                        entry.releaseDate &&
-                        new Date(entry.releaseDate) <= new Date() && (
-                          <button
-                            className="rate-btn"
-                            onClick={() =>
-                              setRatingModal({
-                                open: true,
-                                entryId: entry.id, // ✅ correto
-                                episodeId: null,
-                              })
-                            }
-                            style={{ color: "#639ef7" }}
+                        {entry.description}
+                      </p>
+                    </>
+                  )}
+                  <>
+                    {entry.totalVotes > 0 && (
+                      <>
+                        <div className="movie-info-rating">
+                          <div
+                            onMouseEnter={(e) => {
+                              setHoverEntry(true);
+                              setHoverPosition({ x: e.clientX, y: e.clientY });
+                              fetchEntryDistribution();
+                            }}
+                            onMouseLeave={() => setHoverEntry(false)}
+                            style={{ display: "inline-block" }}
                           >
-                            Rate
-                          </button>
-                        )}
-                    </div>
+                            <RatingBadge
+                              value={entry.topRank / 10}
+                              votes={formatVotes(entry.totalVotes)}
+                              size="large"
+                            />
+                          </div>
+                          {entry.type === "movie" &&
+                            entry.releaseDate &&
+                            new Date(entry.releaseDate) <= new Date() && (
+                              <button
+                                className="rate-btn"
+                                onClick={() =>
+                                  setRatingModal({
+                                    open: true,
+                                    entryId: entry.id, // ✅ correto
+                                    episodeId: null,
+                                  })
+                                }
+                                style={{ color: "#639ef7" }}
+                              >
+                                Rate
+                              </button>
+                            )}
+                        </div>
+                      </>
+                    )}
                   </>
                   <div className="entry-contents">
                     <div className="entry-contents-card">
@@ -1933,7 +1936,7 @@ export default function Entry() {
                           <p
                             style={{ fontSize: "0.8rem", marginLeft: "0.3rem" }}
                           >
-                            ({cast.length})
+                            {cast.length > 0 && <>({cast.length})</>}
                           </p>
                         </h2>
                         <span onClick={() => setActiveTab("cast")}>
@@ -1954,7 +1957,7 @@ export default function Entry() {
                           <p
                             style={{ fontSize: "0.8rem", marginLeft: "0.3rem" }}
                           >
-                            ({totalCharacters})
+                            {totalCharacters > 0 && <>({totalCharacters})</>}
                           </p>
                         </h2>
                         <span onClick={() => setActiveTab("cast")}>
@@ -2186,12 +2189,7 @@ export default function Entry() {
 
                               {episodeTrends[ep.id] && (
                                 <div
-                                  style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                  }}
-                                >
+                                className="entry-episode-graphs">
                                   <TrendGraphEpisode
                                     data={episodeTrends[ep.id] || {}}
                                   />
