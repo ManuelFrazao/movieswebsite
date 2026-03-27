@@ -2,7 +2,7 @@ import { sequelize, Cast, Character, Actor } from "../models/index.js";
 
 export const addCast = async (req, res) => {
   try {
-    const { entryId, characterId, actorId, roleType, order } = req.body;
+    const { entryId, characterId, actorId, roleType, order, episodeId, } = req.body;
 
     if (!actorId || !characterId) {
       return res.status(400).json({
@@ -13,6 +13,7 @@ export const addCast = async (req, res) => {
     const cast = await Cast.create({
       entryId,
       characterId,
+      episodeId: episodeId || null,
       actorId,
       roleType,
       order,
