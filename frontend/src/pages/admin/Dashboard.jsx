@@ -548,7 +548,7 @@ export default function Dashboard() {
         {activeTab === "episodes" && (
           <Box>
             <Typography variant="h5" mb={2}>
-              Characters
+              Episodes
             </Typography>
             <TextField
               select

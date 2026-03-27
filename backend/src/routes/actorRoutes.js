@@ -5,6 +5,7 @@ import {
   getActorBySlug,
   updateActor,
   searchActors,
+  getActorById,
 } from "../controllers/actorController.js";
 import upload from "../middleware/upload.js";
 import { protect, isAdmin } from "../middleware/authMiddleware.js";
@@ -16,5 +17,6 @@ router.get("/", getActors);
 router.get("/search", searchActors);
 router.get("/slug/:slug", getActorBySlug);
 router.put("/:id", protect, isAdmin, upload.single("image"), updateActor);
+router.get("/:id", getActorById);
 
 export default router;

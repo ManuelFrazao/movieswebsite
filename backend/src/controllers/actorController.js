@@ -151,3 +151,19 @@ export const searchActors = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getActorById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const actor = await Actor.findByPk(id);
+
+    if (!actor) {
+      return res.status(404).json({ message: "Actor not found" });
+    }
+
+    res.json(actor);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
