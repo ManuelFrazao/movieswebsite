@@ -647,6 +647,11 @@ export default function Dashboard() {
 
                 { field: "number", headerName: "Ep", width: 80 },
                 { field: "title", headerName: "Title", flex: 1 },
+                {
+                  field: "castCount",
+                  headerName: "Cast",
+                  width: 100,
+                },
 
                 {
                   field: "actions",

@@ -4,6 +4,7 @@ import {
   Entry,
   Favorite,
   Watchlist,
+  Cast,
 } from "../models/index.js";
 import cloudinary from "../utils/cloudinary.js";
 import { Op } from "sequelize";
