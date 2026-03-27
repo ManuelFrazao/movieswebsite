@@ -40,17 +40,17 @@ export default function Dashboard() {
   const [selectedSeason, setSelectedSeason] = useState("");
 
   const fetchSeasons = async (entryId) => {
-  const res = await api.get(`/seasons/entry/${entryId}`);
-  setSeasons(res.data);
-};
+    const res = await api.get(`/seasons/entry/${entryId}`);
+    setSeasons(res.data);
+  };
 
-const fetchEpisodes = async (seasonId) => {
-  const res = await api.get(`/episodes/season/${seasonId}`);
-  setEpisodes(res.data);
-};
+  const fetchEpisodes = async (seasonId) => {
+    const res = await api.get(`/episodes/season/${seasonId}`);
+    setEpisodes(res.data);
+  };
 
   const fetchCharacters = async (entryId) => {
-    const res = await api.get(`/characters/entry/${entryId}`);
+    const res = await api.get(`cast/characters/entry/${entryId}`);
     setCharacters(res.data);
   };
 
@@ -62,18 +62,6 @@ const fetchEpisodes = async (seasonId) => {
   useEffect(() => {
     fetchActors();
   }, []);
-
-  const actorColumns = [
-    {
-      field: "image",
-      headerName: "Image",
-      renderCell: (params) => (
-        <img src={params.value} style={{ width: 40, borderRadius: 6 }} />
-      ),
-      width: 80,
-    },
-    { field: "name", headerName: "Name", flex: 1 },
-  ];
 
   useEffect(() => {
     const t = localStorage.getItem("token");
@@ -156,11 +144,66 @@ const fetchEpisodes = async (seasonId) => {
     navigate("/");
   };
 
+  const handleDeleteActor = async (id) => {
+    if (!window.confirm("Delete actor?")) return;
+
+    await api.delete(`/actors/${id}`);
+
+    setActors(actors.filter((a) => a.id !== id));
+  };
+
+  const handleDeleteCharacter = async (id) => {
+    if (!window.confirm("Delete character?")) return;
+
+    await api.delete(`/characters/${id}`);
+
+    setCharacters(characters.filter((c) => c.id !== id));
+  };
+
+  const handleDeleteEpisode = async (id) => {
+    if (!window.confirm("Delete episode?")) return;
+
+    await api.delete(`/episodes/${id}`);
+
+    setEpisodes(episodes.filter((e) => e.id !== id));
+  };
+
   // 🔥 TABLE COLUMNS
 
   const userColumns = [
     { field: "email", headerName: "Email", flex: 1 },
     { field: "role", headerName: "Role", width: 120 },
+  ];
+
+  const actorColumns = [
+    {
+      field: "image",
+      headerName: "Image",
+      renderCell: (params) => (
+        <img src={params.value} style={{ width: 40, borderRadius: 6 }} />
+      ),
+      width: 80,
+    },
+    { field: "name", headerName: "Name", flex: 1 },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button onClick={() => navigate(`/admin/actors/${params.row.id}`)}>
+            Edit
+          </Button>
+
+          <Button
+            color="error"
+            onClick={() => handleDeleteActor(params.row.id)}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   const entryColumns = [
@@ -469,18 +512,109 @@ const fetchEpisodes = async (seasonId) => {
             </TextField>
             <DataGrid
               rows={characters}
-              columns={[{ field: "name", headerName: "Name", flex: 1 }]}
+              columns={[
+                { field: "name", headerName: "Name", flex: 1 },
+
+                {
+                  field: "actions",
+                  headerName: "Actions",
+                  width: 200,
+                  renderCell: (params) => (
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button
+                        onClick={() =>
+                          navigate(`/admin/characters/${params.row.id}`)
+                        }
+                      >
+                        Edit
+                      </Button>
+
+                      <Button
+                        color="error"
+                        onClick={() => handleDeleteCharacter(params.row.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  ),
+                },
+              ]}
               getRowId={(row) => row.id}
               autoHeight
             />
           </Box>
         )}
 
-        {activeTab === "episd" && (
+        {activeTab === "episodes" && (
           <Box>
-                        <Typography variant="h5" mb={2}>
+            <Typography variant="h5" mb={2}>
               Characters
             </Typography>
+            <TextField
+              select
+              label="Entry"
+              value={selectedEntry}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedEntry(val);
+                fetchSeasons(val);
+              }}
+            >
+              {entries.map((e) => (
+                <MenuItem key={e.id} value={e.id}>
+                  {e.title}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label="Season"
+              value={selectedSeason}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedSeason(val);
+                fetchEpisodes(val);
+              }}
+            >
+              {seasons.map((s) => (
+                <MenuItem key={s.id} value={s.id}>
+                  Season {s.number}
+                </MenuItem>
+              ))}
+            </TextField>
+            <DataGrid
+              rows={episodes}
+              columns={[
+                { field: "number", headerName: "Ep", width: 80 },
+                { field: "title", headerName: "Title", flex: 1 },
+
+                {
+                  field: "actions",
+                  headerName: "Actions",
+                  width: 200,
+                  renderCell: (params) => (
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button
+                        onClick={() =>
+                          navigate(`/admin/episodes/${params.row.id}`)
+                        }
+                      >
+                        Edit
+                      </Button>
+
+                      <Button
+                        color="error"
+                        onClick={() => handleDeleteEpisode(params.row.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  ),
+                },
+              ]}
+              getRowId={(row) => row.id}
+              autoHeight
+            />
           </Box>
         )}
       </Box>

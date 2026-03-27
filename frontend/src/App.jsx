@@ -8,6 +8,9 @@ import Entry from "./pages/Entry";
 import Episode from "./pages/Episode";
 import Actor from "./pages/Actor";
 import Character from "./pages/Character";
+import EditActor from "./pages/admin/EditActor";
+import EditCharacter from "./pages/admin/EditCharacter";
+import EditEpisode from "./pages/admin/EditEpisode";
 
 function App() {
   return (
@@ -25,6 +28,9 @@ function App() {
           }
         />
         <Route path="/admin/entries/:id" element={<EditEntry />} />
+        <Route path="/admin/actors/:id" element={<EditActor />} />
+        <Route path="/admin/characters/:id" element={<EditCharacter />} />
+        <Route path="/admin/episodes/:id" element={<EditEpisode />} />
 
         <Route path="/entry/:slug" element={<Entry />} />
         <Route path="/episode/:id" element={<Episode />} />
