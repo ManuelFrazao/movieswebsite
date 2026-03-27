@@ -1015,7 +1015,7 @@ export default function Entry() {
                             {reviews.length === 1 ? "review" : "reviews"}
                           </span>
                         ) : (
-                          <span>No reviews</span>
+                          <span>Reviews</span>
                         )}
                       </div>
                     </div>
