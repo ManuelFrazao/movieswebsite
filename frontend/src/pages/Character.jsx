@@ -265,7 +265,7 @@ export default function Character() {
                   />
                   <EntryActions
                     entityId={entry.id}
-                    type="actor"
+                    type="character"
                     isFavorite={entry.isFavorite}
                     favoritesCount={entry.favoritesCount}
                     onUpdate={(data) =>

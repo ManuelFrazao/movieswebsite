@@ -113,6 +113,10 @@ export const getCharacterBySlug = async (req, res) => {
           model: CharacterAlias,
           as: "aliases",
         },
+        {
+          association: "castRoles",
+          include: ["actor", "entry"],
+        },
       ],
       order: [[{ model: CharacterAlias, as: "aliases" }, "startSeason", "ASC"]],
     });
@@ -121,8 +125,20 @@ export const getCharacterBySlug = async (req, res) => {
       return res.status(404).json({ message: "Character not found" });
     }
 
+    // 🔥 contar favoritos
+    const favoritesCount = await Favorite.count({
+      where: {
+        targetId: character.id,
+        targetType: "character",
+      },
+    });
+
+    // 🔥 adicionar ao objeto
+    character.dataValues.favoritesCount = favoritesCount;
+
     res.json(character);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
