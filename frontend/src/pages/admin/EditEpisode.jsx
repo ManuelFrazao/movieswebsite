@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "../../services/api";
 import CastManager from "../../components/CastManager";
+import CastSelectorFromEntry from "../../components/CastSelectorFromEntry";
 
 import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 
@@ -12,6 +13,31 @@ export default function EditEpisode() {
   const [episode, setEpisode] = useState(null);
   const [image, setImage] = useState(null);
   const [castData, setCastData] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [entryCast, setEntryCast] = useState([]);
+
+  const fetchEntryCast = async (entryId) => {
+    try {
+      const res = await api.get(`/cast/entry/${entryId}`);
+
+      const formatted = res.data.map((c) => ({
+        id: c.id,
+        actor: c.actor,
+        character: c.character,
+        roleType: c.roleType,
+        order: c.order,
+      }));
+
+      setEntryCast(formatted);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  useEffect(() => {
+    if (episode?.season?.entry?.id) {
+      fetchEntryCast(episode.season.entry.id);
+    }
+  }, [episode]);
 
   const fetchCast = async () => {
     try {
@@ -46,6 +72,7 @@ export default function EditEpisode() {
   }, [id]);
 
   const handleSave = async () => {
+    setSaving(true);
     try {
       const formData = new FormData();
 
@@ -54,7 +81,7 @@ export default function EditEpisode() {
       formData.append("duration", episode.duration || "");
 
       if (episode.airDate) {
-        formData.append("airDate", episode.airDate);
+        formData.append("airDate", episode.airDate?.split("T")[0] || "");
       }
 
       if (image) formData.append("image", image);
@@ -65,6 +92,8 @@ export default function EditEpisode() {
       fetchEpisode();
     } catch (err) {
       console.error(err);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -72,8 +101,13 @@ export default function EditEpisode() {
     try {
       const validCast = castData.filter((c) => c.actor && c.character);
 
+      if (validCast.length === 0) {
+        if (!window.confirm("This will remove all cast. Continue?")) return;
+      }
+
       await api.post("/cast/bulk", {
-        episodeId: id, // 👈 IMPORTANTE
+        entryId: episode.season.entry.id,
+        episodeId: id,
         cast: validCast.map((c, index) => ({
           actorId: c.actor.id,
           characterId: c.character.id,
@@ -81,6 +115,8 @@ export default function EditEpisode() {
           order: index + 1,
         })),
       });
+
+      await fetchCast();
 
       alert("Cast saved!");
     } catch (err) {
@@ -168,7 +204,11 @@ export default function EditEpisode() {
 
           <Box mt={2}>
             <img
-              src={image ? URL.createObjectURL(image) : episode.thumbnail}
+              src={
+                image
+                  ? URL.createObjectURL(image)
+                  : episode.thumbnail || "/placeholder.jpg"
+              }
               alt=""
               style={{
                 width: 160,
@@ -191,6 +231,17 @@ export default function EditEpisode() {
             Cast
           </Typography>
 
+          <CastSelectorFromEntry
+            entryCast={entryCast}
+            castData={castData}
+            setCastData={setCastData}
+          />
+
+          {/* 🔥 CUSTOM CAST */}
+          <Typography variant="subtitle1" mt={3}>
+            Custom Cast
+          </Typography>
+
           <CastManager
             castData={castData}
             setCastData={setCastData}
@@ -204,8 +255,8 @@ export default function EditEpisode() {
 
         {/* ACTIONS */}
         <Box mt={4} display="flex" justifyContent="flex-end">
-          <Button variant="contained" onClick={handleSave}>
-            Save Changes
+          <Button variant="contained" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save Changes"}
           </Button>
         </Box>
       </Paper>

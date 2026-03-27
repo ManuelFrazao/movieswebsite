@@ -60,7 +60,7 @@ export const replaceCast = async (req, res) => {
 
     const newCast = await Cast.bulkCreate(
       cast.map((c) => ({
-        entryId: entryId || null,
+        entryId: entryId,
         episodeId: episodeId || null,
         actorId: c.actorId,
         characterId: c.characterId,
