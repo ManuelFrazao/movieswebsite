@@ -68,9 +68,21 @@ export const getEpisodesBySeason = async (req, res) => {
 
     const episodes = await Episode.findAll({
       where: { seasonId },
+      include: [
+        {
+          model: Cast,
+          as: "cast",
+          attributes: ["id"],
+        },
+      ],
     });
 
-    res.json(episodes);
+    const formatted = episodes.map((ep) => ({
+      ...ep.toJSON(),
+      castCount: ep.cast?.length || 0,
+    }));
+
+    res.json(formatted);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
