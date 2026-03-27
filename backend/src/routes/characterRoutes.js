@@ -11,7 +11,7 @@ import { protect, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", createCharacter);
+router.post("/", upload.single("image"), createCharacter);
 router.get("/search", searchCharacters);
 router.get("/slug/:slug", getCharacterBySlug);
 router.get("/:id", getCharacterById);

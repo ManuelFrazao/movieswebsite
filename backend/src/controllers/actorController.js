@@ -20,10 +20,16 @@ export const createActor = async (req, res) => {
   try {
     let imageUrl = null;
 
-    if (req.file) {
+    if (req.file && req.file.buffer) {
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-        { folder: "actors" }, // 👈 different folder
+        {
+          folder: "actors",
+          transformation: [
+            { width: 300, height: 450, crop: "fill" },
+            { quality: "auto" },
+          ],
+        }
       );
 
       imageUrl = result.secure_url;
@@ -99,16 +105,30 @@ export const updateActor = async (req, res) => {
 
     let imageUrl = actor.profileImage;
 
+    // 🔥 upload nova imagem
     if (req.file && req.file.buffer) {
+      // apagar imagem antiga (opcional mas recomendado)
+      if (actor.profileImage) {
+        const publicId = actor.profileImage.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`actors/${publicId}`);
+      }
+
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-        { folder: "actors" },
+        {
+          folder: "actors",
+          transformation: [
+            { width: 300, height: 450, crop: "fill" }, // 🔥 portrait style
+            { quality: "auto" },
+          ],
+        }
       );
 
       imageUrl = result.secure_url;
     }
 
     let slug = actor.slug;
+
     if (req.body.name && req.body.name !== actor.name) {
       slug = generateSlug(req.body.name);
     }
@@ -121,6 +141,7 @@ export const updateActor = async (req, res) => {
 
     res.json(actor);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -163,6 +184,30 @@ export const getActorById = async (req, res) => {
     }
 
     res.json(actor);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const deleteActor = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const actor = await Actor.findByPk(id);
+
+    if (!actor) {
+      return res.status(404).json({ message: "Actor not found" });
+    }
+
+    // 🔥 apagar imagem do cloudinary
+    if (actor.profileImage) {
+      const publicId = actor.profileImage.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(`actors/${publicId}`);
+    }
+
+    await actor.destroy();
+
+    res.json({ message: "Actor deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

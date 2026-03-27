@@ -32,7 +32,7 @@ export default function EditCharacter() {
     await api.put(`/characters/${id}`, formData);
 
     // 🔥 salvar aliases
-    await api.post(`/character-alias/bulk`, {
+    await api.post("/character-aliases/bulk", {
       characterId: id,
       aliases,
     });

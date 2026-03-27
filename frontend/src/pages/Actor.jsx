@@ -16,7 +16,7 @@ export default function Actor() {
   useEffect(() => {
     const fetchEntry = async () => {
       try {
-        const res = await api.get(`/actors/${slug}`);
+        const res = await api.get(`/actors/slug/${slug}`);
         setEntry(res.data);
       } catch (err) {
         console.error(err.response?.data || err.message);

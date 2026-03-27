@@ -1,5 +1,6 @@
 import { Character, CharacterAlias, Favorite } from "../models/index.js";
 import { Op } from "sequelize";
+import cloudinary from "../utils/cloudinary.js";
 
 const generateSlug = (name) => {
   return (
@@ -24,7 +25,6 @@ export const createCharacter = async (req, res) => {
       return res.status(400).json({ message: "Name is required" });
     }
 
-    // 🔥 CHECK IF EXISTS FIRST
     const existing = await Character.findOne({
       where: {
         name: {
@@ -33,17 +33,25 @@ export const createCharacter = async (req, res) => {
       },
     });
 
-    if (existing) {
-      return res.json(existing); // ✅ return existing instead of creating duplicate
+    if (existing) return res.json(existing);
+
+    let imageUrl = null;
+
+    if (req.file && req.file.buffer) {
+      const result = await cloudinary.uploader.upload(
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        { folder: "characters" },
+      );
+
+      imageUrl = result.secure_url;
     }
 
-    // 🔥 gerar slug
     const slug = generateSlug(name);
 
-    // ✅ CREATE NEW
     const character = await Character.create({
       name,
       slug,
+      image: imageUrl,
     });
 
     res.json(character);
@@ -153,18 +161,37 @@ export const updateCharacter = async (req, res) => {
       return res.status(404).json({ message: "Character not found" });
     }
 
-    const { name, description } = req.body;
+    let imageUrl = character.image;
 
-    // 🔥 atualizar campos
-    if (name) character.name = name;
-    if (description) character.description = description;
+    // 🔥 upload imagem (igual ao episode)
+    if (req.file && req.file.buffer) {
+      // apagar antiga (opcional mas recomendado)
+      if (character.image) {
+        const publicId = character.image.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`characters/${publicId}`);
+      }
 
-    // 🔥 imagem (se existir)
-    if (req.file) {
-      character.image = req.file.path;
+      const result = await cloudinary.uploader.upload(
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        {
+          folder: "characters",
+          transformation: [{ width: 400, crop: "scale" }, { quality: "auto" }],
+        },
+      );
+
+      imageUrl = result.secure_url;
     }
 
-    await character.save();
+    let slug = character.slug;
+    if (req.body.name && req.body.name !== character.name) {
+      slug = generateSlug(req.body.name);
+    }
+
+    await character.update({
+      ...req.body,
+      slug,
+      image: imageUrl,
+    });
 
     res.json(character);
   } catch (err) {

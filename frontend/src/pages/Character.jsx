@@ -16,7 +16,7 @@ export default function Character() {
   useEffect(() => {
     const fetchEntry = async () => {
       try {
-        const res = await api.get(`/characters/${slug}`);
+        const res = await api.get(`/characters/slug/${slug}`);
         setEntry(res.data);
       } catch (err) {
         console.error(err.response?.data || err.message);

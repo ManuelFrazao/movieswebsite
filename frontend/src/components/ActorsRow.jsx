@@ -36,7 +36,7 @@ export default function ActorsRow({ cast = [] }) {
               }}
             />
 
-            <Typography fontSize="0.85rem" onClick={() => navigate(`/actor/slug/${c.actor?.slug}`)}>
+            <Typography fontSize="0.85rem" onClick={() => navigate(`/actor/${c.actor?.slug}`)}>
               {c.actor?.name}
             </Typography>
 
