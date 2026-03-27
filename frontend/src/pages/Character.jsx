@@ -26,9 +26,9 @@ export default function Character() {
     fetchEntry();
   }, [slug]);
 
-  const fetchTrend = async (actorId) => {
+  const fetchTrend = async (characterId) => {
     try {
-      const res = await api.get(`/favorites/character/${actorId}/trending`);
+      const res = await api.get(`/favorites/character/${characterId}/trending`);
       setEntryTrend(res.data);
     } catch (err) {
       console.error(err.response?.data || err.message);

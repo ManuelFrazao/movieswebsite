@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/", createCharacter);
 router.get("/search", searchCharacters);
-router.get("/:id", getCharacterById);
 router.get("/:slug", getCharacterBySlug);
+router.get("/:id", getCharacterById);
 
 export default router;

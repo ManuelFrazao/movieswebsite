@@ -1,6 +1,8 @@
 import { Box, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function CharactersRow({ cast = [] }) {
+  const navigate = useNavigate();
   if (!cast.length) return null;
 
   const uniqueCharacters = [];
@@ -44,7 +46,7 @@ export default function CharactersRow({ cast = [] }) {
               }}
             />
 
-            <Typography fontSize="0.85rem" onClick={() => navigate(`/characters/${c.character?.slug}`)}>
+            <Typography fontSize="0.85rem" onClick={() => navigate(`/character/${c.character?.slug}`)}>
               {c.character?.name}
             </Typography>
 
