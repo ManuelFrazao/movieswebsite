@@ -74,6 +74,7 @@ export const getEpisodesBySeason = async (req, res) => {
           model: Cast,
           as: "cast",
           attributes: ["id"],
+          required: false,
         },
       ],
     });
