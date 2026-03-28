@@ -81,8 +81,8 @@ function NextEpisodeCountdown({ seasons }) {
       }}
     >
       <p style={{ fontSize: "0.75rem", color: "#aaa", margin: "0 0 0.5rem" }}>
-        Next episode: S{nextEpisode.seasonNumber}E{nextEpisode.number} —{" "}
-        {nextEpisode.title}
+        Next episode: S{nextEpisode.seasonNumber}E{nextEpisode.number}{" "}
+        {nextEpisode.title !== "" && <>— {nextEpisode.title}</>}
       </p>
       <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
         {[

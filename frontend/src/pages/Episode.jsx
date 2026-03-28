@@ -851,6 +851,10 @@ export default function Entry() {
     cast.map((c) => c.character?.id).filter(Boolean),
   ).size;
 
+  const seasonNumber = entry?.seasons?.find((s) =>
+    s.episodes?.some((ep) => ep.id === episode.id),
+  )?.seasonNumber;
+
   return (
     <div className="entry">
       <Navbar />
@@ -878,7 +882,11 @@ export default function Entry() {
           </button>
 
           <div className="hero-content">
-            <h1>{episode.title}</h1>
+            <h1>
+              {episode.title?.trim()
+                ? episode.title
+                : `S${seasonNumber}.E${episode.number}`}
+            </h1>
 
             <div className="meta">
               <>
@@ -938,12 +946,6 @@ export default function Entry() {
           onClick={() => setActiveTab("cast")}
         >
           Cast
-        </button>
-        <button
-          className={activeTab === "characters" ? "active" : ""}
-          onClick={() => setActiveTab("characters")}
-        >
-          Characters
         </button>
         <button
           className={activeTab === "forums" ? "active" : ""}
@@ -1350,13 +1352,6 @@ export default function Entry() {
                 <ReviewCard key={r.id} review={r} />
               ))}
             </div>
-          </div>
-        )}
-
-        {/* 🔥 Characters */}
-        {activeTab === "cast" && (
-          <div className="cast">
-            <CastList cast={cast} />
           </div>
         )}
 
