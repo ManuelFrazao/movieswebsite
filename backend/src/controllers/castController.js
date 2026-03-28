@@ -37,21 +37,27 @@ export const getEntryCast = async (req, res) => {
   try {
     const { entryId } = req.params;
 
+    const roleOrder = { main: 0, supporting: 1, guest: 2 };
+
     const cast = await Cast.findAll({
       where: { entryId },
       include: [
         { model: Actor, as: "actor" },
         { model: Character, as: "character" },
       ],
-      order: [["order", "ASC"]],
+      order: [
+        // 🔥 sort by roleType so main always comes before supporting
+        [sequelize.literal(`CASE "roleType" WHEN 'main' THEN 0 WHEN 'supporting' THEN 1 WHEN 'guest' THEN 2 ELSE 3 END`), "ASC"],
+        ["order", "ASC"],
+      ],
     });
 
     const uniqueCastMap = new Map();
 
     cast.forEach((c) => {
       const key = `${c.actorId}-${c.characterId}`;
-
-      if (!uniqueCastMap.has(key) || c.episodeId === null) {
+      // first encountered wins — since sorted by roleType, main always wins
+      if (!uniqueCastMap.has(key)) {
         uniqueCastMap.set(key, c);
       }
     });
@@ -63,7 +69,6 @@ export const getEntryCast = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 // =====================
 // GET EPISODE CAST
 // =====================

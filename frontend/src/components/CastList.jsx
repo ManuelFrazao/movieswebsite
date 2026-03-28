@@ -89,8 +89,8 @@ function CastRow({ role }) {
                 xmlns="http://www.w3.org/2000/svg"
                 width="10"
                 height="10"
-                fillRule="currentColor"
-                className="bi bi-heart-fill"
+                fill="currentColor"
+                class="bi bi-heart-fill"
                 viewBox="0 0 16 16"
               >
                 <path
@@ -127,9 +127,11 @@ function CastRow({ role }) {
             flexShrink: 0,
           }}
         />
-        <div style={{
-            textAlign: "left"
-        }}>
+        <div
+          style={{
+            textAlign: "left",
+          }}
+        >
           <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem" }}>
             {role.character?.name || "Unknown"}
           </p>
@@ -145,8 +147,8 @@ function CastRow({ role }) {
                 xmlns="http://www.w3.org/2000/svg"
                 width="10"
                 height="10"
-                fillRule="currentColor"
-                className="bi bi-heart-fill"
+                fill="currentColor"
+                class="bi bi-heart-fill"
                 viewBox="0 0 16 16"
               >
                 <path
@@ -168,17 +170,34 @@ export default function CastList({ cast }) {
     return <p style={{ color: "#777" }}>No cast yet.</p>;
   }
 
-  const seen = new Set();
-  const unique = cast.filter((role) => {
+    console.log("cast roles:", cast.map(r => ({
+    actor: r.actor?.name,
+    character: r.character?.name,
+    roleType: r.roleType,
+    episodeId: r.episodeId,
+    entryId: r.entryId,
+  })));
+
+  const roleOrder = { main: 0, supporting: 1, guest: 2 };
+
+  const seen = new Map();
+  cast.forEach((role) => {
     const key = `${role.actorId}-${role.characterId}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
+    if (!seen.has(key)) {
+      seen.set(key, role);
+    } else {
+      const existing = seen.get(key);
+      if (
+        (roleOrder[role.roleType] ?? 3) < (roleOrder[existing.roleType] ?? 3)
+      ) {
+        seen.set(key, role);
+      }
+    }
   });
 
-  const order = { main: 0, supporting: 1, guest: 2 };
+  const unique = [...seen.values()];
   const sorted = [...unique].sort(
-    (a, b) => (order[a.roleType] ?? 3) - (order[b.roleType] ?? 3),
+    (a, b) => (roleOrder[a.roleType] ?? 3) - (roleOrder[b.roleType] ?? 3),
   );
 
   return (
