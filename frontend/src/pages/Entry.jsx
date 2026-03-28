@@ -1842,7 +1842,12 @@ export default function Entry() {
                 </div>
                 <div className="movie-info-details">
                   {trailer && (
-                    <div className="trailer-section">
+                    <div
+                      className="trailer-section"
+                      style={{
+                        marginBottom: "1rem",
+                      }}
+                    >
                       <h2>Trailer</h2>
                       <video
                         src={trailer.url}

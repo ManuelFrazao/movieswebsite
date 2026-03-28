@@ -12,6 +12,31 @@ function VideoModal({ video, onClose, currentUser }) {
   const [userValue, setUserValue] = useState(0); // 1, -1, or 0
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // fetch comments
+        const commentsRes = await api.get(`/comments/${video.id}`);
+        setComments(commentsRes.data);
+
+        // fetch like counts + user's current vote
+        const likesRes = await api.get(`/likes/${video.id}`);
+        setLikes(likesRes.data.likes);
+        setDislikes(likesRes.data.dislikes);
+        setUserValue(likesRes.data.userValue);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [video.id]);
 
   useEffect(() => {
     api
@@ -124,7 +149,7 @@ function VideoModal({ video, onClose, currentUser }) {
             </svg>{" "}
             {likes > 0 && likes}
           </button>
-
+          <span style={{ color: "#333" }}>|</span>
           <button
             onClick={() => handleVote(-1)}
             style={{
@@ -157,6 +182,22 @@ function VideoModal({ video, onClose, currentUser }) {
         {/* Comments */}
         <div style={{ borderTop: "1px solid #222", paddingTop: "0.75rem" }}>
           <h4 style={{ marginBottom: "0.5rem" }}>Comments</h4>
+          <span
+            style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-chat-fill"
+              viewBox="0 0 16 16"
+            >
+              <path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9 9 0 0 0 8 15" />
+            </svg>{" "}
+            <strong style={{ color: "#fff" }}>{comments.length}</strong>
+            {comments.length === 1 ? "comment" : "comments"}
+          </span>
 
           {currentUser && (
             <div
