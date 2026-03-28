@@ -262,7 +262,7 @@ export default function Actor() {
                     alt=""
                     style={{
                       borderRadius: "8px",
-                      objectFit: "cover"
+                      objectFit: "cover",
                     }}
                   />
                   <EntryActions
@@ -294,11 +294,82 @@ export default function Actor() {
                       <p
                         style={{
                           fontSize: "0.85rem",
+                          marginBottom: "1rem",
                         }}
                       >
                         {entry.bio}
                       </p>
                     </>
+                  )}
+                  {/* Roles */}
+                  {entry.roles?.length > 0 && (
+                    <div style={{ width: "100%"}}>
+                      <h2>Known For</h2>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "1rem",
+                        }}
+                      >
+                        {Object.values(
+                          entry.roles.reduce((acc, role) => {
+                            const entryId = role.entry?.id;
+                            if (!entryId) return acc;
+                            if (!acc[entryId])
+                              acc[entryId] = {
+                                entry: role.entry,
+                                characters: [],
+                              };
+                            if (role.character)
+                              acc[entryId].characters.push(role.character);
+                            return acc;
+                          }, {}),
+                        ).map(({ entry: e, characters }) => (
+                          <div
+                            key={e.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "1rem",
+                              background: "#1a1a1a",
+                              borderRadius: "8px",
+                              padding: "0.75rem",
+                              cursor: "pointer",
+                              marginBottom: "1rem"
+                            }}
+                            onClick={() => navigate(`/entry/${e.slug}`)}
+                          >
+                            <img
+                              src={e.coverImage}
+                              alt={e.title}
+                              style={{
+                                width: "60px",
+                                height: "90px",
+                                objectFit: "cover",
+                                borderRadius: "6px",
+                              }}
+                            />
+                            <div>
+                              <p style={{ fontWeight: "bold", margin: 0 }}>
+                                {e.title}
+                              </p>
+                              <p
+                                style={{
+                                  fontSize: "0.8rem",
+                                  color: "#aaa",
+                                  margin: "0.25rem 0 0",
+                                }}
+                              >
+                                {characters.length > 0
+                                  ? `As: ${characters.map((c) => c.name).join(", ")}`
+                                  : "Character unknown"}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                   <div className="entry-contents">
                     <div className="entry-contents-card">

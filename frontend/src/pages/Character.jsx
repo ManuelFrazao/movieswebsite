@@ -196,10 +196,7 @@ export default function Character() {
     <div className="entry">
       <Navbar />
       {/* HERO */}
-      <div
-        className="hero"
-        style={{ backgroundImage: `url(${entry.image})` }}
-      >
+      <div className="hero" style={{ backgroundImage: `url(${entry.image})` }}>
         <div className="hero-overlay">
           <button className="back-btn" onClick={() => navigate(-1)}>
             <svg
@@ -262,7 +259,7 @@ export default function Character() {
                     alt=""
                     style={{
                       borderRadius: "8px",
-                      objectFit: "cover"
+                      objectFit: "cover",
                     }}
                   />
                   <EntryActions
@@ -294,11 +291,80 @@ export default function Character() {
                       <p
                         style={{
                           fontSize: "0.85rem",
+                          marginBottom: "1rem",
                         }}
                       >
                         {entry.description}
                       </p>
                     </>
+                  )}
+                  {/* Appeared In */}
+                  {entry.castRoles?.length > 0 && (
+                    <div style={{ width: "100%"}}>
+                      <h2>Appeared In</h2>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "1rem",
+                        }}
+                      >
+                        {/* group by entry */}
+                        {Object.values(
+                          entry.castRoles.reduce((acc, role) => {
+                            const entryId = role.entry?.id;
+                            if (!entryId) return acc;
+                            if (!acc[entryId])
+                              acc[entryId] = { entry: role.entry, actors: [] };
+                            if (role.actor)
+                              acc[entryId].actors.push(role.actor);
+                            return acc;
+                          }, {}),
+                        ).map(({ entry: e, actors }) => (
+                          <div
+                            key={e.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "1rem",
+                              background: "#1a1a1a",
+                              borderRadius: "8px",
+                              padding: "0.75rem",
+                              cursor: "pointer",
+                              marginBottom: "1rem"
+                            }}
+                            onClick={() => navigate(`/entry/${e.slug}`)}
+                          >
+                            <img
+                              src={e.coverImage}
+                              alt={e.title}
+                              style={{
+                                width: "60px",
+                                height: "90px",
+                                objectFit: "cover",
+                                borderRadius: "6px",
+                              }}
+                            />
+                            <div>
+                              <p style={{ fontWeight: "bold", margin: 0 }}>
+                                {e.title}
+                              </p>
+                              <p
+                                style={{
+                                  fontSize: "0.8rem",
+                                  color: "#aaa",
+                                  margin: "0.25rem 0 0",
+                                }}
+                              >
+                                {actors.length > 0
+                                  ? `Played by: ${actors.map((a) => a.name).join(", ")}`
+                                  : "Actor unknown"}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                   <div className="entry-contents">
                     <div className="entry-contents-card">

@@ -705,7 +705,11 @@ svg {
     margin: 0 auto;
     align-content: center;
     display: grid;
+    grid-template-columns: 1fr 1fr;
     justify-items: center;
+    gap: 3rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
   }
   .movie-info-aside-left {
     margin-right: 0;
@@ -760,6 +764,14 @@ svg {
   .graph-rating-distribuition{
     padding: 0;
   }
+  
+  .entry-trend {
+    display: grid;
+    justify-items: center;
+  }
+  .trailer-section{
+    margin: 0 auto;
+  }
 }
 
 @media (width <= 740px) {
@@ -786,5 +798,15 @@ svg {
     justify-items: center;
     align-items: center;
     gap: 0.5rem;
+  }
+    .movie-info-graphs {
+    margin: 0 auto;
+    align-content: center;
+    display: grid;
+    grid-template-columns: 2fr;
+    justify-items: center;
+    gap: 3rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
   }
 }
