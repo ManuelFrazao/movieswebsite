@@ -18,13 +18,11 @@ function VideoModal({ video, onClose, currentUser }) {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // fetch comments
-        const commentsRes = await api.get(`/comments/${video.id}`);
+        const [commentsRes, likesRes] = await Promise.all([
+          api.get(`/comments/${video.id}`),
+          api.get(`/likes/${video.id}`),
+        ]);
         setComments(commentsRes.data);
-
-        // fetch like counts + user's current vote
-        const likesRes = await api.get(`/likes/${video.id}`);
         setLikes(likesRes.data.likes);
         setDislikes(likesRes.data.dislikes);
         setUserValue(likesRes.data.userValue);
@@ -36,13 +34,6 @@ function VideoModal({ video, onClose, currentUser }) {
     };
 
     fetchData();
-  }, [video.id]);
-
-  useEffect(() => {
-    api
-      .get(`/comments/${video.id}`)
-      .then((res) => setComments(res.data))
-      .catch(() => {});
   }, [video.id]);
 
   const handleVote = async (value) => {
@@ -81,6 +72,26 @@ function VideoModal({ video, onClose, currentUser }) {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const formatRelativeDate = (date) => {
+    if (!date) return "";
+
+    const now = new Date();
+    const past = new Date(date);
+
+    const diff = Math.floor((now - past) / 1000);
+
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+
+    return past.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   return (
@@ -183,14 +194,19 @@ function VideoModal({ video, onClose, currentUser }) {
         <div style={{ borderTop: "1px solid #222", paddingTop: "0.75rem" }}>
           <h4 style={{ marginBottom: "0.5rem" }}>Comments</h4>
           <span
-            style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.3rem",
+              marginBottom: "0.5rem",
+            }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
               height="16"
               fill="currentColor"
-              class="bi bi-chat-fill"
+              className="bi bi-chat-fill"
               viewBox="0 0 16 16"
             >
               <path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9 9 0 0 0 8 15" />
@@ -262,19 +278,32 @@ function VideoModal({ video, onClose, currentUser }) {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "flex-start",
+                  textAlign: "start",
                   gap: "0.5rem",
                 }}
               >
                 <div>
-                  <span
+                  <div
                     style={{
-                      fontSize: "0.75rem",
-                      color: "#639ef7",
-                      marginRight: "0.5rem",
+                      display: "flex",
+                      gap: "0.5rem",
+                      alignItems: "center",
                     }}
                   >
-                    {c.user?.username}
-                  </span>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "#639ef7",
+                      }}
+                    >
+                      {c.user?.username}
+                    </span>
+
+                    <span style={{ fontSize: "0.7rem", color: "#777" }}>
+                      {formatRelativeDate(c.createdAt)}
+                    </span>
+                  </div>
+
                   <span style={{ fontSize: "0.85rem" }}>{c.content}</span>
                 </div>
                 {(currentUser?.id === c.userId ||

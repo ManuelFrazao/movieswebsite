@@ -53,6 +53,52 @@ export default function Entry() {
   const [imageCount, setImageCount] = useState(0);
   const [trailer, setTrailer] = useState(null);
   const [videoCount, setVideoCount] = useState(0);
+  const [overviewVideoStats, setOverviewVideoStats] = useState({
+    likes: 0,
+    dislikes: 0,
+    comments: 0,
+  });
+
+  useEffect(() => {
+    if (!entry?.id) return;
+
+    const fetchOverviewStats = async () => {
+      try {
+        const res = await api.get(`/videos/entry/${entry.id}`);
+        const videos = res.data;
+
+        const statsRequests = videos.map(async (v) => {
+          const [likesRes, commentsRes] = await Promise.all([
+            api
+              .get(`/likes/${v.id}`)
+              .catch(() => ({ data: { likes: 0, dislikes: 0 } })),
+            api.get(`/comments/${v.id}`).catch(() => ({ data: [] })),
+          ]);
+          return {
+            likes: likesRes.data.likes,
+            dislikes: likesRes.data.dislikes,
+            comments: commentsRes.data.length,
+          };
+        });
+
+        const allStats = await Promise.all(statsRequests);
+        const totals = allStats.reduce(
+          (acc, s) => ({
+            likes: acc.likes + s.likes,
+            dislikes: acc.dislikes + s.dislikes,
+            comments: acc.comments + s.comments,
+          }),
+          { likes: 0, dislikes: 0, comments: 0 },
+        );
+
+        setOverviewVideoStats(totals);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchOverviewStats();
+  }, [entry?.id]);
 
   useEffect(() => {
     if (!entry?.id) return;
@@ -1848,7 +1894,6 @@ export default function Entry() {
                         marginBottom: "1rem",
                       }}
                     >
-                      <h2>Trailer</h2>
                       <video
                         src={trailer.url}
                         controls
@@ -1856,9 +1901,70 @@ export default function Entry() {
                           width: "100%",
                           maxWidth: "560px",
                           borderRadius: "8px",
-                          marginTop: "0.5rem",
                         }}
                       />
+                      <>
+                        {/* likes, dislikes, comments */}
+                        {(overviewVideoStats.likes > 0 ||
+                          overviewVideoStats.dislikes > 0 ||
+                          overviewVideoStats.comments > 0) && (
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "0.5rem",
+                              fontSize: "0.7rem",
+                              color: "#aaa",
+                            }}
+                          >
+                            {overviewVideoStats.likes > 0 && (
+                              <span>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  fill="currentColor"
+                                  className="bi bi-hand-thumbs-up-fill"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a10 10 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733q.086.18.138.363c.077.27.113.567.113.856s-.036.586-.113.856c-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.2 3.2 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.8 4.8 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.639.199-.575.356-1.539.428-2.59z" />
+                                </svg>{" "}
+                                {formatVotes(overviewVideoStats.likes)}
+                              </span>
+                            )}
+                            {overviewVideoStats.dislikes > 0 && (
+                              <span>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  fill="currentColor"
+                                  className="bi bi-hand-thumbs-up-fill"
+                                  viewBox="0 0 16 16"
+                                  style={{ transform: "rotate(180deg)" }}
+                                >
+                                  <path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a10 10 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733q.086.18.138.363c.077.27.113.567.113.856s-.036.586-.113.856c-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.2 3.2 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.8 4.8 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.639.199-.575.356-1.539.428-2.59z" />
+                                </svg>{" "}
+                                {formatVotes(overviewVideoStats.dislikes)}
+                              </span>
+                            )}
+                            {overviewVideoStats.comments > 0 && (
+                              <span>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  fill="currentColor"
+                                  className="bi bi-chat-fill"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9 9 0 0 0 8 15" />
+                                </svg>{" "}
+                                {formatVotes(overviewVideoStats.comments)}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </>
                     </div>
                   )}
                   {entry.description !== "" && (
