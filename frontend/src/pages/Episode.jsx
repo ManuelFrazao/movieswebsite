@@ -344,11 +344,11 @@ export default function Entry() {
   };
 
   const useIsMobile = () => {
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
 
     useEffect(() => {
       const handleResize = () => {
-        setIsMobile(window.innerWidth < 768);
+        setIsMobile(window.innerWidth < 960);
       };
 
       window.addEventListener("resize", handleResize);

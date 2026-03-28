@@ -43,6 +43,9 @@ function CastRow({ role }) {
           alignItems: "center",
           gap: "0.75rem",
           cursor: "pointer",
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+          textOverflow: "ellipsis",
         }}
         onClick={() =>
           role.actor?.slug && navigate(`/actor/${role.actor.slug}`)
@@ -62,9 +65,20 @@ function CastRow({ role }) {
         <div
           style={{
             textAlign: "left",
+            minWidth: 0,
           }}
         >
-          <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem" }}>
+          <p
+            style={{
+              margin: 0,
+              fontWeight: "bold",
+              fontSize: "0.9rem",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              flex: 1,
+            }}
+          >
             {role.actor?.name || "Unknown"}
           </p>
           <p
@@ -111,6 +125,9 @@ function CastRow({ role }) {
           alignItems: "center",
           gap: "0.75rem",
           cursor: "pointer",
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+          textOverflow: "ellipsis",
         }}
         onClick={() =>
           role.character?.slug && navigate(`/character/${role.character.slug}`)
@@ -130,9 +147,23 @@ function CastRow({ role }) {
         <div
           style={{
             textAlign: "left",
+            minWidth: 0,
           }}
         >
-          <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem" }}>
+          <p
+            style={{
+              margin: 0,
+              fontWeight: "bold",
+              fontSize: "0.9rem",
+              margin: 0,
+              fontWeight: "bold",
+              fontSize: "0.9rem",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              flex: 1,
+            }}
+          >
             {role.character?.name || "Unknown"}
           </p>
           {charFavs > 0 && (
@@ -170,13 +201,16 @@ export default function CastList({ cast }) {
     return <p style={{ color: "#777" }}>No cast yet.</p>;
   }
 
-    console.log("cast roles:", cast.map(r => ({
-    actor: r.actor?.name,
-    character: r.character?.name,
-    roleType: r.roleType,
-    episodeId: r.episodeId,
-    entryId: r.entryId,
-  })));
+  console.log(
+    "cast roles:",
+    cast.map((r) => ({
+      actor: r.actor?.name,
+      character: r.character?.name,
+      roleType: r.roleType,
+      episodeId: r.episodeId,
+      entryId: r.entryId,
+    })),
+  );
 
   const roleOrder = { main: 0, supporting: 1, guest: 2 };
 

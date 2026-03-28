@@ -2477,7 +2477,10 @@ export default function Entry() {
                             {/*{ep.isFinal && (
                                     <span className="final-badge">FINAL</span>
                                   )}*/}
-                            <img src={ep.thumbnail} alt={ep.title} />
+                            <img
+                              src={ep.thumbnail || entry.coverImage}
+                              alt={ep.title}
+                            />
 
                             <div className="episode-info">
                               <div>
@@ -2488,7 +2491,11 @@ export default function Entry() {
                                     cursor: "pointer",
                                   }}
                                 >
-                                  <h3>{ep.title}</h3>
+                                  <h3>
+                                    {ep.title?.trim()
+                                      ? ep.title
+                                      : `S${season.seasonNumber}.E${ep.number}`}
+                                  </h3>
                                 </div>
 
                                 <div className="episode-meta">
