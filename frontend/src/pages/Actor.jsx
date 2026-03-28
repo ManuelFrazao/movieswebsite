@@ -256,8 +256,8 @@ export default function Actor() {
               <div className="movie-info-content">
                 <div className="movie-info-aside-left">
                   <img
-                    width={220}
-                    height={250}
+                    width={240}
+                    height={300}
                     src={entry.profileImage}
                     alt=""
                     style={{
