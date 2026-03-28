@@ -11,6 +11,7 @@ import CharactersRow from "../components/CharactersRow";
 import EntryActions from "../components/EntryActions";
 import ImagesTab from "../components/ImagesTab";
 import VideosTab from "../components/VideosTab";
+import CastList from "../components/CastList";
 
 export default function Entry() {
   const { id } = useParams();
@@ -1355,7 +1356,7 @@ export default function Entry() {
         {/* 🔥 Characters */}
         {activeTab === "cast" && (
           <div className="cast">
-            <p style={{ color: "#777" }}>Coming soon 👀</p>
+            <CastList cast={cast} />
           </div>
         )}
 

@@ -300,7 +300,7 @@ export default function Character() {
                   )}
                   {/* Appeared In */}
                   {entry.castRoles?.length > 0 && (
-                    <div style={{ width: "100%"}}>
+                    <div style={{ width: "100%" }}>
                       <h2>Appeared In</h2>
                       <div
                         style={{
@@ -315,9 +315,16 @@ export default function Character() {
                             const entryId = role.entry?.id;
                             if (!entryId) return acc;
                             if (!acc[entryId])
-                              acc[entryId] = { entry: role.entry, actors: [] };
-                            if (role.actor)
-                              acc[entryId].actors.push(role.actor);
+                              acc[entryId] = {
+                                entry: role.entry,
+                                actors: new Map(),
+                              };
+                            if (role.actor) {
+                              acc[entryId].actors.set(
+                                role.actor.id,
+                                role.actor,
+                              );
+                            }
                             return acc;
                           }, {}),
                         ).map(({ entry: e, actors }) => (
@@ -331,7 +338,7 @@ export default function Character() {
                               borderRadius: "8px",
                               padding: "0.75rem",
                               cursor: "pointer",
-                              marginBottom: "1rem"
+                              marginBottom: "1rem",
                             }}
                             onClick={() => navigate(`/entry/${e.slug}`)}
                           >
@@ -357,7 +364,7 @@ export default function Character() {
                                 }}
                               >
                                 {actors.length > 0
-                                  ? `Played by: ${actors.map((a) => a.name).join(", ")}`
+                                  ? `Played by: ${[...actors.values()].map((a) => a.name).join(", ")}`
                                   : "Actor unknown"}
                               </p>
                             </div>

@@ -303,7 +303,7 @@ export default function Actor() {
                   )}
                   {/* Roles */}
                   {entry.roles?.length > 0 && (
-                    <div style={{ width: "100%"}}>
+                    <div style={{ width: "100%" }}>
                       <h2>Known For</h2>
                       <div
                         style={{
@@ -319,10 +319,15 @@ export default function Actor() {
                             if (!acc[entryId])
                               acc[entryId] = {
                                 entry: role.entry,
-                                characters: [],
+                                characters: new Map(),
                               };
-                            if (role.character)
-                              acc[entryId].characters.push(role.character);
+                            if (role.character) {
+                              // use Map to deduplicate characters by id
+                              acc[entryId].characters.set(
+                                role.character.id,
+                                role.character,
+                              );
+                            }
                             return acc;
                           }, {}),
                         ).map(({ entry: e, characters }) => (
@@ -361,8 +366,8 @@ export default function Actor() {
                                   margin: "0.25rem 0 0",
                                 }}
                               >
-                                {characters.length > 0
-                                  ? `As: ${characters.map((c) => c.name).join(", ")}`
+                                {characters.size > 0
+                                  ? `As: ${[...characters.values()].map((c) => c.name).join(", ")}`
                                   : "Character unknown"}
                               </p>
                             </div>

@@ -11,6 +11,7 @@ import CharactersRow from "../components/CharactersRow";
 import EntryActions from "../components/EntryActions";
 import ImagesTab from "../components/ImagesTab";
 import VideosTab from "../components/VideosTab";
+import CastList from "../components/CastList";
 
 export default function Entry() {
   const { slug } = useParams();
@@ -2072,9 +2073,7 @@ export default function Entry() {
                       </>
                     </div>
                   )}
-                  {isSeries && (
-                    <NextEpisodeCountdown seasons={entry.seasons} />
-                  )}
+                  {isSeries && <NextEpisodeCountdown seasons={entry.seasons} />}
                   {entry.description !== "" && (
                     <>
                       <h2>Synopsis</h2>
@@ -2631,7 +2630,7 @@ export default function Entry() {
         {/* 🔥 Cast */}
         {activeTab === "cast" && (
           <div className="cast">
-            <p style={{ color: "#777" }}>Coming soon 👀</p>
+            <CastList cast={cast} />
           </div>
         )}
 

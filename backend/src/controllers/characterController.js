@@ -1,4 +1,4 @@
-import { Character, CharacterAlias, Favorite } from "../models/index.js";
+import { Character, CharacterAlias, Favorite, Cast, Actor, Entry } from "../models/index.js";
 import { Op } from "sequelize";
 import cloudinary from "../utils/cloudinary.js";
 
@@ -122,8 +122,12 @@ export const getCharacterBySlug = async (req, res) => {
           as: "aliases",
         },
         {
-          association: "castRoles",
-          include: ["actor", "entry"],
+          model: Cast,
+          as: "castRoles",
+          include: [
+            { model: Actor, as: "actor" },
+            { model: Entry, as: "entry" },
+          ],
         },
       ],
       order: [[{ model: CharacterAlias, as: "aliases" }, "startSeason", "ASC"]],
@@ -133,15 +137,10 @@ export const getCharacterBySlug = async (req, res) => {
       return res.status(404).json({ message: "Character not found" });
     }
 
-    // 🔥 contar favoritos
     const favoritesCount = await Favorite.count({
-      where: {
-        targetId: character.id,
-        targetType: "character",
-      },
+      where: { targetId: character.id, targetType: "character" },
     });
 
-    // 🔥 adicionar ao objeto
     character.dataValues.favoritesCount = favoritesCount;
 
     res.json(character);
