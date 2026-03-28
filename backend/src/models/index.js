@@ -15,6 +15,7 @@ import WatchlistModel from "./watchlist.js";
 import FavoriteModel from "./favorite.js";
 import ImageModel from "./image.js";
 import VideoModel from "./video.js";
+import CommentModel from "./comment.js";
 
 const User = UserModel(sequelize);
 const Entry = EntryModel(sequelize);
@@ -31,6 +32,7 @@ const Watchlist = WatchlistModel(sequelize);
 const Favorite = FavoriteModel(sequelize);
 const Image = ImageModel(sequelize);
 const Video = VideoModel(sequelize);
+const Comment = CommentModel(sequelize);
 
 // =====================
 // RELATIONS
@@ -194,6 +196,16 @@ Like.belongsTo(Review, {
   as: "review",
 });
 
+Video.hasMany(Like, {
+  foreignKey: "videoId",
+  as: "likes",
+});
+
+Like.belongsTo(Video, {
+  foreignKey: "videoId",
+  as: "video",
+});
+
 // =====================
 // Character
 // =====================
@@ -318,6 +330,14 @@ Episode.hasMany(Image, { foreignKey: "targetId", as: "episodeImages" });
 Entry.hasMany(Video, { foreignKey: "targetId", as: "entryVideos" });
 Episode.hasMany(Video, { foreignKey: "targetId", as: "episodeVideos" });
 
+// =====================
+// Comment
+// =====================
+Video.hasMany(Comment, { foreignKey: "videoId", as: "comments", onDelete: "CASCADE" });
+Comment.belongsTo(Video, { foreignKey: "videoId", as: "video" });
+User.hasMany(Comment, { foreignKey: "userId", as: "comments" });
+Comment.belongsTo(User, { foreignKey: "userId", as: "user" });
+
 export {
   sequelize,
   User,
@@ -335,4 +355,5 @@ export {
   Favorite,
   Image,
   Video,
+  Comment,
 };
