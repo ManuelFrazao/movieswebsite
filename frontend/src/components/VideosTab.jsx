@@ -112,7 +112,17 @@ function VideoModal({ video, onClose, currentUser }) {
               gap: "0.3rem",
             }}
           >
-            👍 {likes > 0 && likes}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              className="bi bi-hand-thumbs-up-fill"
+              viewBox="0 0 16 16"
+            >
+              <path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a10 10 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733q.086.18.138.363c.077.27.113.567.113.856s-.036.586-.113.856c-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.2 3.2 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.8 4.8 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.639.199-.575.356-1.539.428-2.59z" />
+            </svg>{" "}
+            {likes > 0 && likes}
           </button>
 
           <button
@@ -129,7 +139,18 @@ function VideoModal({ video, onClose, currentUser }) {
               gap: "0.3rem",
             }}
           >
-            👎 {dislikes > 0 && dislikes}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              className="bi bi-hand-thumbs-up-fill"
+              viewBox="0 0 16 16"
+              style={{ transform: "rotate(180deg)" }}
+            >
+              <path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a10 10 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733q.086.18.138.363c.077.27.113.567.113.856s-.036.586-.113.856c-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.2 3.2 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.8 4.8 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.639.199-.575.356-1.539.428-2.59z" />
+            </svg>{" "}
+            {dislikes > 0 && dislikes}
           </button>
         </div>
 
@@ -315,6 +336,21 @@ export default function VideosTab({ targetType, targetId, episodes = [] }) {
     }
   };
 
+  const handleToggleTrailer = async (video) => {
+    try {
+      await api.patch(`/videos/${video.id}/trailer`, {
+        isTrailer: !video.isTrailer,
+      });
+      setVideos((prev) =>
+        prev.map((v) =>
+          v.id === video.id ? { ...v, isTrailer: !v.isTrailer } : v,
+        ),
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="images-tab">
       {isAdmin && (
@@ -376,16 +412,63 @@ export default function VideosTab({ targetType, targetId, episodes = [] }) {
               >
                 ▶ {v.title || v._episodeTitle || "Play"}
               </div>
-              {isAdmin && !v._episodeTitle && (
-                <button
-                  className="image-delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(v.id);
+
+              {/* trailer badge */}
+              {v.isTrailer && (
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: "6px",
+                    left: "6px",
+                    background: "#639ef7",
+                    color: "#fff",
+                    fontSize: "0.65rem",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
                   }}
                 >
-                  ✕
-                </button>
+                  TRAILER
+                </span>
+              )}
+
+              {isAdmin && !v._episodeTitle && (
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "6px",
+                    right: "6px",
+                    display: "flex",
+                    gap: "4px",
+                  }}
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleTrailer(v);
+                    }}
+                    style={{
+                      background: v.isTrailer ? "#639ef7" : "#333",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "0.65rem",
+                      padding: "2px 6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {v.isTrailer ? "★ Trailer" : "☆ Trailer"}
+                  </button>
+                  <button
+                    className="image-delete-btn"
+                    style={{ position: "static" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(v.id);
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
               )}
             </div>
           ))}

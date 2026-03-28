@@ -12,6 +12,10 @@ const VideoModel = (sequelize) => {
       allowNull: false,
     },
     title: DataTypes.STRING,
+    isTrailer: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     targetType: {
       type: DataTypes.ENUM("entry", "episode"),
       allowNull: false,

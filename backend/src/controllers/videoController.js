@@ -39,6 +39,21 @@ export const getVideos = async (req, res) => {
   }
 };
 
+export const setTrailer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isTrailer } = req.body;
+
+    const video = await Video.findByPk(id);
+    if (!video) return res.status(404).json({ message: "Not found" });
+
+    await video.update({ isTrailer });
+    res.json(video);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 export const deleteVideo = async (req, res) => {
   try {
     const { id } = req.params;

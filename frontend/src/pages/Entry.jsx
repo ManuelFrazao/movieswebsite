@@ -52,6 +52,18 @@ export default function Entry() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isWatchlist, setIsWatchlist] = useState(false);
   const [imageCount, setImageCount] = useState(0);
+  const [trailer, setTrailer] = useState(null);
+
+  useEffect(() => {
+    if (!entry?.id) return;
+    api
+      .get(`/videos/entry/${entry.id}`)
+      .then((res) => {
+        const t = res.data.find((v) => v.isTrailer);
+        setTrailer(t || null);
+      })
+      .catch(console.error);
+  }, [entry?.id]);
 
   useEffect(() => {
     if (!entry?.id) return;
@@ -1800,6 +1812,21 @@ export default function Entry() {
                   )}
                 </div>
                 <div className="movie-info-details">
+                  {trailer && (
+                    <div className="trailer-section">
+                      <h2>Trailer</h2>
+                      <video
+                        src={trailer.url}
+                        controls
+                        style={{
+                          width: "100%",
+                          maxWidth: "560px",
+                          borderRadius: "8px",
+                          marginTop: "0.5rem",
+                        }}
+                      />
+                    </div>
+                  )}
                   {entry.description !== "" && (
                     <>
                       <h2>Synopsis</h2>
