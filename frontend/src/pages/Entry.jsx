@@ -40,7 +40,6 @@ export default function Entry() {
   const [episodeReviewCounts, setEpisodeReviewCounts] = useState({});
   const [entryReviewCount, setEntryReviewCount] = useState(0);
   const [cast, setCast] = useState([]);
-
   const [reviewModal, setReviewModal] = useState({
     open: false,
     type: null,
@@ -53,6 +52,36 @@ export default function Entry() {
   const [isWatchlist, setIsWatchlist] = useState(false);
   const [imageCount, setImageCount] = useState(0);
   const [trailer, setTrailer] = useState(null);
+  const [videoCount, setVideoCount] = useState(0);
+
+  useEffect(() => {
+    if (!entry?.id) return;
+
+    const fetchVideoCount = async () => {
+      try {
+        const entryRes = await api.get(`/videos/entry/${entry.id}`);
+        let total = entryRes.data.length;
+
+        const allEpisodes =
+          entry.seasons?.flatMap((s) => s.episodes || []) || [];
+        const episodeRequests = allEpisodes.map((ep) =>
+          api
+            .get(`/videos/episode/${ep.id}`)
+            .then((r) => r.data.length)
+            .catch(() => 0),
+        );
+
+        const episodeCounts = await Promise.all(episodeRequests);
+        total += episodeCounts.reduce((sum, count) => sum + count, 0);
+
+        setVideoCount(total);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchVideoCount();
+  }, [entry?.id]);
 
   useEffect(() => {
     if (!entry?.id) return;
@@ -1902,7 +1931,14 @@ export default function Entry() {
                             d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"
                           />
                         </svg>
-                        <span>Videos</span>
+                        {videoCount > 0 ? (
+                          <span>
+                            {formatVotes(videoCount)}{" "}
+                            {videoCount === 1 ? "video" : "videos"}
+                          </span>
+                        ) : (
+                          <span>Videos</span>
+                        )}
                       </div>
                     </div>
                     <div

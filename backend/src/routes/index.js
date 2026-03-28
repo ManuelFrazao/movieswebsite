@@ -16,6 +16,7 @@ import favoriteRoutes from "./favoriteRoutes.js";
 import imageRoutes from "./imageRoutes.js";
 import videoRoutes from "./videoRoutes.js";
 import commentRoutes from "./commentRoutes.js";
+import likeRoutes from "./likeRoutes.js";
 
 const router = express.Router();
 
@@ -35,5 +36,6 @@ router.use("/favorites", favoriteRoutes);
 router.use("/images", imageRoutes);
 router.use("/videos", videoRoutes);
 router.use("/comments", commentRoutes);
+router.use("/likes", likeRoutes);
 
 export default router;

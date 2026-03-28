@@ -43,6 +43,15 @@ export default function Entry() {
   const [cast, setCast] = useState([]);
   const [imageCount, setImageCount] = useState(0);
   const [trailer, setTrailer] = useState(null);
+  const [videoCount, setVideoCount] = useState(0);
+
+  useEffect(() => {
+    if (!episode?.id) return;
+    api
+      .get(`/videos/episode/${episode.id}`)
+      .then((res) => setVideoCount(res.data.length))
+      .catch(console.error);
+  }, [episode?.id]);
 
   useEffect(() => {
     if (!episode?.id) return;
@@ -1024,7 +1033,14 @@ export default function Entry() {
                             d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"
                           />
                         </svg>
-                        <span>Videos</span>
+                        {videoCount > 0 ? (
+                          <span>
+                            {formatVotes(videoCount)}{" "}
+                            {videoCount === 1 ? "video" : "videos"}
+                          </span>
+                        ) : (
+                          <span>Videos</span>
+                        )}
                       </div>
                     </div>
                     <div className="entry-contents-card">
