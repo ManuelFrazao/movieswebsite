@@ -18,6 +18,7 @@ export default function Character() {
       try {
         const res = await api.get(`/characters/slug/${slug}`);
         setEntry(res.data);
+        console.log("castRoles:", res.data.castRoles);
       } catch (err) {
         console.error(err.response?.data || err.message);
       }

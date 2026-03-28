@@ -85,23 +85,24 @@ export const searchCharacters = async (req, res) => {
   }
 };
 
+// characterController.js
 export const getCharacterById = async (req, res) => {
   try {
     const { id } = req.params;
 
     const character = await Character.findByPk(id, {
-      include: [
-        {
-          model: CharacterAlias,
-          as: "aliases",
-        },
-      ],
-      order: [[{ model: CharacterAlias, as: "aliases" }, "startSeason", "ASC"]],
+      include: [{ model: CharacterAlias, as: "aliases" }],
     });
 
     if (!character) {
       return res.status(404).json({ message: "Character not found" });
     }
+
+    const favoritesCount = await Favorite.count({
+      where: { targetId: id, targetType: "character" },
+    });
+
+    character.dataValues.favoritesCount = favoritesCount;
 
     res.json(character);
   } catch (err) {

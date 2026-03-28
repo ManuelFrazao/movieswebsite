@@ -183,6 +183,12 @@ export const getActorById = async (req, res) => {
       return res.status(404).json({ message: "Actor not found" });
     }
 
+    const favoritesCount = await Favorite.count({
+      where: { targetId: id, targetType: "actor" },
+    });
+
+    actor.dataValues.favoritesCount = favoritesCount;
+
     res.json(actor);
   } catch (err) {
     res.status(500).json({ error: err.message });

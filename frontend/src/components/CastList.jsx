@@ -4,8 +4,24 @@ import api from "../services/api";
 
 function CastRow({ role }) {
   const navigate = useNavigate();
-  const [actorFavs, setActorFavs] = useState(role.actor?.favoritesCount || 0);
-  const [charFavs, setCharFavs] = useState(role.character?.favoritesCount || 0);
+  const [actorFavs, setActorFavs] = useState(0);
+  const [charFavs, setCharFavs] = useState(0);
+
+  useEffect(() => {
+    // fetch actor favorites count
+    if (role.actor?.id) {
+      api.get(`/actors/${role.actor.id}`)
+        .then((res) => setActorFavs(res.data.favoritesCount || 0))
+        .catch(() => {});
+    }
+
+    // fetch character favorites count
+    if (role.character?.id) {
+      api.get(`/characters/${role.character.id}`)
+        .then((res) => setCharFavs(res.data.favoritesCount || 0))
+        .catch(() => {});
+    }
+  }, [role.actor?.id, role.character?.id]);
 
   return (
     <div style={{
@@ -22,26 +38,15 @@ function CastRow({ role }) {
         onClick={() => role.actor?.slug && navigate(`/actor/${role.actor.slug}`)}
       >
         <img
-          src={role.actor?.profileImage || "/placeholder-actor.jpg"}
+          src={role.actor?.profileImage || "/placeholder.jpg"}
           alt={role.actor?.name}
-          style={{
-            width: "48px",
-            height: "64px",
-            objectFit: "cover",
-            borderRadius: "6px",
-            flexShrink: 0,
-          }}
+          style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
         />
         <div>
           <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem" }}>
             {role.actor?.name || "Unknown"}
           </p>
-          <p style={{
-            margin: "2px 0 0",
-            fontSize: "0.75rem",
-            color: "#aaa",
-            textTransform: "capitalize",
-          }}>
+          <p style={{ margin: "2px 0 0", fontSize: "0.75rem", color: "#aaa", textTransform: "capitalize" }}>
             {role.roleType}
           </p>
           {actorFavs > 0 && (
@@ -58,15 +63,9 @@ function CastRow({ role }) {
         onClick={() => role.character?.slug && navigate(`/character/${role.character.slug}`)}
       >
         <img
-          src={role.character?.image || "/placeholder-character.jpg"}
+          src={role.character?.image || "/placeholder.jpg"}
           alt={role.character?.name}
-          style={{
-            width: "48px",
-            height: "64px",
-            objectFit: "cover",
-            borderRadius: "6px",
-            flexShrink: 0,
-          }}
+          style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
         />
         <div>
           <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem" }}>
@@ -88,7 +87,6 @@ export default function CastList({ cast }) {
     return <p style={{ color: "#777" }}>No cast yet.</p>;
   }
 
-  // deduplicate by actor+character
   const seen = new Set();
   const unique = cast.filter((role) => {
     const key = `${role.actorId}-${role.characterId}`;
@@ -97,7 +95,6 @@ export default function CastList({ cast }) {
     return true;
   });
 
-  // sort: main first, then supporting, then guest
   const order = { main: 0, supporting: 1, guest: 2 };
   const sorted = [...unique].sort(
     (a, b) => (order[a.roleType] ?? 3) - (order[b.roleType] ?? 3)
@@ -105,7 +102,6 @@ export default function CastList({ cast }) {
 
   return (
     <div>
-      {/* Header */}
       <div style={{
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
