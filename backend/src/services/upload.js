@@ -1,15 +1,16 @@
 import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
-import cloudinary from "../config/cloudinary.js";
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "entries",
-    allowed_formats: ["jpg", "png"]
-  }
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB to support videos
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/", "video/"];
+    if (allowed.some((type) => file.mimetype.startsWith(type))) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only images and videos are allowed"));
+    }
+  },
 });
-
-const upload = multer({ storage });
 
 export default upload;

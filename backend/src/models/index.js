@@ -14,6 +14,7 @@ import CharacterAliasModel from "./characterAlias.js";
 import WatchlistModel from "./watchlist.js";
 import FavoriteModel from "./favorite.js";
 import ImageModel from "./image.js";
+import VideoModel from "./video.js";
 
 const User = UserModel(sequelize);
 const Entry = EntryModel(sequelize);
@@ -29,6 +30,7 @@ const CharacterAlias = CharacterAliasModel(sequelize);
 const Watchlist = WatchlistModel(sequelize);
 const Favorite = FavoriteModel(sequelize);
 const Image = ImageModel(sequelize);
+const Video = VideoModel(sequelize);
 
 // =====================
 // RELATIONS
@@ -310,6 +312,12 @@ Favorite.belongsTo(User, {
 Entry.hasMany(Image, { foreignKey: "targetId", as: "entryImages" });
 Episode.hasMany(Image, { foreignKey: "targetId", as: "episodeImages" });
 
+// =====================
+// Video
+// =====================
+Entry.hasMany(Video, { foreignKey: "targetId", as: "entryVideos" });
+Episode.hasMany(Video, { foreignKey: "targetId", as: "episodeVideos" });
+
 export {
   sequelize,
   User,
@@ -326,4 +334,5 @@ export {
   Watchlist,
   Favorite,
   Image,
+  Video,
 };

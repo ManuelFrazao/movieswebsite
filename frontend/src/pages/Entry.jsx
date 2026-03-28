@@ -10,6 +10,7 @@ import ActorsRow from "../components/ActorsRow";
 import CharactersRow from "../components/CharactersRow";
 import EntryActions from "../components/EntryActions";
 import ImagesTab from "../components/ImagesTab";
+import VideosTab from "../components/VideosTab";
 
 export default function Entry() {
   const { slug } = useParams();
@@ -2255,9 +2256,11 @@ export default function Entry() {
 
         {/* 🔥 Videos */}
         {activeTab === "videos" && (
-          <div className="videos">
-            <p style={{ color: "#777" }}>Coming soon 👀</p>
-          </div>
+          <VideosTab
+            targetType="entry"
+            targetId={entry.id}
+            episodes={entry.seasons?.flatMap((s) => s.episodes || []) || []}
+          />
         )}
 
         {/* 🔥 Images */}

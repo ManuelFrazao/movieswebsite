@@ -10,6 +10,7 @@ import ActorsRow from "../components/ActorsRow";
 import CharactersRow from "../components/CharactersRow";
 import EntryActions from "../components/EntryActions";
 import ImagesTab from "../components/ImagesTab";
+import VideosTab from "../components/VideosTab";
 
 export default function Entry() {
   const { id } = useParams();
@@ -1142,9 +1143,7 @@ export default function Entry() {
         )}
 
         {activeTab === "videos" && (
-          <div className="videos">
-            <p style={{ color: "#777" }}>Coming soon 👀</p>
-          </div>
+          <VideosTab targetType="episode" targetId={episode.id} />
         )}
 
         {activeTab === "images" && (

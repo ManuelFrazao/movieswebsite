@@ -288,7 +288,7 @@ export default function Character() {
                   )}
                 </div>
                 <div className="movie-info-details">
-                  {entry.bio !== "" && (
+                  {entry.description !== "" && (
                     <>
                       <h2>Biography</h2>
                       <p
@@ -296,7 +296,7 @@ export default function Character() {
                           fontSize: "0.85rem",
                         }}
                       >
-                        {entry.bio}
+                        {entry.description}
                       </p>
                     </>
                   )}
