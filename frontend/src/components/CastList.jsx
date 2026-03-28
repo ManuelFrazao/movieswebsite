@@ -10,48 +10,95 @@ function CastRow({ role }) {
   useEffect(() => {
     // fetch actor favorites count
     if (role.actor?.id) {
-      api.get(`/actors/${role.actor.id}`)
+      api
+        .get(`/actors/${role.actor.id}`)
         .then((res) => setActorFavs(res.data.favoritesCount || 0))
         .catch(() => {});
     }
 
     // fetch character favorites count
     if (role.character?.id) {
-      api.get(`/characters/${role.character.id}`)
+      api
+        .get(`/characters/${role.character.id}`)
         .then((res) => setCharFavs(res.data.favoritesCount || 0))
         .catch(() => {});
     }
   }, [role.actor?.id, role.character?.id]);
 
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "1rem",
-      padding: "0.75rem 0",
-      borderBottom: "1px solid #1f1f1f",
-      alignItems: "center",
-    }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "1rem",
+        padding: "0.75rem 0",
+        borderBottom: "1px solid #1f1f1f",
+        alignItems: "center",
+      }}
+    >
       {/* Actor column */}
       <div
-        style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}
-        onClick={() => role.actor?.slug && navigate(`/actor/${role.actor.slug}`)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
+          cursor: "pointer",
+        }}
+        onClick={() =>
+          role.actor?.slug && navigate(`/actor/${role.actor.slug}`)
+        }
       >
         <img
           src={role.actor?.profileImage || "/placeholder.jpg"}
           alt={role.actor?.name}
-          style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
+          style={{
+            width: "48px",
+            height: "64px",
+            objectFit: "cover",
+            borderRadius: "6px",
+            flexShrink: 0,
+          }}
         />
-        <div>
+        <div
+          style={{
+            textAlign: "left",
+          }}
+        >
           <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem" }}>
             {role.actor?.name || "Unknown"}
           </p>
-          <p style={{ margin: "2px 0 0", fontSize: "0.75rem", color: "#aaa", textTransform: "capitalize" }}>
+          <p
+            style={{
+              margin: "2px 0 0",
+              fontSize: "0.75rem",
+              color: "#aaa",
+              textTransform: "capitalize",
+            }}
+          >
             {role.roleType}
           </p>
           {actorFavs > 0 && (
-            <p style={{ margin: "2px 0 0", fontSize: "0.7rem", color: "#e63946" }}>
-              ♥ {actorFavs}
+            <p
+              style={{
+                margin: "2px 0 0",
+                fontSize: "0.7rem",
+                color: "#e63946",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="10"
+                fillRule="currentColor"
+                className="bi bi-heart-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
+                />
+              </svg>{" "}
+              {actorFavs}
             </p>
           )}
         </div>
@@ -59,21 +106,55 @@ function CastRow({ role }) {
 
       {/* Character column */}
       <div
-        style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}
-        onClick={() => role.character?.slug && navigate(`/character/${role.character.slug}`)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.75rem",
+          cursor: "pointer",
+        }}
+        onClick={() =>
+          role.character?.slug && navigate(`/character/${role.character.slug}`)
+        }
       >
         <img
           src={role.character?.image || "/placeholder.jpg"}
           alt={role.character?.name}
-          style={{ width: "48px", height: "64px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
+          style={{
+            width: "48px",
+            height: "64px",
+            objectFit: "cover",
+            borderRadius: "6px",
+            flexShrink: 0,
+          }}
         />
-        <div>
+        <div style={{
+            textAlign: "left"
+        }}>
           <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem" }}>
             {role.character?.name || "Unknown"}
           </p>
           {charFavs > 0 && (
-            <p style={{ margin: "2px 0 0", fontSize: "0.7rem", color: "#e63946" }}>
-              ♥ {charFavs}
+            <p
+              style={{
+                margin: "2px 0 0",
+                fontSize: "0.7rem",
+                color: "#e63946",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="10"
+                fillRule="currentColor"
+                className="bi bi-heart-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
+                />
+              </svg>{" "}
+              {charFavs}
             </p>
           )}
         </div>
@@ -97,23 +178,40 @@ export default function CastList({ cast }) {
 
   const order = { main: 0, supporting: 1, guest: 2 };
   const sorted = [...unique].sort(
-    (a, b) => (order[a.roleType] ?? 3) - (order[b.roleType] ?? 3)
+    (a, b) => (order[a.roleType] ?? 3) - (order[b.roleType] ?? 3),
   );
 
   return (
     <div>
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "1rem",
-        padding: "0.5rem 0",
-        borderBottom: "1px solid #333",
-        marginBottom: "0.25rem",
-      }}>
-        <span style={{ fontSize: "0.75rem", color: "#777", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "1rem",
+          padding: "0.5rem 0",
+          borderBottom: "1px solid #333",
+          marginBottom: "0.25rem",
+          textAlign: "left",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "0.75rem",
+            color: "#777",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+          }}
+        >
           Actor
         </span>
-        <span style={{ fontSize: "0.75rem", color: "#777", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <span
+          style={{
+            fontSize: "0.75rem",
+            color: "#777",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+          }}
+        >
           Character
         </span>
       </div>

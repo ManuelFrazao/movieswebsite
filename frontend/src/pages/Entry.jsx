@@ -13,6 +13,186 @@ import ImagesTab from "../components/ImagesTab";
 import VideosTab from "../components/VideosTab";
 import CastList from "../components/CastList";
 
+function NextEpisodeCountdown({ seasons }) {
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [nextEpisode, setNextEpisode] = useState(null);
+
+  useEffect(() => {
+    if (!seasons) return;
+
+    const now = new Date();
+    const allEpisodes = seasons
+      .flatMap((s) =>
+        (s.episodes || []).map((ep) => ({
+          ...ep,
+          seasonNumber: s.seasonNumber,
+        })),
+      )
+      .filter((ep) => ep.airDate && new Date(ep.airDate) > now)
+      .sort((a, b) => new Date(a.airDate) - new Date(b.airDate));
+
+    if (allEpisodes.length === 0) {
+      setNextEpisode(null);
+      return;
+    }
+
+    setNextEpisode(allEpisodes[0]);
+  }, [seasons]);
+
+  useEffect(() => {
+    if (!nextEpisode) return;
+
+    const tick = () => {
+      const now = new Date();
+      const target = new Date(nextEpisode.airDate);
+      const diff = target - now;
+
+      if (diff <= 0) {
+        setTimeLeft(null);
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+      );
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [nextEpisode]);
+
+  if (!nextEpisode || !timeLeft) return null;
+
+  return (
+    <div
+      style={{
+        background: "#1a1a1a",
+        border: "1px solid #333",
+        borderRadius: "10px",
+        marginBottom: "1rem",
+        width: "100%",
+        textAlign: "center",
+      }}
+    >
+      <p style={{ fontSize: "0.75rem", color: "#aaa", margin: "0 0 0.5rem" }}>
+        Next episode: S{nextEpisode.seasonNumber}E{nextEpisode.number} —{" "}
+        {nextEpisode.title}
+      </p>
+      <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+        {[
+          { label: "Days", value: timeLeft.days },
+          { label: "Hours", value: timeLeft.hours },
+          { label: "Minutes", value: timeLeft.minutes },
+          { label: "Seconds", value: timeLeft.seconds },
+        ].map(({ label, value }) => (
+          <div key={label} style={{ textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "1.8rem",
+                fontWeight: "bold",
+                color: "#639ef7",
+                minWidth: "50px",
+              }}
+            >
+              {String(value).padStart(2, "0")}
+            </div>
+            <div
+              style={{
+                fontSize: "0.65rem",
+                color: "#777",
+                textTransform: "uppercase",
+              }}
+            >
+              {label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EpisodeCountdown({ airDate }) {
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const target = new Date(airDate);
+      const diff = target - now;
+
+      if (diff <= 0) {
+        setTimeLeft(null);
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+      );
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [airDate]);
+
+  if (!timeLeft) return null;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: "0.5rem",
+        alignItems: "center",
+        marginTop: "0.4rem",
+        flexWrap: "wrap",
+      }}
+    >
+      <span style={{ fontSize: "0.7rem", color: "#777" }}>Airs in:</span>
+      {[
+        { label: "d", value: timeLeft.days },
+        { label: "h", value: timeLeft.hours },
+        { label: "m", value: timeLeft.minutes },
+        { label: "s", value: timeLeft.seconds },
+      ].map(({ label, value }) => (
+        <div
+          key={label}
+          style={{
+            background: "#1a1a1a",
+            border: "1px solid #333",
+            borderRadius: "6px",
+            padding: "2px 6px",
+            textAlign: "center",
+            minWidth: "36px",
+          }}
+        >
+          <span
+            style={{ fontSize: "0.8rem", fontWeight: "bold", color: "#639ef7" }}
+          >
+            {String(value).padStart(2, "0")}
+          </span>
+          <span
+            style={{ fontSize: "0.6rem", color: "#777", marginLeft: "2px" }}
+          >
+            {label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Entry() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -328,6 +508,8 @@ export default function Entry() {
       .then((res) => setEntryReviewCount(res.data.count))
       .catch(console.error);
   }, [entry?.id]);
+
+  const seasonRefs = useRef({});
 
   if (!entry) return <p className="loading">Loading...</p>;
 
@@ -1687,111 +1869,6 @@ export default function Entry() {
     );
   }
 
-  function NextEpisodeCountdown({ seasons }) {
-    const [timeLeft, setTimeLeft] = useState(null);
-    const [nextEpisode, setNextEpisode] = useState(null);
-
-    useEffect(() => {
-      if (!seasons) return;
-
-      const now = new Date();
-      const allEpisodes = seasons
-        .flatMap((s) =>
-          (s.episodes || []).map((ep) => ({
-            ...ep,
-            seasonNumber: s.seasonNumber,
-          })),
-        )
-        .filter((ep) => ep.airDate && new Date(ep.airDate) > now)
-        .sort((a, b) => new Date(a.airDate) - new Date(b.airDate));
-
-      if (allEpisodes.length === 0) {
-        setNextEpisode(null);
-        return;
-      }
-
-      setNextEpisode(allEpisodes[0]);
-    }, [seasons]);
-
-    useEffect(() => {
-      if (!nextEpisode) return;
-
-      const tick = () => {
-        const now = new Date();
-        const target = new Date(nextEpisode.airDate);
-        const diff = target - now;
-
-        if (diff <= 0) {
-          setTimeLeft(null);
-          return;
-        }
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor(
-          (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-        );
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-        setTimeLeft({ days, hours, minutes, seconds });
-      };
-
-      tick();
-      const interval = setInterval(tick, 1000);
-      return () => clearInterval(interval);
-    }, [nextEpisode]);
-
-    if (!nextEpisode || !timeLeft) return null;
-
-    return (
-      <div
-        style={{
-          background: "#1a1a1a",
-          border: "1px solid #333",
-          borderRadius: "10px",
-          marginBottom: "1rem",
-          width: "100%",
-          textAlign: "center",
-        }}
-      >
-        <p style={{ fontSize: "0.75rem", color: "#aaa", margin: "0 0 0.5rem" }}>
-          Next episode: S{nextEpisode.seasonNumber}E{nextEpisode.number} —{" "}
-          {nextEpisode.title}
-        </p>
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-          {[
-            { label: "Days", value: timeLeft.days },
-            { label: "Hours", value: timeLeft.hours },
-            { label: "Minutes", value: timeLeft.minutes },
-            { label: "Seconds", value: timeLeft.seconds },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  fontSize: "1.8rem",
-                  fontWeight: "bold",
-                  color: "#639ef7",
-                  minWidth: "50px",
-                }}
-              >
-                {String(value).padStart(2, "0")}
-              </div>
-              <div
-                style={{
-                  fontSize: "0.65rem",
-                  color: "#777",
-                  textTransform: "uppercase",
-                }}
-              >
-                {label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="entry">
       <Navbar />
@@ -2305,14 +2382,29 @@ export default function Entry() {
               entry.seasons?.map((season) => {
                 const seasonStats = getSeasonStats(season);
                 return (
-                  <div key={season.id} className="season">
+                  <div
+                    key={season.id}
+                    className="season"
+                    ref={(el) => (seasonRefs.current[season.id] = el)}
+                  >
                     <div
                       className="season-header"
-                      onClick={() =>
+                      onClick={() => {
+                        const isOpening = openSeason !== season.id;
                         setOpenSeason(
                           openSeason === season.id ? null : season.id,
-                        )
-                      }
+                        );
+
+                        // only scroll if we're opening, not closing
+                        if (isOpening) {
+                          setTimeout(() => {
+                            seasonRefs.current[season.id]?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                          }, 50);
+                        }
+                      }}
                     >
                       <div
                         style={{
@@ -2408,6 +2500,11 @@ export default function Entry() {
                                     <span>{formatDuration(ep.duration)}</span>
                                   )}
                                 </div>
+
+                                {ep.airDate &&
+                                  new Date(ep.airDate) > new Date() && (
+                                    <EpisodeCountdown airDate={ep.airDate} />
+                                  )}
 
                                 <div
                                   style={{

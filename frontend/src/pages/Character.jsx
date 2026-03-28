@@ -364,7 +364,7 @@ export default function Character() {
                                   margin: "0.25rem 0 0",
                                 }}
                               >
-                                {actors.length > 0
+                                {actors.size > 0
                                   ? `Played by: ${[...actors.values()].map((a) => a.name).join(", ")}`
                                   : "Actor unknown"}
                               </p>
