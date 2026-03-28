@@ -1848,7 +1848,7 @@ export default function Entry() {
               <div className="movie-info-content">
                 <div className="movie-info-aside-left">
                   <img
-                    width={220}
+                    width={240}
                     src={entry.coverImage}
                     alt=""
                     style={{
