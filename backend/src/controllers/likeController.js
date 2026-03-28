@@ -1,11 +1,12 @@
 import { Like } from "../models/index.js";
+import { isSpamUser, SPAM_USER_ID } from "../utils/permissions.js";
+import { Op } from "sequelize";
 
 export const toggleLike = async (req, res) => {
   try {
     const { type, entryId, episodeId, reviewId, videoId, value } = req.body;
     const userId = req.user.id;
-
-    // value must be 1 or -1
+    const spam = isSpamUser(req);
     const likeValue = value === -1 ? -1 : 1;
 
     const where = {
@@ -17,22 +18,22 @@ export const toggleLike = async (req, res) => {
       videoId: videoId || null,
     };
 
+    // count where excludes spam user
     const countWhere = {
       type,
       entryId: entryId || null,
       episodeId: episodeId || null,
       reviewId: reviewId || null,
       videoId: videoId || null,
+      userId: { [Op.ne]: SPAM_USER_ID }, // 🔥 exclude spam user from counts
     };
 
     const existing = await Like.findOne({ where });
 
     if (existing) {
       if (existing.value === likeValue) {
-        // clicking same button again → remove it
         await existing.destroy();
       } else {
-        // switching from like to dislike or vice versa
         await existing.update({ value: likeValue });
       }
     } else {
@@ -42,7 +43,6 @@ export const toggleLike = async (req, res) => {
     const likes = await Like.count({ where: { ...countWhere, value: 1 } });
     const dislikes = await Like.count({ where: { ...countWhere, value: -1 } });
 
-    // what is the current user's vote now
     const current = await Like.findOne({ where });
     const userValue = current ? current.value : 0;
 
