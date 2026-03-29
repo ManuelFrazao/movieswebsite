@@ -149,8 +149,14 @@ export const updateEpisode = async (req, res) => {
       }
     }
 
-    await episode.update({
+    const parsedData = {
       ...req.body,
+      duration: req.body.duration ? Number(req.body.duration) : null,
+      airDate: req.body.airDate ? new Date(req.body.airDate) : null,
+    };
+
+    await episode.update({
+      ...parsedData,
       isFinal,
       thumbnail,
     });

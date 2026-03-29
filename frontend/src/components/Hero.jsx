@@ -5,8 +5,6 @@ export default function Hero() {
 
   return (
     <div style={{ textAlign: "center", marginTop: "100px" }}>
-      <h1>Descobre Filmes e Séries 🎬</h1>
-      <p>Explora, avalia e cria a tua watchlist</p>
     </div>
   );
 }

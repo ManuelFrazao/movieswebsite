@@ -974,6 +974,7 @@ export default function Entry() {
                   <EntryActions
                     entityId={episode.id}
                     type="episode"
+                    releaseDate={episode.airDate}
                     isFavorite={episode.isFavorite}
                     isWatchlist={episode.isWatchlist}
                     favoritesCount={episode.favoritesCount}

@@ -14,6 +14,7 @@ export default function EntryActions({
   isWatchlist: initialWatchlist,
   favoritesCount = 0,
   watchlistCount = 0,
+  releaseDate,
   onUpdate,
 }) {
   const user = getUser();
@@ -71,6 +72,8 @@ export default function EntryActions({
     });
   };
 
+  const hasAired = !releaseDate || new Date(releaseDate) <= new Date();
+
   return (
     <div className="actions">
       {/* WATCHLIST */}
@@ -119,8 +122,9 @@ export default function EntryActions({
           </div>
         </button>
       ) : null}
-      
+
       {/* FAVORITES */}
+      {hasAired && (
       <button
         className={`secondary-btn ${isFavorite ? "active-favorite" : ""}`}
         onClick={handleFavorite}
@@ -165,6 +169,7 @@ export default function EntryActions({
           )}
         </div>
       </button>
+      )}
     </div>
   );
 }

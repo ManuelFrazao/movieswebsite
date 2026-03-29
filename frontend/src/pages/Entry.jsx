@@ -193,6 +193,83 @@ function EpisodeCountdown({ airDate }) {
   );
 }
 
+function MovieCountdown({ releaseDate }) {
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const target = new Date(releaseDate);
+      const diff = target - now;
+
+      if (diff <= 0) {
+        setTimeLeft(null);
+        return;
+      }
+
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      });
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [releaseDate]);
+
+  if (!timeLeft) return null;
+
+  return (
+    <div
+      style={{
+        background: "#1a1a1a",
+        border: "1px solid #333",
+        borderRadius: "10px",
+        padding: "1rem",
+        marginBottom: "1rem",
+        width: "100%",
+      }}
+    >
+      <p style={{ fontSize: "0.75rem", color: "#aaa", margin: "0 0 0.5rem" }}>
+        Release in:
+      </p>
+      <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+        {[
+          { label: "Days", value: timeLeft.days },
+          { label: "Hours", value: timeLeft.hours },
+          { label: "Minutes", value: timeLeft.minutes },
+          { label: "Seconds", value: timeLeft.seconds },
+        ].map(({ label, value }) => (
+          <div key={label} style={{ textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "1.8rem",
+                fontWeight: "bold",
+                color: "#639ef7",
+                minWidth: "50px",
+              }}
+            >
+              {String(value).padStart(2, "0")}
+            </div>
+            <div
+              style={{
+                fontSize: "0.65rem",
+                color: "#777",
+                textTransform: "uppercase",
+              }}
+            >
+              {label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Entry() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -1195,7 +1272,8 @@ export default function Entry() {
             <RatingBadge value={avgs[hoverIndex]} />
 
             <div>
-              <strong>{formatVotes(counts[hoverIndex])}</strong> votes
+              <strong>{formatVotes(counts[hoverIndex])}</strong>{" "}
+              {counts[hoverIndex] === 1 ? "vote" : "votes"}
             </div>
           </div>
         )}
@@ -1336,7 +1414,8 @@ export default function Entry() {
             <RatingBadge value={avgs[hoverIndex]} />
 
             <div>
-              <strong>{formatVotes(counts[hoverIndex])}</strong> votes
+              <strong>{formatVotes(counts[hoverIndex])}</strong>{" "}
+              {counts[hoverIndex] === 1 ? "vote" : "votes"}
             </div>
           </div>
         )}
@@ -1478,7 +1557,8 @@ export default function Entry() {
             <RatingBadge value={avgs[hoverIndex]} />
 
             <div>
-              <strong>{formatVotes(counts[hoverIndex])}</strong> votes
+              <strong>{formatVotes(counts[hoverIndex])}</strong>{" "}
+              {counts[hoverIndex] === 1 ? "vote" : "votes"}
             </div>
           </div>
         )}
@@ -2041,6 +2121,7 @@ export default function Entry() {
                   <EntryActions
                     entityId={entry.id}
                     type="entry"
+                    releaseDate={entry.releaseDate}
                     isFavorite={entry.isFavorite}
                     isWatchlist={entry.isWatchlist}
                     favoritesCount={entry.favoritesCount}
@@ -2150,6 +2231,11 @@ export default function Entry() {
                       </>
                     </div>
                   )}
+                  {!isSeries &&
+                    entry.releaseDate &&
+                    new Date(entry.releaseDate) > new Date() && (
+                      <MovieCountdown releaseDate={entry.releaseDate} />
+                    )}
                   {isSeries && <NextEpisodeCountdown seasons={entry.seasons} />}
                   {entry.description !== "" && (
                     <>
@@ -2157,7 +2243,7 @@ export default function Entry() {
                       <p
                         style={{
                           fontSize: "0.85rem",
-                          marginBottom: "0.5rem"
+                          marginBottom: "0.5rem",
                         }}
                       >
                         {entry.description}
