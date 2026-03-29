@@ -1087,6 +1087,7 @@ export default function Entry() {
                       <p
                         style={{
                           fontSize: "0.85rem",
+                          marginBottom: "0.5rem",
                         }}
                       >
                         {episode.description}
@@ -1094,7 +1095,7 @@ export default function Entry() {
                     </>
                   )}
                   <>
-                    {stats?.totalVotes > 0 && (
+
                       <>
                         <div className="movie-info-rating">
                           <div style={{ display: "inline-block" }}>
@@ -1122,7 +1123,7 @@ export default function Entry() {
                             )}
                         </div>
                       </>
-                    )}
+
                   </>
                   <div className="entry-contents">
                     <div className="entry-contents-card">
@@ -1355,10 +1356,10 @@ export default function Entry() {
           </div>
         )}
 
-        {/* 🔥 CAST */}
-        {activeTab === "characters" && (
-          <div className="characters">
-            <p style={{ color: "#777" }}>Coming soon 👀</p>
+        {/* 🔥 Cast */}
+        {activeTab === "cast" && (
+          <div className="cast">
+            <CastList cast={cast} />
           </div>
         )}
       </div>

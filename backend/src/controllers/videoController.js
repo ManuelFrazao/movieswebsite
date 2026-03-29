@@ -1,5 +1,6 @@
 import cloudinary from "../utils/cloudinary.js";
 import { Video } from "../models/index.js";
+import { Readable } from "stream";
 
 export const uploadVideo = async (req, res) => {
   try {
@@ -7,14 +8,25 @@ export const uploadVideo = async (req, res) => {
 
     if (!req.file?.buffer) return res.status(400).json({ error: "No file" });
 
-    const result = await cloudinary.uploader.upload(
-      `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-      {
-        folder: "videos",
-        resource_type: "video",
-        transformation: [{ quality: "auto" }],
-      },
-    );
+    // 🔥 stream upload instead of base64
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "videos",
+          resource_type: "video",
+          chunk_size: 6000000, // 6MB chunks
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+
+      const readable = new Readable();
+      readable.push(req.file.buffer);
+      readable.push(null);
+      readable.pipe(uploadStream);
+    });
 
     const video = await Video.create({
       url: result.secure_url,
