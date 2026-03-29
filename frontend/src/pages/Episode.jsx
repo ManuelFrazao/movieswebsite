@@ -889,11 +889,12 @@ export default function Entry() {
             </h1>
 
             <div className="meta">
+              {episode.duration > 0 && (
               <>
                 <span>{formatDuration(episode.duration)}</span>
-              </>
-              <>
                 <span>•</span>
+              </>)}
+              <>                
                 <span>{formatDate(episode.airDate)}</span>
               </>
             </div>
