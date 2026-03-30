@@ -635,27 +635,22 @@ export default function Entry() {
 
   const getTotalDuration = (seasons) => {
     if (!seasons) return 0;
-
-    const totalMinutes = seasons
+    return seasons
       .flatMap((s) => s.episodes || [])
-      .reduce((sum, ep) => sum + (ep.duration || 0), 0);
-
-    return totalMinutes;
+      .filter((ep) => ep.duration && ep.duration > 0) // 🔥 only episodes with duration
+      .reduce((sum, ep) => sum + ep.duration, 0);
   };
 
   const getAverageDuration = (seasons) => {
     if (!seasons) return 0;
-
-    const episodes = seasons.flatMap((s) => s.episodes || []);
+    const episodes = seasons
+      .flatMap((s) => s.episodes || [])
+      .filter((ep) => ep.duration && ep.duration > 0); // 🔥 only episodes with duration
 
     if (episodes.length === 0) return 0;
-
-    const totalMinutes = episodes.reduce(
-      (sum, ep) => sum + (ep.duration || 0),
-      0,
+    return Math.round(
+      episodes.reduce((sum, ep) => sum + ep.duration, 0) / episodes.length,
     );
-
-    return Math.round(totalMinutes / episodes.length);
   };
 
   const formatTotalDuration = (minutes) => {
@@ -867,6 +862,7 @@ export default function Entry() {
     let rating = 0;
 
     if (data.episodeId) {
+      // 🔥 check userRatings first, then default to 0
       rating = userRatings[data.episodeId] || 0;
     }
 
@@ -875,11 +871,7 @@ export default function Entry() {
     }
 
     setReviewRating(rating);
-
-    setReviewModal({
-      open: true,
-      ...data,
-    });
+    setReviewModal({ open: true, ...data });
   };
 
   const totalCharacters = new Set(

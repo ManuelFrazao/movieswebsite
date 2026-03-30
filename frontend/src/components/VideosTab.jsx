@@ -121,7 +121,6 @@ function VideoModal({ video, onClose, currentUser }) {
         <video
           src={video.url}
           controls
-          autoPlay
           style={{ width: "100%", borderRadius: "8px", maxHeight: "50vh" }}
         />
 

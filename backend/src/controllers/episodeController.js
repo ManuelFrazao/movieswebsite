@@ -5,6 +5,9 @@ import {
   Favorite,
   Watchlist,
   Cast,
+  Vote,
+  Review,
+  Like,
 } from "../models/index.js";
 import cloudinary from "../utils/cloudinary.js";
 import { Op } from "sequelize";
@@ -149,6 +152,26 @@ export const updateEpisode = async (req, res) => {
       }
     }
 
+    // 🔥 if isFinal is being set to false, check if no other final episodes exist
+    if (!isFinal) {
+      const season = await episode.getSeason();
+      const entry = await season.getEntry();
+      const seasons = await entry.getSeasons();
+      const seasonIds = seasons.map((s) => s.id);
+
+      const anyFinal = await Episode.findOne({
+        where: {
+          seasonId: seasonIds,
+          isFinal: true,
+          id: { [Op.ne]: episode.id }, // exclude current
+        },
+      });
+
+      if (!anyFinal) {
+        await entry.update({ endingYear: null });
+      }
+    }
+
     const parsedData = {
       ...req.body,
       duration: req.body.duration ? Number(req.body.duration) : null,
@@ -256,16 +279,16 @@ export const getEpisodeById = async (req, res) => {
 export const deleteEpisode = async (req, res) => {
   try {
     const { id } = req.params;
-
     const episode = await Episode.findByPk(id);
+    if (!episode) return res.status(404).json({ message: "Episode not found" });
 
-    if (!episode) {
-      return res.status(404).json({ message: "Episode não encontrado" });
-    }
+    // 🔥 delete associated votes, reviews, likes
+    await Vote.destroy({ where: { episodeId: id } });
+    await Review.destroy({ where: { episodeId: id } });
+    await Like.destroy({ where: { episodeId: id } });
 
     await episode.destroy();
-
-    res.json({ message: "Episode apagado" });
+    res.json({ message: "Episode deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

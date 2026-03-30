@@ -20,7 +20,8 @@ function Graph({ data }) {
   };
 
   const days = getLast7Days();
-  if (!data || Object.keys(data).length === 0) return <span style={{ color: "#333", fontSize: "0.7rem" }}>—</span>;
+  if (!data || Object.keys(data).length === 0)
+    return <span style={{ color: "#333", fontSize: "0.7rem" }}>—</span>;
 
   const values = days.map((day) => data?.[day]?.count || 0);
   const avgs = days.map((day) => data?.[day]?.avg || 0);
@@ -76,25 +77,61 @@ function Graph({ data }) {
         ))}
       </svg>
       {hoverIndex !== null && (
-        <div className="graph-tooltip" style={{ left: `${points[hoverIndex].x}px`, top: `${points[hoverIndex].y}px` }}>
-          <div>{new Date(days[hoverIndex]).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</div>
+        <div
+          className="graph-tooltip"
+          style={{
+            left: `${points[hoverIndex].x}px`,
+            top: `${points[hoverIndex].y}px`,
+          }}
+        >
+          <div>
+            {new Date(days[hoverIndex]).toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+            })}
+          </div>
           <RatingBadge value={Number(avgs[hoverIndex]) || 0} />
-          <div><strong>{formatVotes(values[hoverIndex])}</strong> {values[hoverIndex] === 1 ? "vote" : "votes"}</div>
+          <div>
+            <strong>{formatVotes(values[hoverIndex])}</strong>{" "}
+            {values[hoverIndex] === 1 ? "vote" : "votes"}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-function TrendTable({ entries, navigate, trendingData }) {
+function TrendTable({ entries, navigate, trendingData, prevRanks = {} }) {
   if (!entries.length) return <p style={{ color: "#555" }}>No data yet.</p>;
+
+  function PositionChange({ entryId, currentRank, prevRanks }) {
+    const prev = prevRanks[entryId];
+    if (!prev || prev === currentRank)
+      return (
+        <span style={{ color: "#444", fontSize: "0.7rem", width: "28px" }}>
+          —
+        </span>
+      );
+
+    const diff = prev - currentRank; // positive = moved up
+    return diff > 0 ? (
+      <span style={{ color: "#4caf50", fontSize: "0.7rem", width: "28px" }}>
+        ▲{diff}
+      </span>
+    ) : (
+      <span style={{ color: "#e50914", fontSize: "0.7rem", width: "28px" }}>
+        ▼{Math.abs(diff)}
+      </span>
+    );
+  }
 
   return (
     <table className="trend-table">
       <thead>
         <tr>
           <th>#</th>
-          <th></th>
+          <th style={{ width: "28px" }}></th>
           <th>Title</th>
           <th>Rating</th>
           <th>This week</th>
@@ -107,6 +144,13 @@ function TrendTable({ entries, navigate, trendingData }) {
             <td className={`rank-cell ${index < 3 ? "top3" : ""}`}>
               {index + 1}
             </td>
+            <td>
+              <PositionChange
+                entryId={entry.id}
+                currentRank={index + 1}
+                prevRanks={prevRanks}
+              />
+            </td>
             <td className="cover-cell">
               <img src={entry.coverImage} alt={entry.title} />
             </td>
@@ -116,13 +160,18 @@ function TrendTable({ entries, navigate, trendingData }) {
             </td>
             <td className="score-cell">
               {entry.totalVotes > 0 && Number(entry.avg) > 0 ? (
-                <RatingBadge value={Number(entry.avg)} votes={formatVotes(entry.totalVotes)} />
+                <RatingBadge
+                  value={Number(entry.avg)}
+                  votes={formatVotes(entry.totalVotes)}
+                />
               ) : (
                 <span style={{ color: "#444", fontSize: "0.75rem" }}>—</span>
               )}
             </td>
             <td className="trend-cell">
-              {entry.recentVotes > 0 ? `+${formatVotes(entry.recentVotes)}` : "—"}
+              {entry.recentVotes > 0
+                ? `+${formatVotes(entry.recentVotes)}`
+                : "—"}
             </td>
             <td className="graph-cell">
               <Graph data={trendingData[entry.id]} />
@@ -134,16 +183,42 @@ function TrendTable({ entries, navigate, trendingData }) {
   );
 }
 
+// Add this function before the Trending component
+const getPreviousRanks = () => {
+  try {
+    return JSON.parse(localStorage.getItem("trendingRanks") || "{}");
+  } catch {
+    return {};
+  }
+};
+
+const saveCurrentRanks = (entries) => {
+  const ranks = {};
+  entries.forEach((e, i) => {
+    ranks[e.id] = i + 1;
+  });
+  localStorage.setItem("trendingRanks", JSON.stringify(ranks));
+};
+
 export default function Trending() {
   const [entries, setEntries] = useState([]);
   const [trendingData, setTrendingData] = useState({});
   const navigate = useNavigate();
+  const [prevRanks, setPrevRanks] = useState({});
+
+  useEffect(() => {
+    if (!entries.length) return;
+    setPrevRanks(getPreviousRanks());
+    saveCurrentRanks(entries);
+  }, [entries]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await api.get("/votes/trending");
-        setEntries(res.data.length ? res.data : (await api.get("/entries")).data);
+        setEntries(
+          res.data.length ? res.data : (await api.get("/entries")).data,
+        );
       } catch (err) {
         console.error(err);
       }
@@ -155,8 +230,11 @@ export default function Trending() {
     if (!entries.length) return;
     entries.forEach((entry) => {
       if (!trendingData[entry.id]) {
-        api.get(`/votes/entry/${entry.id}/trending`)
-          .then((res) => setTrendingData((prev) => ({ ...prev, [entry.id]: res.data })))
+        api
+          .get(`/votes/entry/${entry.id}/trending`)
+          .then((res) =>
+            setTrendingData((prev) => ({ ...prev, [entry.id]: res.data })),
+          )
           .catch(() => {});
       }
     });
@@ -167,7 +245,9 @@ export default function Trending() {
   const sorted = [...entries].sort((a, b) => (b.score || 0) - (a.score || 0));
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const newEntries = entries.filter((e) => new Date(e.createdAt) >= thirtyDaysAgo);
+  const newEntries = entries.filter(
+    (e) => new Date(e.createdAt) >= thirtyDaysAgo,
+  );
 
   return (
     <div>
@@ -176,22 +256,38 @@ export default function Trending() {
 
         <div className="section">
           <h2>🎬 Top Movies</h2>
-          <TrendTable entries={movies} navigate={navigate} trendingData={trendingData} />
+          <TrendTable
+            entries={movies}
+            navigate={navigate}
+            trendingData={trendingData}
+          />
         </div>
 
         <div className="section">
           <h2>📺 Top Series</h2>
-          <TrendTable entries={series} navigate={navigate} trendingData={trendingData} />
+          <TrendTable
+            entries={series}
+            navigate={navigate}
+            trendingData={trendingData}
+          />
         </div>
 
         <div className="section">
           <h2>🔥 Top Overall</h2>
-          <TrendTable entries={sorted} navigate={navigate} trendingData={trendingData} />
+          <TrendTable
+            entries={sorted}
+            navigate={navigate}
+            trendingData={trendingData}
+          />
         </div>
 
         <div className="section">
           <h2>🆕 New Releases</h2>
-          <TrendTable entries={newEntries} navigate={navigate} trendingData={trendingData} />
+          <TrendTable
+            entries={newEntries}
+            navigate={navigate}
+            trendingData={trendingData}
+          />
         </div>
       </div>
     </div>

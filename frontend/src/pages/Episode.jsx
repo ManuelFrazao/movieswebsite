@@ -52,6 +52,25 @@ export default function Entry() {
   });
 
   useEffect(() => {
+    if (!entry?.id) return;
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user?.id) return;
+
+    // fetch user's existing episode votes for this entry
+    api
+      .get(`/votes/entry/${entry.id}/my-votes`)
+      .then((res) => {
+        const ratings = {};
+        res.data.forEach((v) => {
+          if (v.episodeId) ratings[v.episodeId] = v.value;
+          if (v.entryId) ratings.entry = v.value;
+        });
+        setUserRatings(ratings);
+      })
+      .catch(() => {});
+  }, [entry?.id]);
+
+  useEffect(() => {
     if (!episode?.id) return;
 
     const fetchOverviewStats = async () => {
@@ -890,11 +909,12 @@ export default function Entry() {
 
             <div className="meta">
               {episode.duration > 0 && (
+                <>
+                  <span>{formatDuration(episode.duration)}</span>
+                  <span>•</span>
+                </>
+              )}
               <>
-                <span>{formatDuration(episode.duration)}</span>
-                <span>•</span>
-              </>)}
-              <>                
                 <span>{formatDate(episode.airDate)}</span>
               </>
             </div>
@@ -1097,35 +1117,33 @@ export default function Entry() {
                     </>
                   )}
                   <>
-
-                      <>
-                        <div className="movie-info-rating">
-                          <div style={{ display: "inline-block" }}>
-                            <RatingBadge
-                              value={stats?.averageRating}
-                              votes={formatVotes(stats?.totalVotes)}
-                              size="large"
-                            />
-                          </div>
-                          {episode.airDate &&
-                            new Date(episode.airDate) <= new Date() && (
-                              <button
-                                className="rate-btn"
-                                onClick={() =>
-                                  setRatingModal({
-                                    open: true,
-                                    episodeId: episode.id,
-                                    entryId: null,
-                                  })
-                                }
-                                style={{ color: "#639ef7" }}
-                              >
-                                Rate
-                              </button>
-                            )}
+                    <>
+                      <div className="movie-info-rating">
+                        <div style={{ display: "inline-block" }}>
+                          <RatingBadge
+                            value={stats?.averageRating}
+                            votes={formatVotes(stats?.totalVotes)}
+                            size="large"
+                          />
                         </div>
-                      </>
-
+                        {episode.airDate &&
+                          new Date(episode.airDate) <= new Date() && (
+                            <button
+                              className="rate-btn"
+                              onClick={() =>
+                                setRatingModal({
+                                  open: true,
+                                  episodeId: episode.id,
+                                  entryId: null,
+                                })
+                              }
+                              style={{ color: "#639ef7" }}
+                            >
+                              Rate
+                            </button>
+                          )}
+                      </div>
+                    </>
                   </>
                   <div className="entry-contents">
                     <div className="entry-contents-card">

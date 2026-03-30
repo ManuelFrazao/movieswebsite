@@ -158,6 +158,10 @@ export default function EditEntry() {
         formData.append("image", entryImage);
       }
 
+      if (entry.genres) {
+        formData.append("genres", JSON.stringify(entry.genres));
+      }
+
       await api.put(`/entries/${id}`, formData);
 
       alert("Updated!");
@@ -309,6 +313,23 @@ export default function EditEntry() {
         onChange={(e) => setEntry({ ...entry, description: e.target.value })}
       />
 
+      <TextField
+        label="Genres (comma separated)"
+        fullWidth
+        margin="normal"
+        value={Array.isArray(entry.genres) ? entry.genres.join(", ") : ""}
+        onChange={(e) =>
+          setEntry({
+            ...entry,
+            genres: e.target.value
+              .split(",")
+              .map((g) => g.trim())
+              .filter(Boolean),
+          })
+        }
+        helperText="e.g. Action, Drama, Sci-Fi"
+      />
+
       <Box
         mt={2}
         display="flex"
@@ -346,24 +367,22 @@ export default function EditEntry() {
         )}
       </Box>
 
-      <Box
-        mt={2}
-        display="flex"
-        flexDirection={"column"}
-        alignItems="center"
-        gap={2}
-      >
-        <CastManager
-          entryId={id}
-          castData={castData}
-          setCastData={setCastData}
-          onChange={setCastData}
-        />
-
-        <Button variant="contained" onClick={handleSaveCast} sx={{ mt: 2 }}>
-          Save Cast
-        </Button>
-      </Box>
+      <Accordion sx={{ mt: 2 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Cast ({castData.length})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <CastManager
+            entryId={id}
+            castData={castData}
+            setCastData={setCastData}
+            onChange={setCastData}
+          />
+          <Button variant="contained" onClick={handleSaveCast} sx={{ mt: 2 }}>
+            Save Cast
+          </Button>
+        </AccordionDetails>
+      </Accordion>
 
       <Box
         mt={2}

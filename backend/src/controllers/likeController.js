@@ -68,7 +68,37 @@ export const getVideoLikes = async (req, res) => {
 
     let userValue = 0;
     if (userId) {
-      const existing = await Like.findOne({ where: { userId, type: "video", videoId } });
+      const existing = await Like.findOne({
+        where: { userId, type: "video", videoId },
+      });
+      userValue = existing ? existing.value : 0;
+    }
+
+    res.json({ likes, dislikes, userValue });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getReviewLikes = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const userId = req.user?.id;
+
+    const countWhere = {
+      type: "review",
+      reviewId,
+      userId: { [Op.ne]: SPAM_USER_ID },
+    };
+
+    const likes = await Like.count({ where: { ...countWhere, value: 1 } });
+    const dislikes = await Like.count({ where: { ...countWhere, value: -1 } });
+
+    let userValue = 0;
+    if (userId) {
+      const existing = await Like.findOne({
+        where: { userId, type: "review", reviewId },
+      });
       userValue = existing ? existing.value : 0;
     }
 

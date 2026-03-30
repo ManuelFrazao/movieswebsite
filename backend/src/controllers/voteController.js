@@ -490,6 +490,33 @@ export const getEntryDistribution = async (req, res) => {
   }
 };
 
+export const getMyVotes = async (req, res) => {
+  try {
+    const { entryId } = req.params;
+    const userId = req.user.id;
+
+    const episodes = await Episode.findAll({
+      where: { entryId },
+      attributes: ["id"],
+    });
+    const episodeIds = episodes.map((e) => e.id);
+
+    const votes = await Vote.findAll({
+      where: {
+        userId,
+        [Op.or]: [
+          { entryId },
+          { episodeId: episodeIds },
+        ],
+      },
+    });
+
+    res.json(votes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // =====================
 // DELETE VOTE
 // =====================
