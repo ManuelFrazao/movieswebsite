@@ -16,6 +16,7 @@
   --mono: ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
+  font-family: Roboto, Helvetica, Arial, sans-serif;
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);

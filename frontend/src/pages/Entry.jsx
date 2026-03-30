@@ -878,6 +878,19 @@ export default function Entry() {
     cast.map((c) => c.character?.id).filter(Boolean),
   ).size;
 
+  const isReleased = () => {
+    if (!entry.releaseDate) return false;
+
+    const today = new Date();
+    const release = new Date(entry.releaseDate);
+
+    // 🔥 remover horas (comparar só datas)
+    today.setHours(0, 0, 0, 0);
+    release.setHours(0, 0, 0, 0);
+
+    return release <= today;
+  };
+
   function RatingOverlay({ data }) {
     const max = Math.max(...Object.values(data), 1);
 
@@ -2243,44 +2256,42 @@ export default function Entry() {
                     </>
                   )}
                   <>
-                    {entry.totalVotes > 0 && (
-                      <>
-                        <div className="movie-info-rating">
-                          <div
-                            onMouseEnter={(e) => {
-                              setHoverEntry(true);
-                              setHoverPosition({ x: e.clientX, y: e.clientY });
-                              fetchEntryDistribution();
-                            }}
-                            onMouseLeave={() => setHoverEntry(false)}
-                            style={{ display: "inline-block" }}
+                    <div className="movie-info-rating">
+                      <div
+                        onMouseEnter={(e) => {
+                          setHoverEntry(true);
+                          setHoverPosition({ x: e.clientX, y: e.clientY });
+                          fetchEntryDistribution();
+                        }}
+                        onMouseLeave={() => setHoverEntry(false)}
+                        style={{ display: "inline-block" }}
+                      >
+                        {entry.totalVotes > 0 && (
+                          <RatingBadge
+                            value={entry.topRank / 10}
+                            votes={formatVotes(entry.totalVotes)}
+                            size="large"
+                          />
+                        )}
+                      </div>
+                      {entry.type === "movie" &&
+                        entry.releaseDate &&
+                        isReleased() && (
+                          <button
+                            className="rate-btn"
+                            onClick={() =>
+                              setRatingModal({
+                                open: true,
+                                entryId: entry.id, // ✅ correto
+                                episodeId: null,
+                              })
+                            }
+                            style={{ color: "#639ef7" }}
                           >
-                            <RatingBadge
-                              value={entry.topRank / 10}
-                              votes={formatVotes(entry.totalVotes)}
-                              size="large"
-                            />
-                          </div>
-                          {entry.type === "movie" &&
-                            entry.releaseDate &&
-                            new Date(entry.releaseDate) <= new Date() && (
-                              <button
-                                className="rate-btn"
-                                onClick={() =>
-                                  setRatingModal({
-                                    open: true,
-                                    entryId: entry.id, // ✅ correto
-                                    episodeId: null,
-                                  })
-                                }
-                                style={{ color: "#639ef7" }}
-                              >
-                                Rate
-                              </button>
-                            )}
-                        </div>
-                      </>
-                    )}
+                            Rate
+                          </button>
+                        )}
+                    </div>
                   </>
                   <div className="entry-contents">
                     <div className="entry-contents-card">
