@@ -2759,6 +2759,13 @@ export default function Entry() {
                 <h3>Score Distribution</h3>
 
                 <RatingDistributionEntry data={entryDistribution} />
+
+                <div>
+                  <span style={{
+                    fontSize: "0.85rem",
+                    color: "rgb(119, 119, 119)"
+                  }}>Total votes: {entry.totalVotes.toLocaleString()}</span>
+                </div>
               </div>
             )}
             <div className="entry-trend-dist-graph">
