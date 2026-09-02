@@ -182,7 +182,8 @@ export default function Actor() {
             </div>
 
             <div>
-              <strong>{formatVotes(counts[hoverIndex])}</strong> favorites
+              <strong>{formatVotes(counts[hoverIndex])}</strong>{" "}
+              {counts[hoverIndex] === 1 ? "favorite" : "favorites"}
             </div>
           </div>
         )}
