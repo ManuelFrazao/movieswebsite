@@ -64,7 +64,13 @@ export default function ReviewCard({ review, onLike, isSeries = false }) {
         <div>
           <strong>{review.user?.username}</strong>
           <div className="review-meta">
-            <span>{formatRelativeDate(review.createdAt)}</span>
+            <span>
+              {formatRelativeDate(review.createdAt)}
+              {review.updatedAt &&
+                new Date(review.updatedAt) -
+                  new Date(review.createdAt) >
+                  60000 && " (edited)"}
+            </span>
             {isSeries && review.episode && (
               <div className="review-episode">
                 {review.episode?.season?.seasonNumber && (

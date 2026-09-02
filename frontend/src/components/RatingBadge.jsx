@@ -17,7 +17,11 @@ export default function RatingBadge({ value, votes, size = "small" }) {
     if (typeof v === "number") {
       return v === 1 ? "1 vote" : `${v.toLocaleString()} votes`;
     }
-    // already a string — can't know if singular, just display as-is
+    // already a string (e.g. from formatVotes()) — only unabbreviated
+    // small numbers can actually be "1", anything with a K/M suffix
+    // is always plural
+    const parsed = Number(v);
+    if (!Number.isNaN(parsed) && parsed === 1) return "1 vote";
     return `${v} votes`;
   };
 

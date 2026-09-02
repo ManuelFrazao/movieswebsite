@@ -13,14 +13,29 @@ export const createVote = async (req, res) => {
       return res.status(400).json({ message: "Dados inválidos" });
     }
 
-    // 🔥 criar voto
-    const vote = await Vote.create({
-      value,
-      type,
-      userId,
-      entryId: entryId || null,
-      episodeId: episodeId || null,
+    // 🔥 se o user já votou nesta entry/episode, atualiza em vez de duplicar
+    const existingVote = await Vote.findOne({
+      where: {
+        userId,
+        entryId: entryId || null,
+        episodeId: episodeId || null,
+      },
     });
+
+    let vote;
+    if (existingVote) {
+      existingVote.value = value;
+      await existingVote.save();
+      vote = existingVote;
+    } else {
+      vote = await Vote.create({
+        value,
+        type,
+        userId,
+        entryId: entryId || null,
+        episodeId: episodeId || null,
+      });
+    }
 
     // =====================
     // 🎬 UPDATE ENTRY STATS (MOVIE)

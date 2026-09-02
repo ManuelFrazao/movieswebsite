@@ -13,6 +13,11 @@ import ImagesTab from "../components/ImagesTab";
 import VideosTab from "../components/VideosTab";
 import CastList from "../components/CastList";
 
+const getUser = () => {
+  const raw = localStorage.getItem("user");
+  return raw ? JSON.parse(raw) : null;
+};
+
 function NextEpisodeCountdown({ seasons }) {
   const [timeLeft, setTimeLeft] = useState(null);
   const [nextEpisode, setNextEpisode] = useState(null);
@@ -273,6 +278,7 @@ function MovieCountdown({ releaseDate }) {
 export default function Entry() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const currentUser = getUser();
   const [entry, setEntry] = useState(null);
   const [episodeStats, setEpisodeStats] = useState({});
   const [ratingModal, setRatingModal] = useState({
@@ -465,6 +471,25 @@ export default function Entry() {
     if (!entry?.id) return;
     fetchReviews();
   }, [entry?.id, reviewSort]);
+
+  // 🔥 load the current user's existing votes so the Rate button/modal
+  // reflect a prior rating even after a page reload
+  useEffect(() => {
+    if (!entry?.id) return;
+    if (!getUser()) return;
+
+    api
+      .get(`/votes/entry/${entry.id}/my-votes`)
+      .then((res) => {
+        const map = {};
+        (res.data || []).forEach((v) => {
+          if (v.entryId) map.entry = v.value;
+          if (v.episodeId) map[v.episodeId] = v.value;
+        });
+        setUserRatings((prev) => ({ ...prev, ...map }));
+      })
+      .catch(() => {});
+  }, [entry?.id]);
 
   const fetchEntryDistribution = async () => {
     if (entryDistribution) return;
@@ -858,19 +883,41 @@ export default function Entry() {
     }
   };
 
+  // 🔥 the current user's own review for whatever entry/episode is being
+  // opened in the review modal — lets us switch into "edit" mode instead
+  // of letting them post a second, duplicate review
+  const findMyReview = (data) => {
+    if (!currentUser) return null;
+
+    return (
+      reviews.find((r) => {
+        if (r.user?.id !== currentUser.id) return false;
+        if (data.episodeId) return r.episode?.id === data.episodeId;
+        return !r.episodeId && r.entryId === data.entryId;
+      }) || null
+    );
+  };
+
+  const myEntryReview = findMyReview({ entryId: entry?.id });
+
   const openReviewModal = (data) => {
-    let rating = 0;
+    const existing = findMyReview(data);
 
-    if (data.episodeId) {
-      // 🔥 check userRatings first, then default to 0
-      rating = userRatings[data.episodeId] || 0;
-    }
+    let rating = existing?.rating || 0;
 
-    if (data.entryId) {
-      rating = userRatings.entry || 0;
+    if (!existing) {
+      if (data.episodeId) {
+        // 🔥 check userRatings first, then default to 0
+        rating = userRatings[data.episodeId] || 0;
+      }
+
+      if (data.entryId) {
+        rating = userRatings.entry || 0;
+      }
     }
 
     setReviewRating(rating);
+    setReviewText(existing?.content || "");
     setReviewModal({ open: true, ...data });
   };
 
@@ -1760,7 +1807,8 @@ export default function Entry() {
               <RatingBadge value={points[hoverIndex].rating} />
 
               <div>
-                <strong>{formatVotes(points[hoverIndex].votes)}</strong> votes
+                <strong>{formatVotes(points[hoverIndex].votes)}</strong>{" "}
+                {points[hoverIndex].votes === 1 ? "vote" : "votes"}
               </div>
             </div>
           )}
@@ -1944,7 +1992,8 @@ export default function Entry() {
             <div style={{ fontWeight: "bold" }}>{points[hoverIndex].title}</div>
 
             <div>
-              <strong>{formatVotes(points[hoverIndex].votes)}</strong> votes
+              <strong>{formatVotes(points[hoverIndex].votes)}</strong>{" "}
+              {points[hoverIndex].votes === 1 ? "vote" : "votes"}
             </div>
 
             <RatingBadge value={points[hoverIndex].rating} />
@@ -2279,16 +2328,17 @@ export default function Entry() {
                         isReleased() && (
                           <button
                             className="rate-btn"
-                            onClick={() =>
+                            onClick={() => {
+                              setSelectedRating(userRatings.entry || 5);
                               setRatingModal({
                                 open: true,
                                 entryId: entry.id, // ✅ correto
                                 episodeId: null,
-                              })
-                            }
+                              });
+                            }}
                             style={{ color: "#639ef7" }}
                           >
-                            Rate
+                            {userRatings.entry ? "Change rate" : "Rate"}
                           </button>
                         )}
                     </div>
@@ -2663,18 +2713,21 @@ export default function Entry() {
                                   {canRateEpisode(ep.airDate) && (
                                     <button
                                       className="rate-btn"
-                                      onClick={() =>
+                                      onClick={() => {
+                                        setSelectedRating(
+                                          userRatings[ep.id] || 5,
+                                        );
                                         setRatingModal({
                                           open: true,
                                           episodeId: ep.id,
-                                        })
-                                      }
+                                        });
+                                      }}
                                       style={{
                                         color: "#639ef7",
                                       }}
                                     >
                                       {userRatings[ep.id]
-                                        ? `Your rating: ${userRatings[ep.id]}`
+                                        ? "Change rate"
                                         : "Rate"}
                                     </button>
                                   )}
@@ -2801,7 +2854,7 @@ export default function Entry() {
                     })
                   }
                 >
-                  Write Review
+                  {myEntryReview ? "Edit Review" : "Write Review"}
                 </button>
               )}
 
@@ -2880,7 +2933,15 @@ export default function Entry() {
       {ratingModal.open && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Rate Episode</h3>
+            <h3>
+              {ratingModal.entryId
+                ? userRatings.entry
+                  ? "Change Your Rating"
+                  : "Rate"
+                : userRatings[ratingModal.episodeId]
+                  ? "Change Your Rating"
+                  : "Rate Episode"}
+            </h3>
             <div
               className="rating-value"
               style={{
@@ -2943,7 +3004,7 @@ export default function Entry() {
       {reviewModal.open && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Write Review</h3>
+            <h3>{findMyReview(reviewModal) ? "Edit Review" : "Write Review"}</h3>
 
             <div className="rating-grid"></div>
 

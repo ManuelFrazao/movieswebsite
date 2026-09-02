@@ -89,14 +89,32 @@ export const createReview = async (req, res) => {
       }
     }
 
-    const review = await Review.create({
-      content,
-      rating: finalRating,
-      type,
-      userId,
-      entryId: entryId || null,
-      episodeId: episodeId || null,
+    // 🔥 se o user já tem uma review nesta entry/episode, edita em vez de
+    // criar uma duplicada
+    const existingReview = await Review.findOne({
+      where: {
+        userId,
+        entryId: entryId || null,
+        episodeId: episodeId || null,
+      },
     });
+
+    let review;
+    if (existingReview) {
+      existingReview.content = content;
+      existingReview.rating = finalRating;
+      await existingReview.save();
+      review = existingReview;
+    } else {
+      review = await Review.create({
+        content,
+        rating: finalRating,
+        type,
+        userId,
+        entryId: entryId || null,
+        episodeId: episodeId || null,
+      });
+    }
 
     res.json(review);
   } catch (err) {
