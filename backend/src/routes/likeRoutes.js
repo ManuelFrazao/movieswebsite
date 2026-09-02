@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.post("/", protect, toggleLike);
 router.get("/:videoId", optionalAuth, getVideoLikes);
-router.get("/review/:reviewId", getReviewLikes);
+router.get("/review/:reviewId", optionalAuth, getReviewLikes);
 
 export default router;

@@ -2840,7 +2840,7 @@ export default function Entry() {
         {/* Reviews */}
         {activeTab === "reviews" && (
           <div className="reviews">
-            <h2>Reviews</h2>
+            <h2 style={{color: "white"}}>Reviews</h2>
 
             {entry.type !== "series" &&
               entry.releaseDate &&
