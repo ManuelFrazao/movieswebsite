@@ -17,9 +17,14 @@ import {
   Grid,
   TextField,
   MenuItem,
+  IconButton,
 } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 
 import { DataGrid } from "@mui/x-data-grid";
+
+const SIDEBAR_WIDTH = 220;
 
 export default function Dashboard() {
   const [users, setUsers] = useState([]);
@@ -30,6 +35,11 @@ export default function Dashboard() {
   const tabFromUrl = params.get("tab");
 
   const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const selectTab = (tab) => {
+    setActiveTab(tab);
+    setMobileMenuOpen(false);
+  };
   const [showForm, setShowForm] = useState(false);
   const [token, setToken] = useState(null);
   const [actors, setActors] = useState([]);
@@ -278,75 +288,110 @@ export default function Dashboard() {
     },
   ];
 
+  const navList = (
+    <>
+      <Typography variant="h6">Admin Dashboard</Typography>
+      <Box mb={2}>
+        <Button variant="outlined" onClick={() => navigate("/")}>
+          ← Back to site
+        </Button>
+      </Box>
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => selectTab("overview")}>
+            <ListItemText primary="Overview" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => selectTab("users")}>
+            <ListItemText primary="Users" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => selectTab("entries")}>
+            <ListItemText primary="Entries" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => selectTab("actors")}>
+            <ListItemText primary="Actors" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => selectTab("characters")}>
+            <ListItemText primary="Characters" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => selectTab("episodes")}>
+            <ListItemText primary="Episodes" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleLogout}>
+            <ListItemText primary="Logout" />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </>
+  );
+
   return (
     <Box sx={{ display: "flex" }}>
-      {/* SIDEBAR */}
+      {/* HAMBURGER TOGGLE - small screens only */}
+      <IconButton
+        onClick={() => setMobileMenuOpen((open) => !open)}
+        sx={{
+          display: { xs: "inline-flex", md: "none" },
+          position: "fixed",
+          top: 8,
+          left: 8,
+          zIndex: 1300,
+          bgcolor: "background.paper",
+          boxShadow: 2,
+          "&:hover": { bgcolor: "background.paper" },
+        }}
+      >
+        {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+      </IconButton>
+
+      {/* SIDEBAR - permanent, larger screens */}
       <Drawer
         variant="permanent"
         sx={{
-          width: 220,
+          display: { xs: "none", md: "block" },
+          width: SIDEBAR_WIDTH,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: 220,
+            width: SIDEBAR_WIDTH,
             boxSizing: "border-box",
           },
         }}
       >
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h6">🎬 Admin</Typography>
-          <Box mb={2}>
-            <Button variant="outlined" onClick={() => navigate("/")}>
-              ← Back to site
-            </Button>
-          </Box>
-          <List>
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => setActiveTab("overview")}>
-                <ListItemText primary="Overview" />
-              </ListItemButton>
-            </ListItem>
+        <Box sx={{ p: 2 }}>{navList}</Box>
+      </Drawer>
 
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => setActiveTab("users")}>
-                <ListItemText primary="Users" />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => setActiveTab("entries")}>
-                <ListItemText primary="Entries" />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => setActiveTab("actors")}>
-                <ListItemText primary="Actors" />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => setActiveTab("characters")}>
-                <ListItemText primary="Characters" />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => setActiveTab("episodes")}>
-                <ListItemText primary="Episodes" />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem disablePadding>
-              <ListItemButton onClick={handleLogout}>
-                <ListItemText primary="Logout" />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        </Box>
+      {/* SIDEBAR - retractable full-page menu, small screens */}
+      <Drawer
+        variant="temporary"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        sx={{ display: { xs: "block", md: "none" } }}
+        PaperProps={{
+          sx: { width: "100%", boxSizing: "border-box" },
+        }}
+      >
+        <Box sx={{ p: 2, pt: 7 }}>{navList}</Box>
       </Drawer>
 
       {/* MAIN */}
-      <Box sx={{ flex: 1, minWidth: 0, p: 3 }}>
+      <Box sx={{ flex: 1, minWidth: 0, p: 3, pt: { xs: 7, md: 3 } }}>
         {/* OVERVIEW */}
         {activeTab === "overview" && (
           <Grid container spacing={2}>
