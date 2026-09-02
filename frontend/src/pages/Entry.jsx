@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, data } from "react-router-dom";
 import api from "../services/api";
 import "./Entry.css";
 import RatingBadge from "../components/RatingBadge";
@@ -2465,7 +2465,7 @@ export default function Entry() {
           </>
         )}
 
-        {/* 👉 SE FOR SÉRIE */}
+        {/* If it is a series */}
         {activeTab === "episodes" && isSeries && (
           <>
             {isSeries &&
@@ -2729,7 +2729,7 @@ export default function Entry() {
           </>
         )}
 
-        {/* 🔥 Videos */}
+        {/* Videos */}
         {activeTab === "videos" && (
           <VideosTab
             targetType="entry"
@@ -2738,7 +2738,7 @@ export default function Entry() {
           />
         )}
 
-        {/* 🔥 Images */}
+        {/* Images */}
         {activeTab === "images" && (
           <ImagesTab
             targetType="entry"
@@ -2747,7 +2747,7 @@ export default function Entry() {
           />
         )}
 
-        {/* 🔥 Statistics */}
+        {/* Statistics */}
         {activeTab === "statistics" && (
           <div className="statistics">
             <div className="entry-trend">
@@ -2768,6 +2768,7 @@ export default function Entry() {
                 </div>
               </div>
             )}
+            {isSeries && (<>
             <div className="entry-trend-dist-graph">
               <h3>Episode Rating Distribution</h3>
               <EpisodeRatingGraph entry={entry} episodeStats={episodeStats} />
@@ -2776,10 +2777,11 @@ export default function Entry() {
               <h3>Episode Votes Distribution</h3>
               <EpisodeVotesGraph entry={entry} episodeStats={episodeStats} />
             </div>
+            </>)}
           </div>
         )}
 
-        {/* 🔥 Reviews */}
+        {/* Reviews */}
         {activeTab === "reviews" && (
           <div className="reviews">
             <h2>Reviews</h2>
@@ -2800,22 +2802,22 @@ export default function Entry() {
                 </button>
               )}
 
-            {/* 🔝 TOP REVIEW */}
+            {/* TOP REVIEW */}
             {topReview && (
               <div className="top-review">
-                <h3>🔥 Top Review</h3>
+                <h3>Top Review</h3>
                 <ReviewCard review={topReview} />
               </div>
             )}
 
-            {/* 🔽 SORT */}
+            {/* SORT */}
             <div className="review-sort">
               <button onClick={() => setReviewSort("recent")}>Recent</button>
               <button onClick={() => setReviewSort("popular")}>Popular</button>
               <button onClick={() => setReviewSort("rating")}>Rating</button>
             </div>
 
-            {/* 📝 LIST */}
+            {/* LIST */}
             <div className="reviews-list">
               {reviews.map((r) => (
                 <ReviewCard
@@ -2828,14 +2830,14 @@ export default function Entry() {
           </div>
         )}
 
-        {/* 🔥 Cast */}
+        {/* Cast */}
         {activeTab === "cast" && (
           <div className="cast">
             <CastList cast={cast} />
           </div>
         )}
 
-        {/* 🔥 Forums */}
+        {/* Forums */}
         {activeTab === "forums" && (
           <div className="forums">
             <p style={{ color: "#777" }}>Coming soon 👀</p>
