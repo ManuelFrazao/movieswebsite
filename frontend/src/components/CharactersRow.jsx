@@ -35,6 +35,7 @@ export default function CharactersRow({ cast = [] }) {
               textAlign: "center",
               cursor: "pointer",
             }}
+            onClick={() => navigate(`/character/${c.character?.slug}`)}
           >
             <Box
               component="img"

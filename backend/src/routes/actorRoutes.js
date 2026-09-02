@@ -9,16 +9,16 @@ import {
   deleteActor,
 } from "../controllers/actorController.js";
 import upload from "../middleware/upload.js";
-import { protect, isAdmin } from "../middleware/authMiddleware.js";
+import { protect, isAdmin, optionalAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.post("/", protect, isAdmin, upload.single("image"), createActor);
 router.get("/", getActors);
 router.get("/search", searchActors);
-router.get("/slug/:slug", getActorBySlug);
+router.get("/slug/:slug", optionalAuth, getActorBySlug);
 router.put("/:id", protect, isAdmin, upload.single("image"), updateActor);
-router.get("/:id", getActorById);
+router.get("/:id", optionalAuth, getActorById);
 router.delete("/:id", protect, isAdmin, deleteActor);
 
 export default router;

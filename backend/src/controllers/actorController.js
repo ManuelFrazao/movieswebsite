@@ -61,6 +61,7 @@ export const getActors = async (req, res) => {
 export const getActorBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
+    const userId = req.user?.id;
 
     const actor = await Actor.findOne({
       where: { slug },
@@ -84,8 +85,22 @@ export const getActorBySlug = async (req, res) => {
       },
     });
 
+    // 🔥 estado do utilizador
+    let isFavorite = false;
+    if (userId) {
+      const fav = await Favorite.findOne({
+        where: {
+          userId,
+          targetId: actor.id,
+          targetType: "actor",
+        },
+      });
+      isFavorite = !!fav;
+    }
+
     // 🔥 adicionar ao objeto
     actor.dataValues.favoritesCount = favoritesCount;
+    actor.dataValues.isFavorite = isFavorite;
 
     res.json(actor);
   } catch (err) {
@@ -176,6 +191,7 @@ export const searchActors = async (req, res) => {
 export const getActorById = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
 
     const actor = await Actor.findByPk(id);
 
@@ -187,7 +203,16 @@ export const getActorById = async (req, res) => {
       where: { targetId: id, targetType: "actor" },
     });
 
+    let isFavorite = false;
+    if (userId) {
+      const fav = await Favorite.findOne({
+        where: { userId, targetId: id, targetType: "actor" },
+      });
+      isFavorite = !!fav;
+    }
+
     actor.dataValues.favoritesCount = favoritesCount;
+    actor.dataValues.isFavorite = isFavorite;
 
     res.json(actor);
   } catch (err) {

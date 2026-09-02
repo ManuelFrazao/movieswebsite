@@ -89,6 +89,7 @@ export const searchCharacters = async (req, res) => {
 export const getCharacterById = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
 
     const character = await Character.findByPk(id, {
       include: [{ model: CharacterAlias, as: "aliases" }],
@@ -102,7 +103,16 @@ export const getCharacterById = async (req, res) => {
       where: { targetId: id, targetType: "character" },
     });
 
+    let isFavorite = false;
+    if (userId) {
+      const fav = await Favorite.findOne({
+        where: { userId, targetId: id, targetType: "character" },
+      });
+      isFavorite = !!fav;
+    }
+
     character.dataValues.favoritesCount = favoritesCount;
+    character.dataValues.isFavorite = isFavorite;
 
     res.json(character);
   } catch (err) {
@@ -114,6 +124,7 @@ export const getCharacterById = async (req, res) => {
 export const getCharacterBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
+    const userId = req.user?.id;
 
     const character = await Character.findOne({
       where: { slug },
@@ -142,7 +153,16 @@ export const getCharacterBySlug = async (req, res) => {
       where: { targetId: character.id, targetType: "character" },
     });
 
+    let isFavorite = false;
+    if (userId) {
+      const fav = await Favorite.findOne({
+        where: { userId, targetId: character.id, targetType: "character" },
+      });
+      isFavorite = !!fav;
+    }
+
     character.dataValues.favoritesCount = favoritesCount;
+    character.dataValues.isFavorite = isFavorite;
 
     res.json(character);
   } catch (err) {
