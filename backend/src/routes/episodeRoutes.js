@@ -8,7 +8,7 @@ import {
 } from "../controllers/episodeController.js";
 import upload from "../middleware/upload.js";
 
-import { protect, isAdmin } from "../middleware/authMiddleware.js";
+import { protect, isAdmin, optionalAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -27,7 +27,7 @@ router.put(
   upload.single("image"), // 🔥 FALTA ISTO
   updateEpisode
 );
-router.get("/:id", getEpisodeById);
+router.get("/:id", optionalAuth, getEpisodeById);
 router.delete("/:id", protect, isAdmin, deleteEpisode);
 
 export default router;

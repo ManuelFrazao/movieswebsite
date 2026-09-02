@@ -2,6 +2,7 @@
   background: linear-gradient(to bottom, #0f0f0f, #141414);
   color: white;
   min-height: 100vh;
+  --navbar-title: #fff;
 }
 
 /* HERO */
