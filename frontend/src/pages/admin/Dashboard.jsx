@@ -281,8 +281,18 @@ export default function Dashboard() {
   return (
     <Box sx={{ display: "flex" }}>
       {/* SIDEBAR */}
-      <Drawer variant="permanent">
-        <Box sx={{ width: 220, p: 2 }}>
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: 220,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: 220,
+            boxSizing: "border-box",
+          },
+        }}
+      >
+        <Box sx={{ p: 2 }}>
           <Typography variant="h6">🎬 Admin</Typography>
           <Box mb={2}>
             <Button variant="outlined" onClick={() => navigate("/")}>
@@ -336,7 +346,7 @@ export default function Dashboard() {
       </Drawer>
 
       {/* MAIN */}
-      <Box sx={{ flex: 1, p: 3 }}>
+      <Box sx={{ flex: 1, minWidth: 0, p: 3 }}>
         {/* OVERVIEW */}
         {activeTab === "overview" && (
           <Grid container spacing={2}>
