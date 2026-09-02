@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("API a funcionar 🚀");
+  res.send("API working");
 });
 
 app.use("/api", routes);
