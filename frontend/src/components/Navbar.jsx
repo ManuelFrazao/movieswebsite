@@ -34,7 +34,7 @@ export default function Navbar() {
         justifyContent: "space-between",
       }}
     >
-      <h2>MoviesWebsite</h2>
+      <h2 style={{ color: "white" }}>MoviesWebsite</h2>
 
       <div>
         <Link to="/" style={{ marginRight: "10px" }}>
