@@ -8,6 +8,7 @@ import {
   Entry,
 } from "../models/index.js";
 import { Op } from "sequelize";
+import { upsertVote } from "../utils/voteHelpers.js";
 
 // =====================
 // CREATE REVIEW
@@ -30,6 +31,18 @@ export const createReview = async (req, res) => {
       // 🔥 PRIORIDADE: rating vindo do frontend
       if (inputRating) {
         finalRating = inputRating;
+
+        // 🔥 mantém o Vote (e por consequência o rating geral da entry)
+        // em sincronia com o rating escolhido na review — só se aplica a
+        // filmes, já que séries não têm um voto direto na entry
+        if (entry.type !== "series") {
+          await upsertVote({
+            userId,
+            type: "entry",
+            entryId,
+            value: finalRating,
+          });
+        }
       }
 
       // 🎬 MOVIE (fallback para vote)
@@ -74,6 +87,15 @@ export const createReview = async (req, res) => {
     if (type === "episode") {
       if (inputRating) {
         finalRating = inputRating;
+
+        // 🔥 mantém o Vote do episódio (e o rating geral da entry) em
+        // sincronia com o rating escolhido na review
+        await upsertVote({
+          userId,
+          type: "episode",
+          episodeId,
+          value: finalRating,
+        });
       } else {
         const vote = await Vote.findOne({
           where: { userId, episodeId },

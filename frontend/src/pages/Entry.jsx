@@ -288,6 +288,7 @@ export default function Entry() {
   });
   const [selectedRating, setSelectedRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(null);
+  const [hoverReviewRating, setHoverReviewRating] = useState(null);
   const [userRatings, setUserRatings] = useState({});
   const [entryTrend, setEntryTrend] = useState({});
   const [activeTab, setActiveTab] = useState("overview");
@@ -523,16 +524,16 @@ export default function Entry() {
     }
   };
 
-  useEffect(() => {
-    const fetchEntry = async () => {
-      try {
-        const res = await api.get(`/entries/slug/${slug}`);
-        setEntry(res.data);
-      } catch (err) {
-        console.error(err.response?.data || err.message);
-      }
-    };
+  const fetchEntry = async () => {
+    try {
+      const res = await api.get(`/entries/slug/${slug}`);
+      setEntry(res.data);
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+    }
+  };
 
+  useEffect(() => {
     fetchEntry();
   }, [slug]);
 
@@ -872,8 +873,32 @@ export default function Entry() {
         rating: reviewRating,
       });
 
-      // 🔥 refresh
+      // 🔥 refresh reviews list
       fetchReviews();
+
+      // 🔥 the review's rating also updates the underlying vote, so refresh
+      // everything that shows the entry's/episode's overall rating too
+      if (reviewModal.episodeId) {
+        setUserRatings((prev) => ({
+          ...prev,
+          [reviewModal.episodeId]: reviewRating,
+        }));
+        fetchEpisodeStats(reviewModal.episodeId);
+        fetchEpisodeTrends(entry.id);
+        fetchTrend(entry.id);
+        fetchDistribution(reviewModal.episodeId, true);
+      }
+
+      if (reviewModal.entryId) {
+        setUserRatings((prev) => ({
+          ...prev,
+          entry: reviewRating,
+        }));
+        fetchEntry();
+        fetchTrend(reviewModal.entryId);
+        setEntryDistribution(null);
+        fetchEntryDistribution();
+      }
 
       // reset
       setReviewModal({ open: false, type: null });
@@ -2840,7 +2865,7 @@ export default function Entry() {
         {/* Reviews */}
         {activeTab === "reviews" && (
           <div className="reviews">
-            <h2 style={{color: "white"}}>Reviews</h2>
+            <h2>Reviews</h2>
 
             {entry.type !== "series" &&
               entry.releaseDate &&
@@ -3006,11 +3031,35 @@ export default function Entry() {
           <div className="modal">
             <h3>{findMyReview(reviewModal) ? "Edit Review" : "Write Review"}</h3>
 
-            <div className="rating-grid"></div>
+            <div
+              className="rating-value"
+              style={{
+                color: getRatingColor(hoverReviewRating ?? reviewRating),
+              }}
+            >
+              {hoverReviewRating ?? reviewRating}
+            </div>
 
-            {/* 🔥 rating atual */}
-            <div style={{ marginBottom: "10px", color: "#aaa" }}>
-              Current rating: <strong>{reviewRating}</strong>
+            <div className="rating-grid">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                <button
+                  key={num}
+                  className={`rating-btn ${reviewRating == num ? "active" : ""}`}
+                  style={
+                    reviewRating == num
+                      ? {
+                          background: getRatingColor(num),
+                          borderColor: getRatingColor(num),
+                        }
+                      : {}
+                  }
+                  onClick={() => setReviewRating(num)}
+                  onMouseEnter={() => setHoverReviewRating(num)}
+                  onMouseLeave={() => setHoverReviewRating(null)}
+                >
+                  {num}
+                </button>
+              ))}
             </div>
 
             {/* textarea */}
