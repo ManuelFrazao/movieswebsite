@@ -22,14 +22,14 @@ app.use("/api", routes);
 
 // ligar à DB
 sequelize.authenticate()
-  .then(() => console.log("DB conectada 🔥"))
+  .then(() => console.log("Data base connected"))
   .catch(err => console.error(err));
 
 // 🔥 CRIAR TABELAS
 sequelize.sync({ alter: true })
-  .then(() => console.log("Tabelas criadas ✅"))
+  .then(() => console.log("Tables created"))
   .catch(err => console.error(err));
 
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Server open on port ${PORT}`);
 });
