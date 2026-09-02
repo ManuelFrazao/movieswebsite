@@ -252,10 +252,9 @@ export default function Trending() {
   return (
     <div>
       <div className="trending">
-        <h1>📊 Trending</h1>
 
         <div className="section">
-          <h2>🎬 Top Movies</h2>
+          <h2>Top Movies</h2>
           <TrendTable
             entries={movies}
             navigate={navigate}
@@ -264,7 +263,7 @@ export default function Trending() {
         </div>
 
         <div className="section">
-          <h2>📺 Top Series</h2>
+          <h2>Top Series</h2>
           <TrendTable
             entries={series}
             navigate={navigate}
@@ -273,7 +272,7 @@ export default function Trending() {
         </div>
 
         <div className="section">
-          <h2>🔥 Top Overall</h2>
+          <h2>Top Overall</h2>
           <TrendTable
             entries={sorted}
             navigate={navigate}
@@ -282,7 +281,7 @@ export default function Trending() {
         </div>
 
         <div className="section">
-          <h2>🆕 New Releases</h2>
+          <h2>New Releases</h2>
           <TrendTable
             entries={newEntries}
             navigate={navigate}

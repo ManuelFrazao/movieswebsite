@@ -17,22 +17,26 @@ import ImageModel from "./image.js";
 import VideoModel from "./video.js";
 import CommentModel from "./comment.js";
 
+// NOTE: order matters here. sequelize.sync() creates tables in the order
+// they're defined below, and stops entirely on the first failure — so every
+// table must be defined AFTER every other table it has a foreign key to,
+// or its CREATE TABLE (and everything after it) silently never runs.
 const User = UserModel(sequelize);
 const Entry = EntryModel(sequelize);
 const Season = SeasonModel(sequelize);
 const Episode = EpisodeModel(sequelize);
 const Vote = VoteModel(sequelize);
 const Review = ReviewModel(sequelize);
-const Like = LikeModel(sequelize);
-const Character = CharacterModel(sequelize);
-const Cast = CastModel(sequelize);
-const Actor = ActorModel(sequelize);
-const CharacterAlias = CharacterAliasModel(sequelize);
-const Watchlist = WatchlistModel(sequelize);
-const Favorite = FavoriteModel(sequelize);
-const Image = ImageModel(sequelize);
-const Video = VideoModel(sequelize);
-const Comment = CommentModel(sequelize);
+const Video = VideoModel(sequelize); // no FKs of its own; must exist before Like/Comment
+const Like = LikeModel(sequelize); // needs User, Entry, Episode, Review, Video
+const Character = CharacterModel(sequelize); // no FKs of its own
+const Actor = ActorModel(sequelize); // no FKs of its own; must exist before Cast
+const Cast = CastModel(sequelize); // needs Actor, Character, Entry, Episode
+const CharacterAlias = CharacterAliasModel(sequelize); // needs Character
+const Watchlist = WatchlistModel(sequelize); // needs User
+const Favorite = FavoriteModel(sequelize); // needs User
+const Image = ImageModel(sequelize); // no FKs of its own
+const Comment = CommentModel(sequelize); // needs Video, User
 
 // =====================
 // RELATIONS

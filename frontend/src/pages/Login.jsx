@@ -30,7 +30,7 @@ export default function Login() {
     <div className="container">
       
       <button onClick={() => navigate("/")} className="backBtn">
-        ← Voltar
+        ← Go back
       </button>
 
       <div className="card">
@@ -53,7 +53,7 @@ export default function Login() {
           />
 
           <button type="submit" className="button">
-            Entrar
+            Login
           </button>
         </form>
       </div>
