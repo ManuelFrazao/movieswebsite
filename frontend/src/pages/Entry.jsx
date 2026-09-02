@@ -2393,7 +2393,10 @@ export default function Entry() {
                         )}
                       </div>
                     </div>
-                    <div className="entry-contents-card">
+                    <div
+                      className="entry-contents-card"
+                      onClick={() => setActiveTab("forums")}
+                    >
                       <div
                         style={{
                           display: "flex",
