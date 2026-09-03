@@ -1,6 +1,6 @@
 import { User, Entry } from "../models/index.js";
 
-// 👤 ver todos os users
+// get all users (admin only)
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
@@ -13,7 +13,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// 🎬 ver todos os entries (filmes/séries)
+// get all entries (admin only)
 export const getAllEntries = async (req, res) => {
   try {
     const entries = await Entry.findAll();
@@ -23,7 +23,7 @@ export const getAllEntries = async (req, res) => {
   }
 };
 
-// 🔄 mudar role de um user
+//  update user role (admin only)
 export const updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
@@ -32,19 +32,19 @@ export const updateUserRole = async (req, res) => {
     const user = await User.findByPk(id);
 
     if (!user) {
-      return res.status(404).json({ message: "User não encontrado" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     user.role = role;
     await user.save();
 
-    res.json({ message: "Role atualizada", user });
+    res.json({ message: "Role updated", user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// ❌ apagar user
+// delete user (admin only)
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -52,12 +52,12 @@ export const deleteUser = async (req, res) => {
     const user = await User.findByPk(id);
 
     if (!user) {
-      return res.status(404).json({ message: "User não encontrado" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     await user.destroy();
 
-    res.json({ message: "User apagado" });
+    res.json({ message: "User deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

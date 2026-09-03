@@ -11,7 +11,7 @@ export const createVote = async (req, res) => {
     const userId = req.user.id;
 
     if (!value || !type) {
-      return res.status(400).json({ message: "Dados inválidos" });
+      return res.status(400).json({ message: "Invalid data" });
     }
 
     const vote = await upsertVote({ userId, type, entryId, episodeId, value });
@@ -77,7 +77,7 @@ export const getEntryStats = async (req, res) => {
 };
 
 // =====================
-// TRENDING (7 dias)
+// TRENDING (7 days)
 // =====================
 export const getEntryTrending = async (req, res) => {
   try {
@@ -85,13 +85,13 @@ export const getEntryTrending = async (req, res) => {
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    // 🔥 buscar entry
+    // get entry
     const entry = await Entry.findByPk(id);
 
     let votes = [];
 
     if (entry.type === "movie") {
-      // 🎬 votos diretos
+      // direct votes for the entry
       votes = await Vote.findAll({
         where: {
           entryId: id,
@@ -101,7 +101,7 @@ export const getEntryTrending = async (req, res) => {
         },
       });
     } else {
-      // 📺 votos dos episódios
+      // episode votes for the entry
       votes = await Vote.findAll({
         include: {
           model: Episode,
@@ -151,7 +151,7 @@ export const getTrendingEntries = async (req, res) => {
   try {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    // 🔥 buscar todos os entries com episódios
+    // get all entries with episodes
     const entries = await Entry.findAll({
       include: {
         model: Episode,
@@ -176,16 +176,16 @@ export const getTrendingEntries = async (req, res) => {
         continue;
       }
 
-      // 🔥 todos os votos
+      // get all votes
       let allVotes = [];
 
       if (entry.type === "movie") {
-        // 🎬 votos diretos
+        // direct votes
         allVotes = await Vote.findAll({
           where: { entryId: entry.id },
         });
       } else {
-        // 📺 votos dos episódios
+        // episode votes
         allVotes = await Vote.findAll({
           where: {
             episodeId: {
@@ -202,7 +202,7 @@ export const getTrendingEntries = async (req, res) => {
           ? 0
           : allVotes.reduce((sum, v) => sum + v.value, 0) / totalVotes;
 
-      // 🔥 votos recentes
+      // recent votes
       let recentVotes = 0;
 
       if (entry.type === "movie") {
@@ -240,7 +240,7 @@ export const getTrendingEntries = async (req, res) => {
       });
     }
 
-    // 🔥 ordenar por score
+    // order by score
     results.sort((a, b) => b.score - a.score);
 
     res.json(results);
@@ -250,7 +250,7 @@ export const getTrendingEntries = async (req, res) => {
 };
 
 // =====================
-// TRENDING POR EPISÓDIO (7 dias)
+// TRENDING POR EPISÓDIO (7 days)
 // =====================
 export const getEpisodeTrending = async (req, res) => {
   try {
@@ -299,7 +299,7 @@ export const getEpisodeTrending = async (req, res) => {
 };
 
 // =====================
-// TRENDING TODOS OS EPISÓDIOS (7 dias)
+// Episode Trend (7 days)
 // =====================
 export const getEntryEpisodesTrending = async (req, res) => {
   try {
@@ -307,7 +307,7 @@ export const getEntryEpisodesTrending = async (req, res) => {
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    // 🔥 buscar episódios da entry
+    // get entry episodes
     const episodes = await Episode.findAll({
       where: { entryId: id },
       attributes: ["id"],
@@ -317,7 +317,7 @@ export const getEntryEpisodesTrending = async (req, res) => {
 
     if (!episodeIds.length) return res.json({});
 
-    // 🔥 buscar votos
+    // get votes for the episodes in the last 7 days
     const votes = await Vote.findAll({
       where: {
         episodeId: {
@@ -344,7 +344,7 @@ export const getEntryEpisodesTrending = async (req, res) => {
       result[epId][day].total += vote.value;
     });
 
-    // 🔥 calcular médias
+    // calculate average for each day
     Object.keys(result).forEach((epId) => {
       Object.keys(result[epId]).forEach((day) => {
         const d = result[epId][day];
@@ -371,7 +371,7 @@ export const getEpisodeDistribution = async (req, res) => {
 
     const distribution = {};
 
-    // 🔥 inicializar 1–10
+    // initialize distribution for values 1-10
     for (let i = 1; i <= 10; i++) {
       distribution[i] = 0;
     }
@@ -395,12 +395,12 @@ export const getEntryDistribution = async (req, res) => {
     let votes = [];
 
     if (entry.type === "movie") {
-      // 🎬 votos diretos
+      // direct votes for the entry
       votes = await Vote.findAll({
         where: { entryId: id },
       });
     } else {
-      // 📺 votos dos episódios
+      // epidode votes for the entry
       votes = await Vote.findAll({
         include: {
           model: Episode,
@@ -463,12 +463,12 @@ export const deleteVote = async (req, res) => {
     const vote = await Vote.findByPk(id);
 
     if (!vote) {
-      return res.status(404).json({ message: "Vote não encontrado" });
+      return res.status(404).json({ message: "Vote not found" });
     }
 
     await vote.destroy();
 
-    res.json({ message: "Vote removido" });
+    res.json({ message: "Vote removed" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

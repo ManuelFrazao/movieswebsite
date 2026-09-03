@@ -183,7 +183,7 @@ export const updateCharacter = async (req, res) => {
 
     let imageUrl = character.image;
 
-    // 🔥 upload imagem (igual ao episode)
+    // upload imagem (same as episode)
     if (req.file && req.file.buffer) {
       // apagar antiga (opcional mas recomendado)
       if (character.image) {

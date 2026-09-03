@@ -37,7 +37,7 @@ export const createEpisode = async (req, res) => {
       entryId: season.entryId,
     });
 
-    // 🔥 NOVO: atualizar releaseDate da série
+    // update entry release date if airDate is provided
     if (episode.airDate) {
       const allEpisodes = await Episode.findAll({
         where: { entryId: season.entryId },
@@ -105,7 +105,7 @@ export const updateEpisode = async (req, res) => {
 
     let thumbnail = episode.thumbnail;
 
-    // 🖼️ upload imagem
+    // upload image
     if (req.file && req.file.buffer) {
       if (episode.thumbnail) {
         const publicId = episode.thumbnail.split("/").pop().split(".")[0];
@@ -125,16 +125,16 @@ export const updateEpisode = async (req, res) => {
 
     const isFinal = req.body?.isFinal === "true" || req.body?.isFinal === true;
 
-    // 🔥 se for final → garantir unicidade
+    // if isFinal is being set to true, ensure no other final episodes exist for the same series
     if (isFinal) {
       const season = await episode.getSeason();
       const entry = await season.getEntry();
 
-      // 🔥 buscar TODAS as seasons da série
+      // get all seasons of the entry and their IDs
       const seasons = await entry.getSeasons();
       const seasonIds = seasons.map((s) => s.id);
 
-      // 🔥 remover qualquer outro episódio final
+      // remove isFinal from all other episodes in the same series
       await Episode.update(
         { isFinal: false },
         {
@@ -144,7 +144,7 @@ export const updateEpisode = async (req, res) => {
         },
       );
 
-      // 🔥 atualizar data de fim da série
+      // update entry's endingYear if airDate is provided
       if (req.body.airDate) {
         await entry.update({
           endingYear: new Date(req.body.airDate).getFullYear(),
@@ -152,7 +152,7 @@ export const updateEpisode = async (req, res) => {
       }
     }
 
-    // 🔥 if isFinal is being set to false, check if no other final episodes exist
+    // if isFinal is being set to false, check if no other final episodes exist
     if (!isFinal) {
       const season = await episode.getSeason();
       const entry = await season.getEntry();
@@ -215,7 +215,7 @@ export const getEpisodeById = async (req, res) => {
     }
 
     // =====================
-    // 🔥 USER FLAGS
+    // USER FLAGS
     // =====================
     let isFavorite = false;
     let isWatchlist = false;
@@ -243,7 +243,7 @@ export const getEpisodeById = async (req, res) => {
     }
 
     // =====================
-    // 🔥 COUNTS
+    // COUNTS
     // =====================
     const [favoritesCount, watchlistCount] = await Promise.all([
       Favorite.count({
@@ -261,7 +261,7 @@ export const getEpisodeById = async (req, res) => {
     ]);
 
     // =====================
-    // 🔥 RESPONSE FINAL
+    // FINAL RESPONSE
     // =====================
     res.json({
       ...episode.toJSON(),

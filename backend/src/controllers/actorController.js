@@ -77,7 +77,7 @@ export const getActorBySlug = async (req, res) => {
       return res.status(404).json({ message: "Actor not found" });
     }
 
-    // 🔥 contar favoritos
+    // favorites count
     const favoritesCount = await Favorite.count({
       where: {
         targetId: actor.id,
@@ -85,7 +85,7 @@ export const getActorBySlug = async (req, res) => {
       },
     });
 
-    // 🔥 estado do utilizador
+    // user's favorite status
     let isFavorite = false;
     if (userId) {
       const fav = await Favorite.findOne({
@@ -98,7 +98,7 @@ export const getActorBySlug = async (req, res) => {
       isFavorite = !!fav;
     }
 
-    // 🔥 adicionar ao objeto
+    // add favoritesCount and isFavorite to the actor object
     actor.dataValues.favoritesCount = favoritesCount;
     actor.dataValues.isFavorite = isFavorite;
 
@@ -120,9 +120,9 @@ export const updateActor = async (req, res) => {
 
     let imageUrl = actor.profileImage;
 
-    // 🔥 upload nova imagem
+    // upload new image
     if (req.file && req.file.buffer) {
-      // apagar imagem antiga (opcional mas recomendado)
+      // delete old image (optional but recommended)
       if (actor.profileImage) {
         const publicId = actor.profileImage.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`actors/${publicId}`);
@@ -133,7 +133,7 @@ export const updateActor = async (req, res) => {
         {
           folder: "actors",
           transformation: [
-            { width: 300, height: 450, crop: "fill" }, // 🔥 portrait style
+            { width: 300, height: 450, crop: "fill" }, // portrait style
             { quality: "auto" },
           ],
         }
@@ -230,7 +230,7 @@ export const deleteActor = async (req, res) => {
       return res.status(404).json({ message: "Actor not found" });
     }
 
-    // 🔥 apagar imagem do cloudinary
+    // delete image from Cloudinary
     if (actor.profileImage) {
       const publicId = actor.profileImage.split("/").pop().split(".")[0];
       await cloudinary.uploader.destroy(`actors/${publicId}`);

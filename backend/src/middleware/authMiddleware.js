@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-// verifica se está autenticado
+// verifies the authentication
 export const protect = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -19,7 +19,7 @@ export const protect = (req, res, next) => {
   }
 };
 
-// verifica se é admin
+// verifies if the user is an admin
 export const isAdmin = (req, res, next) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Acesso negado (admin only)" });

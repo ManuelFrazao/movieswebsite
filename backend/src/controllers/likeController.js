@@ -25,7 +25,7 @@ export const toggleLike = async (req, res) => {
       episodeId: episodeId || null,
       reviewId: reviewId || null,
       videoId: videoId || null,
-      userId: { [Op.ne]: SPAM_USER_ID }, // 🔥 exclude spam user from counts
+      userId: { [Op.ne]: SPAM_USER_ID }, // exclude spam user from counts
     };
 
     const existing = await Like.findOne({ where });

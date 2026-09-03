@@ -8,7 +8,7 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// 🔥 adicionar/remover (toggle)
+// add/remove (toggle)
 router.post("/toggle", protect, toggleFavorite);
 router.get("/actor/:id/trending", getActorFavoritesTrending);
 router.get("/character/:id/trending", getCharacterFavoritesTrending);

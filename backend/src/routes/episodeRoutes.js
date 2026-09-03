@@ -24,7 +24,7 @@ router.put(
   "/:id",
   protect,
   isAdmin,
-  upload.single("image"), // 🔥 FALTA ISTO
+  upload.single("image"),
   updateEpisode
 );
 router.get("/:id", optionalAuth, getEpisodeById);

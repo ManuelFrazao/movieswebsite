@@ -6,7 +6,7 @@ export const toggleFavorite = async (req, res) => {
   const userId = req.user.id;
   const isAdmin = req.user.role === "admin";
 
-  // 🔥 ADMIN MODE → SEMPRE ADICIONA
+  // ADMIN MODE → if the user is an admin, they can add favorites for any user without checking if it already exists
   if (isAdmin) {
     await Favorite.create({ userId, targetId, targetType });
 
@@ -21,7 +21,6 @@ export const toggleFavorite = async (req, res) => {
     });
   }
 
-  // 👇 normal
   const existing = await Favorite.findOne({
     where: { userId, targetId, targetType },
   });

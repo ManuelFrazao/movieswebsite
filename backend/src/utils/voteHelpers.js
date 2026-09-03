@@ -1,6 +1,6 @@
 import { Vote, Entry, Episode } from "../models/index.js";
 
-// 🔥 Creates or updates a user's vote for an entry/episode, then keeps
+// Creates or updates a user's vote for an entry/episode, then keeps
 // Entry.totalVotes/topRank in sync. Shared by voteController (direct rating)
 // and reviewController (rating set/changed from inside a review), so the
 // entry's overall rating always reflects the latest value either flow wrote.
@@ -28,7 +28,7 @@ export const upsertVote = async ({ userId, type, entryId, episodeId, value }) =>
     });
   }
 
-  // 🎬 UPDATE ENTRY STATS (MOVIE)
+  // UPDATE ENTRY STATS (MOVIE)
   if (type === "entry" && entryId) {
     const votes = await Vote.findAll({ where: { entryId } });
     const totalVotes = votes.length;
@@ -43,7 +43,7 @@ export const upsertVote = async ({ userId, type, entryId, episodeId, value }) =>
     );
   }
 
-  // 📺 UPDATE ENTRY STATS (SERIES via episodes)
+  // UPDATE ENTRY STATS (SERIES via episodes)
   if (type === "episode" && episodeId) {
     const episode = await Episode.findByPk(episodeId);
 

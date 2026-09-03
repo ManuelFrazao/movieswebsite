@@ -39,7 +39,7 @@ export const createEntry = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    const slug = generateSlug(req.body.title); // 🔥 aqui
+    const slug = generateSlug(req.body.title);
 
     const entry = await Entry.create({
       ...req.body,
@@ -61,7 +61,7 @@ export const getEntries = async (req, res) => {
       include: {
         model: Episode,
         as: "episodes",
-        attributes: ["id", "airDate"], // 🔥 essencial
+        attributes: ["id", "airDate"],
       },
     });
 
@@ -89,7 +89,7 @@ export const getEntries = async (req, res) => {
   }
 };
 
-// GET ONE (FULL DATA 🔥)
+// GET ONE (FULL DATA)
 export const getEntryById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -124,12 +124,12 @@ export const getEntryById = async (req, res) => {
     });
 
     if (!entry) {
-      return res.status(404).json({ message: "Entry não encontrada" });
+      return res.status(404).json({ message: "Entry not found" });
     }
 
     res.json(entry);
   } catch (err) {
-    console.error(err); // 🔥 add this for debugging
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -172,12 +172,12 @@ export const getEntryBySlug = async (req, res) => {
     });
 
     if (!entry) {
-      return res.status(404).json({ message: "Entry não encontrada" });
+      return res.status(404).json({ message: "Entry not found" });
     }
 
     const userId = req.user?.id;
 
-    // 🔥 FLAGS (estado do utilizador)
+    // FLAGS (user's favorite/watchlist status)
     let isFavorite = false;
     let isWatchlist = false;
 
@@ -203,7 +203,7 @@ export const getEntryBySlug = async (req, res) => {
       isWatchlist = !!watch;
     }
 
-    // 🔥 COUNTS (nunca guardados no model)
+    // COUNTS (never save these in the database, always calculate on the fly)
     const [favoritesCount, watchlistCount] = await Promise.all([
       Favorite.count({
         where: {
@@ -219,7 +219,7 @@ export const getEntryBySlug = async (req, res) => {
       }),
     ]);
 
-    // 🔥 RESPONSE FINAL
+    // Final response with flags and counts
     res.json({
       ...entry.toJSON(),
       isFavorite,
@@ -241,12 +241,11 @@ export const updateEntry = async (req, res) => {
     const entry = await Entry.findByPk(id);
 
     if (!entry) {
-      return res.status(404).json({ message: "Entry não encontrada" });
+      return res.status(404).json({ message: "Entry not found" });
     }
 
     let imageUrl = entry.coverImage;
 
-    // 🔥 se nova imagem
     if (req.file && req.file.buffer) {
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
@@ -256,7 +255,7 @@ export const updateEntry = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    // 🔥 atualizar slug se mudar título
+    // update slug only if title has changed
     let slug = entry.slug;
     if (req.body.title && req.body.title !== entry.title) {
       slug = generateSlug(req.body.title);
@@ -288,12 +287,12 @@ export const deleteEntry = async (req, res) => {
     const entry = await Entry.findByPk(id);
 
     if (!entry) {
-      return res.status(404).json({ message: "Entry não encontrada" });
+      return res.status(404).json({ message: "Entry not found" });
     }
 
     await entry.destroy();
 
-    res.json({ message: "Entry apagada" });
+    res.json({ message: "Entry deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

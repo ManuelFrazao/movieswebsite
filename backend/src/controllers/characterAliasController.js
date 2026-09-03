@@ -32,12 +32,12 @@ export const bulkCharacterAlias = async (req, res) => {
       return res.status(400).json({ message: "Invalid data" });
     }
 
-    // 🔥 apagar antigos
+    // delete existing aliases for the character
     await CharacterAlias.destroy({
       where: { characterId },
     });
 
-    // 🔥 criar novos
+    // create new aliases
     const newAliases = await CharacterAlias.bulkCreate(
       aliases.map((a) => ({
         characterId,

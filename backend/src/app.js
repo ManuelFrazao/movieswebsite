@@ -20,12 +20,12 @@ app.get("/", (req, res) => {
 
 app.use("/api", routes);
 
-// ligar à DB
+// connect to the database
 sequelize.authenticate()
   .then(() => console.log("Data base connected"))
   .catch(err => console.error(err));
 
-// 🔥 CRIAR TABELAS
+// create tables
 sequelize.sync({ alter: true })
   .then(() => console.log("Tables created"))
   .catch(err => console.error(err));

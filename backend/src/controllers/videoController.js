@@ -8,7 +8,7 @@ export const uploadVideo = async (req, res) => {
 
     if (!req.file?.buffer) return res.status(400).json({ error: "No file" });
 
-    // 🔥 stream upload instead of base64
+    // stream upload instead of base64
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {

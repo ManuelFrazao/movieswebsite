@@ -10,15 +10,15 @@ import { protect, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// 🔐 todas estas rotas são protegidas
+// every route is protected
 router.use(protect, isAdmin);
 
-// 👤 users
+// users
 router.get("/users", getAllUsers);
 router.patch("/users/:id/role", updateUserRole);
 router.delete("/users/:id", deleteUser);
 
-// 🎬 entries
+// entries
 router.get("/entries", getAllEntries);
 
 export default router;

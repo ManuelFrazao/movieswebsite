@@ -20,7 +20,7 @@ export const createReview = async (req, res) => {
 
     let finalRating = null;
 
-    // 🎬 ENTRY
+    // ENTRY
     if (type === "entry") {
       const entry = await Entry.findByPk(entryId);
 
@@ -28,13 +28,11 @@ export const createReview = async (req, res) => {
         return res.status(404).json({ message: "Entry não encontrada" });
       }
 
-      // 🔥 PRIORIDADE: rating vindo do frontend
+      // rating is provided in the request body, use it and update the Vote for the entry
       if (inputRating) {
         finalRating = inputRating;
 
-        // 🔥 mantém o Vote (e por consequência o rating geral da entry)
-        // em sincronia com o rating escolhido na review — só se aplica a
-        // filmes, já que séries não têm um voto direto na entry
+        // mantains the Vote of the entry (and the overall rating) in sync with the rating chosen in the review
         if (entry.type !== "series") {
           await upsertVote({
             userId,
@@ -45,7 +43,7 @@ export const createReview = async (req, res) => {
         }
       }
 
-      // 🎬 MOVIE (fallback para vote)
+      // MOVIE (fallback to vote)
       else if (entry.type !== "series") {
         const vote = await Vote.findOne({
           where: { userId, entryId },
@@ -60,7 +58,7 @@ export const createReview = async (req, res) => {
         finalRating = vote.value;
       }
 
-      // 📺 SERIES (fallback média episódios)
+      // SERIES (fallback media of episode votes)
       else {
         const votes = await Vote.findAll({
           where: { userId },
@@ -83,13 +81,12 @@ export const createReview = async (req, res) => {
       }
     }
 
-    // 📺 EPISODE
+    // EPISODE
     if (type === "episode") {
       if (inputRating) {
         finalRating = inputRating;
 
-        // 🔥 mantém o Vote do episódio (e o rating geral da entry) em
-        // sincronia com o rating escolhido na review
+        // mantains the Vote of the episode (and the overall rating of the entry) in sync with the rating chosen in the review
         await upsertVote({
           userId,
           type: "episode",
@@ -111,8 +108,7 @@ export const createReview = async (req, res) => {
       }
     }
 
-    // 🔥 se o user já tem uma review nesta entry/episode, edita em vez de
-    // criar uma duplicada
+    // if the user has already reviewed this entry or episode, update the existing review instead of creating a new one
     const existingReview = await Review.findOne({
       where: {
         userId,
@@ -155,7 +151,7 @@ export const getEntryReviews = async (req, res) => {
     if (sort === "popular")
       order = [[{ model: Like, as: "likes" }, "id", "DESC"]];
 
-    // 🔥 episódios da entry
+    // entry episodes
     const episodes = await Episode.findAll({
       where: { entryId: id },
       attributes: ["id"],
@@ -185,7 +181,7 @@ export const getEntryReviews = async (req, res) => {
           include: {
             model: Season,
             as: "season",
-            attributes: ["id", "seasonNumber"], // 🔥 importante
+            attributes: ["id", "seasonNumber"],
           },
         },
       ],
@@ -236,12 +232,12 @@ export const getEntryReviewCount = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 🎬 reviews diretas da entry
+    // entry reviews
     const entryReviews = await Review.count({
       where: { entryId: id },
     });
 
-    // 📺 episódios da entry
+    // entry episodes
     const episodes = await Episode.findAll({
       where: { entryId: id },
       attributes: ["id"],
@@ -249,7 +245,7 @@ export const getEntryReviewCount = async (req, res) => {
 
     const episodeIds = episodes.map((e) => e.id);
 
-    // 📊 reviews dos episódios
+    // episode reviews
     const episodeReviews = await Review.count({
       where: { episodeId: episodeIds },
     });

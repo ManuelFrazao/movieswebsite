@@ -46,7 +46,7 @@ export const getEntryCast = async (req, res) => {
         { model: Character, as: "character" },
       ],
       order: [
-        // 🔥 sort by roleType so main always comes before supporting
+        // sort by roleType so main always comes before supporting
         [sequelize.literal(`CASE "roleType" WHEN 'main' THEN 0 WHEN 'supporting' THEN 1 WHEN 'guest' THEN 2 ELSE 3 END`), "ASC"],
         ["order", "ASC"],
       ],
@@ -102,14 +102,14 @@ export const replaceCast = async (req, res) => {
       return res.status(400).json({ message: "entryId is required" });
     }
 
-    // 🔥 REMOVE EXISTING
+    // REMOVE EXISTING
     await Cast.destroy({
       where: episodeId
         ? { episodeId } // 👉 só este episódio
         : { entryId, episodeId: null }, // 👉 só cast base
     });
 
-    // 🔥 REMOVE DUPLICATES (extra segurança)
+    // REMOVE DUPLICATES (extra segurança)
     const uniqueCast = cast.filter(
       (c, index, self) =>
         index ===
@@ -118,7 +118,7 @@ export const replaceCast = async (req, res) => {
         ),
     );
 
-    // 🔥 CREATE NEW
+    // CREATE NEW
     const newCast = await Cast.bulkCreate(
       uniqueCast.map((c) => ({
         entryId: entryId,
@@ -150,11 +150,11 @@ export const getCharactersByEntry = async (req, res) => {
     const { entryId } = req.params;
 
     const cast = await Cast.findAll({
-      where: { entryId }, // 🔥 buscar tudo (entry + episódios)
+      where: { entryId }, // sort by roleType so main always comes before supporting
       include: [{ model: Character, as: "character" }],
     });
 
-    // 🔥 remover duplicados (igual ao cast)
+    // remove duplicates (same as cast)
     const uniqueMap = new Map();
 
     cast.forEach((c) => {
@@ -186,7 +186,7 @@ export const deleteCastByEntry = async (req, res) => {
     await Cast.destroy({
       where: {
         entryId,
-        episodeId: null, // 🔥 só base
+        episodeId: null,
       },
     });
 
