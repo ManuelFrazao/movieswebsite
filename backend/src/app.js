@@ -26,7 +26,7 @@ sequelize.authenticate()
   .catch(err => console.error(err));
 
 // create tables
-sequelize.sync({ alter: true })
+sequelize.authenticate()
   .then(() => console.log("Tables created"))
   .catch(err => console.error(err));
 

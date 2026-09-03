@@ -1,0 +1,10 @@
+// Tells sequelize-cli where things actually live in this project, since our
+// layout (backend/src/...) doesn't match the CLI's default expectations.
+// This file has no extension, which Node's require() always treats as
+// CommonJS — that's fine, it just needs to be plain module.exports.
+const path = require("path");
+
+module.exports = {
+  config: path.resolve("src", "config", "config.cjs"),
+  "migrations-path": path.resolve("migrations"),
+};
