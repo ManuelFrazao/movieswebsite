@@ -25,11 +25,6 @@ sequelize.authenticate()
   .then(() => console.log("Data base connected"))
   .catch(err => console.error(err));
 
-// create tables
-sequelize.authenticate()
-  .then(() => console.log("Tables created"))
-  .catch(err => console.error(err));
-
 app.listen(PORT, () => {
   console.log(`Server open on port ${PORT}`);
 });
